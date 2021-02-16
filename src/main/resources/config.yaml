@@ -1,0 +1,31 @@
+databases:
+  tinkergraph:
+    enabled: true
+  overflowdb:
+    enabled: true
+    storage: "/tmp/plume/cpg.bin"
+    set_overflow: true
+    set_heap_percentage_threshold: 80
+    set_serialization_stats_enabled: false
+  janusgraph:
+    enabled: false
+    remote_config: "src/main/resources/conf/remote-graph.properties"
+  tigergraph:
+    enabled: false
+    hostname: "127.0.0.1"
+    port: 9000
+    secure: false
+#    auth_key: "secret"
+  neptune:
+    enabled: false
+    hostnames:
+      - "127.0.0.1"
+    port: 8182
+    key_cert_chain_file: "src/test/resources/conf/SFSRootCAG2.pem"
+  neo4j:
+    enabled: false
+    hostname: "127.0.0.1"
+    port: 7687
+    username: "neo4j"
+    password: "neo4j123"
+    database: "neo4j"
