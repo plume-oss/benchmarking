@@ -13,6 +13,7 @@
         <Logger name="io.shiftleft.console.scripting" level="error"/>
         <Logger name="io.shiftleft.semanticcpg" level="error"/>
         <Logger name="io.github.plume.oss" level="info"/>
+        <Logger name="io.github.plume.oss.graph" level="error"/>
 
         <Root level="info">
             <AppenderRef ref="Console" />

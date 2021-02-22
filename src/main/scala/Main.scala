@@ -7,6 +7,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 import org.yaml.snakeyaml.Yaml
 
 import java.io.{ BufferedWriter, File, FileWriter }
+import java.time.LocalDateTime
 import scala.util.Using
 
 object Main {
@@ -23,6 +24,8 @@ object Main {
     val config = parseConfig(CONFIG_PATH)
 
     val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
+    logger.info(s"Found ${files.length} files to benchmark against.")
+    logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
     files.foreach(f => {
       getDrivers(config).foreach(d => {
         logger.info(s"Running benchmark for ${f.getName} using driver ${d.getClass}")
@@ -56,11 +59,11 @@ object Main {
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append(s"fileName,loadingAndCompiling,buildPasses,buildSoot,\n")
+        _.append(s"date,fileName,loadingAndCompiling,buildPasses,buildSoot,\n")
       }
     }
-    Using.resource(new BufferedWriter(new FileWriter(csv))) {
-      _.append(s"${b.fileName},${b.loadingAndCompiling},${b.buildPasses},${b.buildSoot},\n")
+    Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
+      _.append(s"${LocalDateTime.now()},${b.fileName},${b.loadingAndCompiling},${b.buildPasses},${b.buildSoot},\n")
     }
   }
 
