@@ -1,6 +1,6 @@
 databases:
   tinkergraph:
-    enabled: true
+    enabled: false
   overflowdb:
     enabled: true
     storage: "/tmp/plume/cpg.bin"
