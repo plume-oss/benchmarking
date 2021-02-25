@@ -4,7 +4,7 @@ databases:
     enabled: false
   conf2:
     db: "overflowdb"
-    enabled: false
+    enabled: true
     storage: "/tmp/plume/cpg.bin"
     set_overflow: true
     set_heap_percentage_threshold: 80
@@ -15,7 +15,7 @@ databases:
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf4:
     db: "janus-scylla-es"
-    enabled: false
+    enabled: true
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf5:
     db: "tigergraph"

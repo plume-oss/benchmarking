@@ -30,17 +30,18 @@ object Main {
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
     getDrivers(config).foreach { case (dbName, driver) =>
+      if (hasDockerDependency(dbName)) startDockerFile(dbName)
       Using.resource(driver) { d =>
+        handleConnection(d)
+        handleSchema(d)
         files.foreach { f =>
           logger.info(s"$dbName $driver")
           logger.info(s"Running benchmark for ${f.getName} using driver ${driver.getClass}")
-          handleDockerDependency(dbName)
-          handleConnection(d)
-          handleSchema(d)
           d.clearGraph()
           captureBenchmarkResult(runBenchmark(f, dbName, d))
         }
       }
+      if (hasDockerDependency(dbName)) closeAnyDockerContainers(dbName)
     }
   }
 
@@ -59,18 +60,23 @@ object Main {
     }
   }
 
-  def handleDockerDependency(dbName: String): Unit = {
-    val hasDockerCompose = getDockerComposeFiles.map {
-      _.getName.contains(dbName)
-    }.foldLeft(false)(_ || _)
-    if (hasDockerCompose) startDockerFile(dbName)
+  def hasDockerDependency(dbName: String): Boolean = getDockerComposeFiles.map {
+    _.getName.contains(dbName)
+  }.foldLeft(false)(_ || _)
+
+  def toDockerComposeFile(dbName: String): JavaFile =
+    new JavaFile(getClass.getResource(s"$DOCKER_PATH${JavaFile.separator}$dbName.yml").toURI)
+
+  def closeAnyDockerContainers(dbName: String): Unit = {
+    logger.info(s"Stopping Docker services for $dbName...")
+    val dockerComposeUp = Process(Seq("docker-compose", "-f", toDockerComposeFile(dbName).getAbsolutePath, "down"))
+    dockerComposeUp.run(ProcessLogger(_ => ()))
   }
 
   def startDockerFile(dbName: String): Unit = {
     logger.info(s"Docker Compose file found for $dbName, starting...")
-    val dockerComposeFile = new JavaFile(getClass.getResource(s"$DOCKER_PATH${JavaFile.separator}$dbName.yml").toURI)
-    val dockerComposeUp = Process(Seq("docker-compose", "-f", dockerComposeFile.getAbsolutePath, "up"))
-    logger.info(s"Starting process ${dockerComposeUp}")
+    val dockerComposeUp = Process(Seq("docker-compose", "-f", toDockerComposeFile(dbName).getAbsolutePath, "up"))
+    logger.info(s"Starting process $dockerComposeUp")
     dockerComposeUp.run(ProcessLogger(_ => ()))
     var status = false
     while (!status) {
