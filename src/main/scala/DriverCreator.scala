@@ -1,6 +1,6 @@
 package io.github.plume.oss
 
-import drivers.{ DriverFactory, GraphDatabase, OverflowDbDriver, TinkerGraphDriver }
+import drivers._
 
 import scala.reflect.io.File
 
@@ -23,6 +23,14 @@ object DriverCreator {
       driver.setSerializationStatsEnabled(
         config.getOrDefault("set_serialization_stats_enabled", false).asInstanceOf[Boolean]
       )
+      driver
+    } else
+      null
+
+  def createJanusGraphDriver(config: java.util.LinkedHashMap[String, Any]): JanusGraphDriver =
+    if (config.getOrDefault("enabled", false) == true) {
+      val driver = DriverFactory.invoke(GraphDatabase.JANUS_GRAPH).asInstanceOf[JanusGraphDriver]
+      driver.remoteConfig(config.get("remote_config").asInstanceOf[String])
       driver
     } else
       null

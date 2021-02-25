@@ -8,13 +8,19 @@ idePackagePrefix := Some("io.github.plume.oss")
 
 val plume_version = "0.2.2"
 val snakeyaml_version = "1.27"
+val log4j_version = "2.11.2"
+val circle_version = "0.14.0-M4"
 
 libraryDependencies ++= Seq(
   "io.github.plume-oss" % "plume" % plume_version exclude ("io.github.plume-oss", "cpgconv"),
-  "org.apache.logging.log4j" % "log4j-core" % "2.11.2",
-  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.11.2",
+  "org.apache.logging.log4j" % "log4j-core" % log4j_version,
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j_version,
   "org.yaml" % "snakeyaml" % snakeyaml_version
-)
+) ++ Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circle_version)
 
 ThisBuild / resolvers ++= Seq(
   Resolver.mavenLocal,

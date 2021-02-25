@@ -1,14 +1,16 @@
 package io.github.plume.oss
 
-import drivers.IDriver
+import drivers._
 
 import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.time.LocalDateTime
+import scala.sys.process.{Process, ProcessLogger, stringSeqToProcess}
 import scala.util.Using
+import scala.util.control.Breaks.{break, breakable}
 
 object Main {
 
@@ -16,6 +18,7 @@ object Main {
   val LOG4J2_XML = "../../../../log4j2.xml"
   val CONFIG_PATH = "../../../../config.yaml"
   val PROGRAMS_PATH = "../../../../programs"
+  val DOCKER_PATH = "../../../../docker"
 
   def main(args: Array[String]): Unit = {
     import org.apache.logging.log4j.LogManager
@@ -26,17 +29,76 @@ object Main {
     val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
-    files.foreach(f => {
-      getDrivers(config).foreach { case (dbName, driver) =>
-        logger.info(s"Running benchmark for ${f.getName} using driver ${driver.getClass}")
-        Using.resource(driver) { d =>
+    getDrivers(config).foreach { case (dbName, driver) =>
+      Using.resource(driver) { d =>
+        files.foreach { f =>
+          logger.info(s"$dbName $driver")
+          logger.info(s"Running benchmark for ${f.getName} using driver ${driver.getClass}")
+          handleDockerDependency(dbName)
+          handleConnection(d)
+          handleSchema(d)
+          d.clearGraph()
           captureBenchmarkResult(runBenchmark(f, dbName, d))
         }
       }
-    })
+    }
   }
 
-  def runBenchmark(f: File, dbName: String, driver: IDriver): BenchmarkResult = {
+  def handleSchema(driver: IDriver): Unit = {
+    driver match {
+      case x: ISchemaSafeDriver => x.buildSchema()
+      case _ =>
+    }
+  }
+
+  def handleConnection(driver: IDriver): Unit = {
+    driver match {
+      case x: GremlinDriver => x.connect()
+      case y: OverflowDbDriver => y.connect()
+      case z: Neo4jDriver => z.connect()
+    }
+  }
+
+  def handleDockerDependency(dbName: String): Unit = {
+    val hasDockerCompose = getDockerComposeFiles.map {
+      _.getName.contains(dbName)
+    }.foldLeft(false)(_ || _)
+    if (hasDockerCompose) startDockerFile(dbName)
+  }
+
+  def startDockerFile(dbName: String): Unit = {
+    logger.info(s"Docker Compose file found for $dbName, starting...")
+    val dockerComposeFile = new JavaFile(getClass.getResource(s"$DOCKER_PATH${JavaFile.separator}$dbName.yml").toURI)
+    val dockerComposeUp = Process(Seq("docker-compose", "-f", dockerComposeFile.getAbsolutePath, "up"))
+    logger.info(s"Starting process ${dockerComposeUp}")
+    dockerComposeUp.run(ProcessLogger(_ => ()))
+    var status = false
+    while (!status) {
+      val healthCheck = Seq("docker", "inspect", "--format='{{json .State.Health}}'", "janusgraph-plume-benchmark")
+      val rawResponse = healthCheck.lazyLines
+      breakable {
+        for (x <- rawResponse) {
+          val jsonRaw = x.substring(1, x.length - 1)
+          io.circe.parser.parse(jsonRaw) match {
+            case Left(failure) => logger.warn(failure.message, failure.underlying)
+            case Right(json) =>
+              json.\\("Status").head.asString match {
+                case Some("unhealthy") => logger.info("Container is unhealthy")
+                case Some("starting") => logger.info("Container is busy starting")
+                case Some("healthy") => logger.info("Container is healthy! Proceeding...")
+                  status = true
+                  break
+              }
+          }
+        }
+      }
+      Thread.sleep(1000)
+    }
+  }
+
+  def getDockerComposeFiles: Array[JavaFile] = new JavaFile(getClass.getResource(DOCKER_PATH).getFile).listFiles()
+
+  def runBenchmark(f: JavaFile, dbName: String, driver: IDriver): BenchmarkResult = {
     val e = new Extractor(driver)
     val s1 = System.nanoTime()
     logger.info("Loading file...")
@@ -55,7 +117,7 @@ object Main {
 
   def captureBenchmarkResult(b: BenchmarkResult) {
     logger.info(s"Capturing benchmark for $b.")
-    val csv = new File("./results.csv")
+    val csv = new JavaFile("./results.csv")
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
@@ -84,26 +146,27 @@ object Main {
           _.getValue.asInstanceOf[java.util.LinkedHashMap[String, Any]]
         }
           .map { configs: java.util.LinkedHashMap[String, Any] =>
-            val dbName = configs.getOrDefault("db", "unknown")
+            val dbName = configs.getOrDefault("db", "unknown").asInstanceOf[String]
             dbName match {
               case "tinkergraph" =>
                 Tuple2(dbName, DriverCreator.createTinkerGraphDriver(configs))
               case "overflowdb" =>
                 Tuple2(dbName, DriverCreator.createOverflowDbDriver(configs))
-              case "unknown" =>
-                logger.warn(s"No database specified for configuration $config.")
-                null
+              case s"janus$x" => Tuple2(dbName, DriverCreator.createJanusGraphDriver(configs))
+              case "unknown" => logger.warn(s"No database specified for configuration $config."); null
+              case _ => logger.warn(s"Database name '${dbName}' not registered. "); null
             }
-          }.toArray.filterNot(_ == null)
+          }.toArray
           .toList
           .asInstanceOf[List[(String, IDriver)]]
+          .filterNot { tup: (String, IDriver) => tup == null || tup._2 == null }
 
       case _ => List.empty[(String, IDriver)]
     }
   }
 
 
-  def getFilesToBenchmarkAgainst(prefixPath: String): Array[File] =
-    new File(getClass.getResource(prefixPath).getFile).listFiles()
+  def getFilesToBenchmarkAgainst(prefixPath: String): Array[JavaFile] =
+    new JavaFile(getClass.getResource(prefixPath).getFile).listFiles()
 
 }
