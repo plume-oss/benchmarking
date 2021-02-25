@@ -2,7 +2,7 @@
 <Configuration status="warn" strict="true">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%C [%-5p] %m%n" />
+            <PatternLayout pattern="%d{dd MMM yyyy HH:mm:ss,SSS} %C [%-5p] %m%n" />
         </Console>
     </Appenders>
     <Loggers>
@@ -13,7 +13,7 @@
         <Logger name="io.shiftleft.console.scripting" level="error"/>
         <Logger name="io.shiftleft.semanticcpg" level="info"/>
         <Logger name="io.github.plume.oss" level="info"/>
-        <Logger name="io.github.plume.oss.graph" level="error"/>
+        <Logger name="io.github.plume.oss.graph" level="info"/>
 
         <Root level="info">
             <AppenderRef ref="Console" />

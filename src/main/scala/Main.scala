@@ -84,11 +84,11 @@ object Main {
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append(s"date,fileName,database,loadingAndCompiling,buildPasses,buildSoot,\n")
+        _.append(s"date,fileName,database,loadingAndCompiling,buildSoot,buildPasses,\n")
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(s"${LocalDateTime.now()},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildPasses},${b.buildSoot},\n")
+      _.append(s"${LocalDateTime.now()},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildSoot},${b.buildPasses},\n")
     }
   }
 

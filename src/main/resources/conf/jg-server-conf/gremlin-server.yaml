@@ -55,7 +55,7 @@ maxContentLength: 65536
 maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
 writeBufferLowWaterMark: 32768
-writeBufferHighWaterMark: 65536
+writeBufferHighWaterMark: 81928192
 
 threadPoolWorker: 1
 gremlinPool: 8
