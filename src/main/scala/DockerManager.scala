@@ -27,7 +27,7 @@ object DockerManager {
     dockerComposeUp.run(ProcessLogger(_ => ()))
     var status = false
     while (!status) {
-      val healthCheck = Seq("docker", "inspect", "--format='{{json .State.Health}}'", "janusgraph-plume-benchmark")
+      val healthCheck = Seq("docker", "inspect", "--format='{{json .State.Health}}'", dbName)
       try {
         val rawResponse = healthCheck.lazyLines
         breakable {
@@ -49,7 +49,7 @@ object DockerManager {
       } catch {
         case _: StringIndexOutOfBoundsException => // Usually happens just as the services have been created
       }
-      Thread.sleep(1000)
+      Thread.sleep(2500)
     }
   }
 

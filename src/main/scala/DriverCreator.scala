@@ -14,41 +14,39 @@ object DriverCreator {
 
   def createOverflowDbDriver(config: java.util.LinkedHashMap[String, Any]): OverflowDbDriver =
     if (config.getOrDefault("enabled", false) == true) {
-      val driver = DriverFactory.invoke(GraphDatabase.OVERFLOWDB).asInstanceOf[OverflowDbDriver]
+
       val storageLoc = config.getOrDefault("storage", "/tmp/plume/cpg.bin").asInstanceOf[String]
       File(storageLoc).delete()
-      driver.setStorageLocation(storageLoc)
-      driver.setOverflow(config.getOrDefault("set_overflow", true).asInstanceOf[Boolean])
-      driver.setHeapPercentageThreshold(config.getOrDefault("set_heap_percentage_threshold", 80).asInstanceOf[Int])
-      driver.setSerializationStatsEnabled(
-        config.getOrDefault("set_serialization_stats_enabled", false).asInstanceOf[Boolean]
-      )
-      driver
+      DriverFactory.invoke(GraphDatabase.OVERFLOWDB).asInstanceOf[OverflowDbDriver]
+        .storageLocation(storageLoc)
+        .overflow(config.getOrDefault("set_overflow", true).asInstanceOf[Boolean])
+        .heapPercentageThreshold(config.getOrDefault("set_heap_percentage_threshold", 80).asInstanceOf[Int])
+        .serializationStatsEnabled(
+          config.getOrDefault("set_serialization_stats_enabled", false).asInstanceOf[Boolean]
+        )
     } else
       null
 
   def createJanusGraphDriver(config: java.util.LinkedHashMap[String, Any]): JanusGraphDriver =
     if (config.getOrDefault("enabled", false) == true) {
-      val driver = DriverFactory.invoke(GraphDatabase.JANUS_GRAPH).asInstanceOf[JanusGraphDriver]
-      driver.remoteConfig(config.get("remote_config").asInstanceOf[String])
-      driver
+      DriverFactory.invoke(GraphDatabase.JANUS_GRAPH).asInstanceOf[JanusGraphDriver]
+        .remoteConfig(config.get("remote_config").asInstanceOf[String])
     } else
       null
 
   def createNeptuneDriver(config: java.util.LinkedHashMap[String, Any]): NeptuneDriver =
     if (config.getOrDefault("enabled", false) == true) {
-      val driver = DriverFactory.invoke(GraphDatabase.NEPTUNE).asInstanceOf[NeptuneDriver]
-      driver.addHostnames(config.getOrDefault("hostnames", List("127.0.0.1")).asInstanceOf[List[String]]: _*)
+      DriverFactory.invoke(GraphDatabase.NEPTUNE).asInstanceOf[NeptuneDriver]
+        .addHostnames(config.getOrDefault("hostnames", List("127.0.0.1")).asInstanceOf[List[String]]: _*)
         .keyCertChainFile(config.getOrDefault("key_cert_chain_file", "src/test/resources/conf/SFSRootCAG2.pem").asInstanceOf[String])
         .port(config.getOrDefault("port", 8182).asInstanceOf[Int])
-      driver
     } else
       null
 
   def createTigerGraphDriver(config: java.util.LinkedHashMap[String, Any]): TigerGraphDriver =
     if (config.getOrDefault("enabled", false) == true) {
-      val driver = DriverFactory.invoke(GraphDatabase.TIGER_GRAPH).asInstanceOf[TigerGraphDriver]
-      driver.hostname(config.getOrDefault("hostname", "127.0.0.1").asInstanceOf[String])
+      DriverFactory.invoke(GraphDatabase.TIGER_GRAPH).asInstanceOf[TigerGraphDriver]
+        .hostname(config.getOrDefault("hostname", "127.0.0.1").asInstanceOf[String])
         .username(config.getOrDefault("username", "tigergraph").asInstanceOf[String])
         .password(config.getOrDefault("password", "tigergraph").asInstanceOf[String])
         .secure(config.getOrDefault("secure", false).asInstanceOf[Boolean])
@@ -60,8 +58,8 @@ object DriverCreator {
 
   def createNeo4jDriver(config: java.util.LinkedHashMap[String, Any]): Neo4jDriver =
     if (config.getOrDefault("enabled", false) == true) {
-      val driver = DriverFactory.invoke(GraphDatabase.NEO4J).asInstanceOf[Neo4jDriver]
-      driver.hostname(config.getOrDefault("hostname", "127.0.0.1").asInstanceOf[String])
+      DriverFactory.invoke(GraphDatabase.NEO4J).asInstanceOf[Neo4jDriver]
+        .hostname(config.getOrDefault("hostname", "127.0.0.1").asInstanceOf[String])
         .username(config.getOrDefault("username", "neo4j").asInstanceOf[String])
         .password(config.getOrDefault("password", "neo4j123").asInstanceOf[String])
         .database(config.getOrDefault("database", "neo4j").asInstanceOf[String])

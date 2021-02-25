@@ -57,6 +57,7 @@ object Main {
       case x: GremlinDriver => x.connect()
       case y: OverflowDbDriver => y.connect()
       case z: Neo4jDriver => z.connect()
+      case _ =>
     }
   }
 
@@ -83,11 +84,11 @@ object Main {
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append(s"date,fileName,loadingAndCompiling,buildPasses,buildSoot,\n")
+        _.append(s"date,fileName,database,loadingAndCompiling,buildPasses,buildSoot,\n")
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(s"${LocalDateTime.now()},${b.fileName},${b.loadingAndCompiling},${b.buildPasses},${b.buildSoot},\n")
+      _.append(s"${LocalDateTime.now()},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildPasses},${b.buildSoot},\n")
     }
   }
 
@@ -119,7 +120,7 @@ object Main {
               case "neo4j" => Tuple2(dbName, DriverCreator.createNeo4jDriver(configs))
               case "neptune" => Tuple2(dbName, DriverCreator.createNeptuneDriver(configs))
               case "unknown" => logger.warn(s"No database specified for configuration $config."); null
-              case _ => logger.warn(s"Database name '${dbName}' not registered. "); null
+              case _ => logger.warn(s"Database name '$dbName' not registered. "); null
             }
           }.toArray
           .toList

@@ -2,7 +2,7 @@ version: '3'
 services:
   tigergraph:
     image: dbakereffendi/tigergraph:3.0.5
-    container_name: plume-tigergraph-benchmark
+    container_name: tigergraph
     ports:
       - "14022:22"
       - "9000:9000"
