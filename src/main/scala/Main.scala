@@ -8,9 +8,7 @@ import org.yaml.snakeyaml.Yaml
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.time.LocalDateTime
-import scala.sys.process.{Process, ProcessLogger, stringSeqToProcess}
 import scala.util.Using
-import scala.util.control.Breaks.{break, breakable}
 
 object Main {
 
@@ -30,7 +28,7 @@ object Main {
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
     getDrivers(config).foreach { case (dbName, driver) =>
-      if (hasDockerDependency(dbName)) startDockerFile(dbName)
+      if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName)
       Using.resource(driver) { d =>
         handleConnection(d)
         handleSchema(d)
@@ -41,13 +39,15 @@ object Main {
           captureBenchmarkResult(runBenchmark(f, dbName, d))
         }
       }
-      if (hasDockerDependency(dbName)) closeAnyDockerContainers(dbName)
+      if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
     }
   }
 
   def handleSchema(driver: IDriver): Unit = {
     driver match {
-      case x: ISchemaSafeDriver => x.buildSchema()
+      case x: ISchemaSafeDriver =>
+        logger.info(s"Building schema for $driver.")
+        x.buildSchema()
       case _ =>
     }
   }
@@ -59,50 +59,6 @@ object Main {
       case z: Neo4jDriver => z.connect()
     }
   }
-
-  def hasDockerDependency(dbName: String): Boolean = getDockerComposeFiles.map {
-    _.getName.contains(dbName)
-  }.foldLeft(false)(_ || _)
-
-  def toDockerComposeFile(dbName: String): JavaFile =
-    new JavaFile(getClass.getResource(s"$DOCKER_PATH${JavaFile.separator}$dbName.yml").toURI)
-
-  def closeAnyDockerContainers(dbName: String): Unit = {
-    logger.info(s"Stopping Docker services for $dbName...")
-    val dockerComposeUp = Process(Seq("docker-compose", "-f", toDockerComposeFile(dbName).getAbsolutePath, "down"))
-    dockerComposeUp.run(ProcessLogger(_ => ()))
-  }
-
-  def startDockerFile(dbName: String): Unit = {
-    logger.info(s"Docker Compose file found for $dbName, starting...")
-    val dockerComposeUp = Process(Seq("docker-compose", "-f", toDockerComposeFile(dbName).getAbsolutePath, "up"))
-    logger.info(s"Starting process $dockerComposeUp")
-    dockerComposeUp.run(ProcessLogger(_ => ()))
-    var status = false
-    while (!status) {
-      val healthCheck = Seq("docker", "inspect", "--format='{{json .State.Health}}'", "janusgraph-plume-benchmark")
-      val rawResponse = healthCheck.lazyLines
-      breakable {
-        for (x <- rawResponse) {
-          val jsonRaw = x.substring(1, x.length - 1)
-          io.circe.parser.parse(jsonRaw) match {
-            case Left(failure) => logger.warn(failure.message, failure.underlying)
-            case Right(json) =>
-              json.\\("Status").head.asString match {
-                case Some("unhealthy") => logger.info("Container is unhealthy")
-                case Some("starting") => logger.info("Container is busy starting")
-                case Some("healthy") => logger.info("Container is healthy! Proceeding...")
-                  status = true
-                  break
-              }
-          }
-        }
-      }
-      Thread.sleep(1000)
-    }
-  }
-
-  def getDockerComposeFiles: Array[JavaFile] = new JavaFile(getClass.getResource(DOCKER_PATH).getFile).listFiles()
 
   def runBenchmark(f: JavaFile, dbName: String, driver: IDriver): BenchmarkResult = {
     val e = new Extractor(driver)
