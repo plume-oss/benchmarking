@@ -47,7 +47,7 @@ object DockerManager {
           }
         }
       } catch {
-        case e: StringIndexOutOfBoundsException => // Usually happens just as the services have been created
+        case _: StringIndexOutOfBoundsException => // Usually happens just as the services have been created
       }
       Thread.sleep(1000)
     }

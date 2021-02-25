@@ -4,7 +4,7 @@ databases:
     enabled: false
   conf2:
     db: "overflowdb"
-    enabled: true
+    enabled: false
     storage: "/tmp/plume/cpg.bin"
     set_overflow: true
     set_heap_percentage_threshold: 80
@@ -20,8 +20,11 @@ databases:
   conf5:
     db: "tigergraph"
     enabled: false
+    username: "tigergraph"
+    password: "tigergraph"
     hostname: "127.0.0.1"
-    port: 9000
+    restPpPort: 9000
+    gsqlPort: 14240
     secure: false
 #    auth_key: "secret"
   conf6:

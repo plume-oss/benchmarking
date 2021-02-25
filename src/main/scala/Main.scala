@@ -114,7 +114,10 @@ object Main {
                 Tuple2(dbName, DriverCreator.createTinkerGraphDriver(configs))
               case "overflowdb" =>
                 Tuple2(dbName, DriverCreator.createOverflowDbDriver(configs))
-              case s"janus$x" => Tuple2(dbName, DriverCreator.createJanusGraphDriver(configs))
+              case s"janus$_" => Tuple2(dbName, DriverCreator.createJanusGraphDriver(configs))
+              case "tigergraph" => Tuple2(dbName, DriverCreator.createTigerGraphDriver(configs))
+              case "neo4j" => Tuple2(dbName, DriverCreator.createNeo4jDriver(configs))
+              case "neptune" => Tuple2(dbName, DriverCreator.createNeptuneDriver(configs))
               case "unknown" => logger.warn(s"No database specified for configuration $config."); null
               case _ => logger.warn(s"Database name '${dbName}' not registered. "); null
             }
