@@ -7,13 +7,13 @@ import scala.reflect.io.File
 object DriverCreator {
 
   def createTinkerGraphDriver(config: java.util.LinkedHashMap[String, Any]): TinkerGraphDriver =
-    if (config.get("enabled") == true)
+    if (config.getOrDefault("enabled", false) == true)
       DriverFactory.invoke(GraphDatabase.TINKER_GRAPH).asInstanceOf[TinkerGraphDriver]
     else
       null
 
   def createOverflowDbDriver(config: java.util.LinkedHashMap[String, Any]): OverflowDbDriver =
-    if (config.get("enabled") == true) {
+    if (config.getOrDefault("enabled", false) == true) {
       val driver = DriverFactory.invoke(GraphDatabase.OVERFLOWDB).asInstanceOf[OverflowDbDriver]
       val storageLoc = config.getOrDefault("storage", "/tmp/plume/cpg.bin").asInstanceOf[String]
       File(storageLoc).delete()

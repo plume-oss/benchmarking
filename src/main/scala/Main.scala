@@ -1,12 +1,12 @@
 package io.github.plume.oss
 
-import drivers.{ DriverFactory, GraphDatabase, IDriver, OverflowDbDriver, TinkerGraphDriver }
+import drivers.IDriver
 
 import org.apache.logging.log4j.core.LoggerContext
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
-import java.io.{ BufferedWriter, File, FileWriter }
+import java.io.{BufferedWriter, File, FileWriter}
 import java.time.LocalDateTime
 import scala.util.Using
 
@@ -27,17 +27,17 @@ object Main {
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
     files.foreach(f => {
-      getDrivers(config).foreach(d => {
-        logger.info(s"Running benchmark for ${f.getName} using driver ${d.getClass}")
-        Using.resource(d) { it =>
-          captureBenchmarkResult(runBenchmark(f, it))
+      getDrivers(config).foreach { case (dbName, driver) =>
+        logger.info(s"Running benchmark for ${f.getName} using driver ${driver.getClass}")
+        Using.resource(driver) { d =>
+          captureBenchmarkResult(runBenchmark(f, dbName, d))
         }
-      })
+      }
     })
   }
 
-  def runBenchmark(f: File, d: IDriver): BenchmarkResult = {
-    val e = new Extractor(d)
+  def runBenchmark(f: File, dbName: String, driver: IDriver): BenchmarkResult = {
+    val e = new Extractor(driver)
     val s1 = System.nanoTime()
     logger.info("Loading file...")
     e.load(f)
@@ -50,7 +50,7 @@ object Main {
     logger.info("Running internal passes...")
     e.postProject()
     val t3 = System.nanoTime() - s3
-    BenchmarkResult(f.getName, t1, t2, t3)
+    BenchmarkResult(f.getName, dbName, t1, t2, t3)
   }
 
   def captureBenchmarkResult(b: BenchmarkResult) {
@@ -74,29 +74,34 @@ object Main {
     }
   }
 
-  def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[IDriver] =
-    config.getOrDefault("databases", { Map("tinkergraph" -> Map("enabled" -> "true")) }) match {
+  def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver)] = {
+    config.getOrDefault("databases", {
+      Map("conf0" -> Map("db" -> "tinkergraph", "enabled" -> "true"))
+    }) match {
       case dbs: java.util.LinkedHashMap[String, Any] =>
         dbs
-          .keySet()
-          .toArray
-          .map {
-            case "tinkergraph" =>
-              DriverCreator.createTinkerGraphDriver(
-                dbs.get("tinkergraph").asInstanceOf[java.util.LinkedHashMap[String, Any]]
-              )
-            case "overflowdb" =>
-              DriverCreator.createOverflowDbDriver(
-                dbs.get("overflowdb").asInstanceOf[java.util.LinkedHashMap[String, Any]]
-              )
-            case _ => null
-          }
-          .filterNot(_ == null)
+          .entrySet().stream().map {
+          _.getValue.asInstanceOf[java.util.LinkedHashMap[String, Any]]
+        }
+          .map { configs: java.util.LinkedHashMap[String, Any] =>
+            val dbName = configs.getOrDefault("db", "unknown")
+            dbName match {
+              case "tinkergraph" =>
+                Tuple2(dbName, DriverCreator.createTinkerGraphDriver(configs))
+              case "overflowdb" =>
+                Tuple2(dbName, DriverCreator.createOverflowDbDriver(configs))
+              case "unknown" =>
+                logger.warn(s"No database specified for configuration $config.")
+                null
+            }
+          }.toArray.filterNot(_ == null)
           .toList
-          .asInstanceOf[List[IDriver]]
+          .asInstanceOf[List[(String, IDriver)]]
 
-      case _ => List.empty[IDriver]
+      case _ => List.empty[(String, IDriver)]
     }
+  }
+
 
   def getFilesToBenchmarkAgainst(prefixPath: String): Array[File] =
     new File(getClass.getResource(prefixPath).getFile).listFiles()
