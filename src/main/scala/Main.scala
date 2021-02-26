@@ -27,39 +27,38 @@ object Main {
     val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
-    getDrivers(config).foreach { case (dbName, driver) =>
-      if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName)
-      Using.resource(driver) { d =>
-        handleConnection(d)
-        handleSchema(d)
-        files.foreach { f =>
-          logger.info(s"$dbName $driver")
-          logger.info(s"Running benchmark for ${f.getName} using driver ${driver.getClass}")
-          d.clearGraph()
-          captureBenchmarkResult(runBenchmark(f, dbName, d))
+    getDrivers(config).foreach {
+      case (dbName, driver) =>
+        if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName)
+        Using.resource(driver) { d =>
+          handleConnection(d)
+          handleSchema(d)
+          files.foreach { f =>
+            val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
+            logger.info(s"Running benchmark for ${f.getName} using driver $driverName")
+            d.clearGraph()
+            captureBenchmarkResult(runBenchmark(f, dbName, d))
+          }
         }
-      }
-      if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
+        if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
     }
   }
 
-  def handleSchema(driver: IDriver): Unit = {
+  def handleSchema(driver: IDriver): Unit =
     driver match {
       case x: ISchemaSafeDriver =>
         logger.info(s"Building schema for $driver.")
         x.buildSchema()
       case _ =>
     }
-  }
 
-  def handleConnection(driver: IDriver): Unit = {
+  def handleConnection(driver: IDriver): Unit =
     driver match {
-      case x: GremlinDriver => x.connect()
+      case x: GremlinDriver    => x.connect()
       case y: OverflowDbDriver => y.connect()
-      case z: Neo4jDriver => z.connect()
-      case _ =>
+      case z: Neo4jDriver      => z.connect()
+      case _                   =>
     }
-  }
 
   def runBenchmark(f: JavaFile, dbName: String, driver: IDriver): BenchmarkResult = {
     val e = new Extractor(driver)
@@ -88,7 +87,9 @@ object Main {
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(s"${LocalDateTime.now()},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildSoot},${b.buildPasses},\n")
+      _.append(
+        s"${LocalDateTime.now()},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildSoot},${b.buildPasses},\n"
+      )
     }
   }
 
@@ -99,15 +100,17 @@ object Main {
     }
   }
 
-  def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver)] = {
+  def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver)] =
     config.getOrDefault("databases", {
       Map("conf0" -> Map("db" -> "tinkergraph", "enabled" -> "true"))
     }) match {
       case dbs: java.util.LinkedHashMap[String, Any] =>
         dbs
-          .entrySet().stream().map {
-          _.getValue.asInstanceOf[java.util.LinkedHashMap[String, Any]]
-        }
+          .entrySet()
+          .stream()
+          .map {
+            _.getValue.asInstanceOf[java.util.LinkedHashMap[String, Any]]
+          }
           .map { configs: java.util.LinkedHashMap[String, Any] =>
             val dbName = configs.getOrDefault("db", "unknown").asInstanceOf[String]
             dbName match {
@@ -115,22 +118,23 @@ object Main {
                 Tuple2(dbName, DriverCreator.createTinkerGraphDriver(configs))
               case "overflowdb" =>
                 Tuple2(dbName, DriverCreator.createOverflowDbDriver(configs))
-              case s"janus$_" => Tuple2(dbName, DriverCreator.createJanusGraphDriver(configs))
+              case s"janus$_"   => Tuple2(dbName, DriverCreator.createJanusGraphDriver(configs))
               case "tigergraph" => Tuple2(dbName, DriverCreator.createTigerGraphDriver(configs))
-              case "neo4j" => Tuple2(dbName, DriverCreator.createNeo4jDriver(configs))
-              case "neptune" => Tuple2(dbName, DriverCreator.createNeptuneDriver(configs))
-              case "unknown" => logger.warn(s"No database specified for configuration $config."); null
-              case _ => logger.warn(s"Database name '$dbName' not registered. "); null
+              case "neo4j"      => Tuple2(dbName, DriverCreator.createNeo4jDriver(configs))
+              case "neptune"    => Tuple2(dbName, DriverCreator.createNeptuneDriver(configs))
+              case "unknown"    => logger.warn(s"No database specified for configuration $config."); null
+              case _            => logger.warn(s"Database name '$dbName' not registered. "); null
             }
-          }.toArray
+          }
+          .toArray
           .toList
           .asInstanceOf[List[(String, IDriver)]]
-          .filterNot { tup: (String, IDriver) => tup == null || tup._2 == null }
+          .filterNot { tup: (String, IDriver) =>
+            tup == null || tup._2 == null
+          }
 
       case _ => List.empty[(String, IDriver)]
     }
-  }
-
 
   def getFilesToBenchmarkAgainst(prefixPath: String): Array[JavaFile] =
     new JavaFile(getClass.getResource(prefixPath).getFile).listFiles()
