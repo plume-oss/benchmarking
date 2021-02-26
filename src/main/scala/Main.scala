@@ -8,6 +8,7 @@ import org.yaml.snakeyaml.Yaml
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.time.LocalDateTime
+import scala.jdk.CollectionConverters
 import scala.util.Using
 
 object Main {
@@ -28,8 +29,8 @@ object Main {
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
     getDrivers(config).foreach {
-      case (dbName, driver) =>
-        if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName)
+      case (dbName, driver, containers) =>
+        if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName, containers)
         Using.resource(driver) { d =>
           handleConnection(d)
           handleSchema(d)
@@ -100,7 +101,7 @@ object Main {
     }
   }
 
-  def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver)] =
+  def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver, List[String])] =
     config.getOrDefault("databases", {
       Map("conf0" -> Map("db" -> "tinkergraph", "enabled" -> "true"))
     }) match {
@@ -111,29 +112,46 @@ object Main {
           .map {
             _.getValue.asInstanceOf[java.util.LinkedHashMap[String, Any]]
           }
-          .map { configs: java.util.LinkedHashMap[String, Any] =>
-            val dbName = configs.getOrDefault("db", "unknown").asInstanceOf[String]
+          .map { dbConf: java.util.LinkedHashMap[String, Any] =>
+            val dbName = dbConf.getOrDefault("db", "unknown").asInstanceOf[String]
             dbName match {
               case "tinkergraph" =>
-                Tuple2(dbName, DriverCreator.createTinkerGraphDriver(configs))
+                (dbName,
+                 DriverCreator.createTinkerGraphDriver(dbConf),
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
               case "overflowdb" =>
-                Tuple2(dbName, DriverCreator.createOverflowDbDriver(configs))
-              case s"janus$_"   => Tuple2(dbName, DriverCreator.createJanusGraphDriver(configs))
-              case "tigergraph" => Tuple2(dbName, DriverCreator.createTigerGraphDriver(configs))
-              case "neo4j"      => Tuple2(dbName, DriverCreator.createNeo4jDriver(configs))
-              case "neptune"    => Tuple2(dbName, DriverCreator.createNeptuneDriver(configs))
-              case "unknown"    => logger.warn(s"No database specified for configuration $config."); null
-              case _            => logger.warn(s"Database name '$dbName' not registered. "); null
+                (dbName,
+                 DriverCreator.createOverflowDbDriver(dbConf),
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+              case s"janus$_" =>
+                (dbName,
+                 DriverCreator.createJanusGraphDriver(dbConf),
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+              case "tigergraph" =>
+                (dbName,
+                 DriverCreator.createTigerGraphDriver(dbConf),
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+              case "neo4j" =>
+                (dbName,
+                 DriverCreator.createNeo4jDriver(dbConf),
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+              case "neptune" =>
+                (dbName,
+                 DriverCreator.createNeptuneDriver(dbConf),
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+              case "unknown" => logger.warn(s"No database specified for configuration $config."); null
+              case _         => logger.warn(s"Database name '$dbName' not registered. "); null
             }
           }
           .toArray
           .toList
-          .asInstanceOf[List[(String, IDriver)]]
-          .filterNot { tup: (String, IDriver) =>
+          .map { case (x, y, z) => (x, y, CollectionConverters.ListHasAsScala(z.asInstanceOf[java.util.ArrayList[String]]).asScala.toList) }
+          .asInstanceOf[List[(String, IDriver, List[String])]]
+          .filterNot { tup: (String, IDriver, List[String]) =>
             tup == null || tup._2 == null
           }
 
-      case _ => List.empty[(String, IDriver)]
+      case _ => List.empty[(String, IDriver, List[String])]
     }
 
   def getFilesToBenchmarkAgainst(prefixPath: String): Array[JavaFile] =

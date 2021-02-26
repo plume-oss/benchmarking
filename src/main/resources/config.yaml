@@ -6,16 +6,20 @@ databases:
     db: "overflowdb"
     enabled: false
     storage: "/tmp/plume/cpg.bin"
-    set_overflow: true
+    set_overflow: false
     set_heap_percentage_threshold: 80
     set_serialization_stats_enabled: false
   conf3:
     db: "janus-berkeleyje-lucene"
-    enabled: true
+    enabled: false
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf4:
     db: "janus-scylla-es"
     enabled: true
+    containers:
+      - "janus-plume-benchmark"
+      - "scylla-plume-benchmark"
+      - "elastic-plume-benchmark"
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf5:
     db: "tigergraph"

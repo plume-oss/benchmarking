@@ -3,12 +3,12 @@ version: "2.4"
 services:
   janusgraph:
     image: janusgraph/janusgraph:0.5.3
-    container_name: janus-scylla-es
+    container_name: janus-plume-benchmark
     environment:
       JANUS_PROPS_TEMPLATE: cql-es
       janusgraph.storage.backend: cql
-      janusgraph.storage.hostname: scylla-plume
-      janusgraph.index.search.hostname: elastic-plume
+      janusgraph.storage.hostname: scylla-plume-benchmark
+      janusgraph.index.search.hostname: elastic-plume-benchmark
     ports:
       - "8182:8182"
     healthcheck:
