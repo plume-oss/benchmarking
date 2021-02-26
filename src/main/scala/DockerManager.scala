@@ -35,7 +35,7 @@ object DockerManager {
     var status = 1
     while (status == 1) {
       Thread.sleep(2500)
-      status = healthChecks.map(performHealthCheck).foldLeft(1)(_ | _)
+      status = healthChecks.map(performHealthCheck).foldLeft(0)(_ & _)
     }
   }
 
