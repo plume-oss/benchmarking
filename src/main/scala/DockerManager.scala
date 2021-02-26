@@ -4,7 +4,6 @@ import Main.{DOCKER_PATH, logger}
 
 import java.io.{File => JavaFile}
 import scala.sys.process.{Process, ProcessLogger, stringSeqToProcess}
-import scala.util.control.Breaks.{break, breakable}
 
 object DockerManager {
   def hasDockerDependency(dbName: String): Boolean = getDockerComposeFiles.map {
@@ -38,9 +37,7 @@ object DockerManager {
             json.\\("Status").head.asString match {
               case Some("unhealthy") => logger.info("Container is unhealthy")
               case Some("starting") => logger.info("Container is busy starting")
-              case Some("healthy") => logger.info("Container is healthy! Proceeding...")
-                status = true
-                break
+              case Some("healthy") => logger.info("Container is healthy! Proceeding..."); status = true
               case Some(x) =>  logger.info(s"Container is $x")
               case None => logger.warn("Unable to obtain container health.")
             }
