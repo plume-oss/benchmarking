@@ -11,7 +11,9 @@ databases:
     set_serialization_stats_enabled: false
   conf3:
     db: "janus-berkeleyje-lucene"
-    enabled: false
+    enabled: true
+    containers:
+      - "janus-berkeleyje-lucene"
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf4:
     db: "janus-scylla-es"
@@ -23,7 +25,9 @@ databases:
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf5:
     db: "tigergraph"
-    enabled: false
+    enabled: true
+    containers:
+      - "tigergraph-plume-benchmark"
     username: "tigergraph"
     password: "tigergraph"
     hostname: "127.0.0.1"
@@ -40,7 +44,9 @@ databases:
     key_cert_chain_file: "src/test/resources/conf/SFSRootCAG2.pem"
   conf7:
     db: "neo4j"
-    enabled: false
+    enabled: true
+    containers:
+      - "neo4j-plume-benchmark"
     hostname: "127.0.0.1"
     port: 7687
     username: "neo4j"

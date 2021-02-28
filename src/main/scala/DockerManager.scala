@@ -32,14 +32,14 @@ object DockerManager {
     )
     logger.info(s"Starting process $dockerComposeUp")
     dockerComposeUp.run(ProcessLogger(_ => ()))
-    var status = 1
+    var status: Byte = 1
     while (status == 1) {
       Thread.sleep(2500)
-      status = healthChecks.map(performHealthCheck).foldLeft(0)(_ & _)
+      status = healthChecks.map(performHealthCheck).foldRight(0)(_ | _).toByte
     }
   }
 
-  def performHealthCheck(containerName: String): Int = {
+  def performHealthCheck(containerName: String): Byte = {
     val healthCheck = Seq("docker", "inspect", "--format='{{json .State.Health}}'", containerName)
     try {
       val x: String = healthCheck.!!.trim
