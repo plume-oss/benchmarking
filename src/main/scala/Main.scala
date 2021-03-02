@@ -1,6 +1,7 @@
 package io.github.plume.oss
 
 import drivers._
+import util.ExtractorConst
 
 import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.{Logger, LoggerFactory}
@@ -84,12 +85,12 @@ object Main {
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append(s"date,fileName,database,loadingAndCompiling,buildSoot,buildPasses,\n")
+        _.append(s"date,plumeVersion,fileName,database,loadingAndCompiling,buildSoot,buildPasses\n")
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
-        s"${LocalDateTime.now()},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildSoot},${b.buildPasses},\n"
+        s"${LocalDateTime.now()},${ExtractorConst.INSTANCE.getPlumeVersion},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildSoot},${b.buildPasses}\n"
       )
     }
   }
@@ -145,7 +146,10 @@ object Main {
           }
           .toArray
           .toList
-          .map { case (x, y, z) => (x, y, CollectionConverters.ListHasAsScala(z.asInstanceOf[java.util.ArrayList[String]]).asScala.toList) }
+          .map {
+            case (x, y, z) =>
+              (x, y, CollectionConverters.ListHasAsScala(z.asInstanceOf[java.util.ArrayList[String]]).asScala.toList)
+          }
           .asInstanceOf[List[(String, IDriver, List[String])]]
           .filterNot { tup: (String, IDriver, List[String]) =>
             tup == null || tup._2 == null
