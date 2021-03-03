@@ -1,10 +1,10 @@
 databases:
   conf1:
     db: "tinkergraph"
-    enabled: false
+    enabled: true
   conf2:
     db: "overflowdb"
-    enabled: true
+    enabled: false
     storage: "/tmp/plume/cpg.bin"
     set_overflow: false
     set_heap_percentage_threshold: 80
@@ -52,3 +52,13 @@ databases:
     username: "neo4j"
     password: "neo4j123"
     database: "neo4j"
+  conf8:
+    db: "tigergraph-cloud"
+    enabled: false
+    username: "tigergraph"
+    password: "PlumeBench"
+    hostname: "plume-benchmarking-1.i.tgcloud.io"
+    restPpPort: 9000
+    gsqlPort: 14240
+    secure: true
+    # auth_key: ""

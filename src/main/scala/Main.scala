@@ -25,7 +25,6 @@ object Main {
     val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
     context.setConfigLocation(getClass.getResource(LOG4J2_XML).toURI)
     val config = parseConfig(CONFIG_PATH)
-
     val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
@@ -128,7 +127,7 @@ object Main {
                 (dbName,
                  DriverCreator.createJanusGraphDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case "tigergraph" =>
+              case s"tigergraph$_" =>
                 (dbName,
                  DriverCreator.createTigerGraphDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
