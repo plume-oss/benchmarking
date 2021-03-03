@@ -6,3 +6,5 @@
 /project/project/target/
 /target/
 results.csv
+/venv/
+*.pdf
