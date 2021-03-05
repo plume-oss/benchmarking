@@ -1,23 +1,23 @@
 iterations: 5
 databases:
   conf1:
-    db: "tinkergraph"
+    db: "TinkerGraph"
     enabled: false
   conf2:
-    db: "overflowdb"
+    db: "OverflowDB"
     enabled: false
     storage: "/tmp/plume/cpg.bin"
     set_overflow: false
     set_heap_percentage_threshold: 80
     set_serialization_stats_enabled: false
   conf3:
-    db: "janus-berkeleyje-lucene"
+    db: "JanusGraph_BerkeleyJE_Lucene"
     enabled: false
     containers:
       - "janus-berkeleyje-lucene"
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf4:
-    db: "janus-scylla-es"
+    db: "JanusGraph_Scylla_ElasticSearch"
     enabled: false
     containers:
       - "janus-plume-benchmark"
@@ -25,7 +25,7 @@ databases:
       - "elastic-plume-benchmark"
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf5:
-    db: "tigergraph"
+    db: "TigerGraph"
     enabled: false
     containers:
       - "tigergraph-plume-benchmark"
@@ -37,14 +37,14 @@ databases:
     secure: false
 #    auth_key: "secret"
   conf6:
-    db: "neptune"
+    db: "Neptune"
     enabled: false
     hostnames:
       - "127.0.0.1"
     port: 8182
     key_cert_chain_file: "src/test/resources/conf/SFSRootCAG2.pem"
   conf7:
-    db: "neo4j"
+    db: "Neo4j"
     enabled: false
     containers:
       - "neo4j-plume-benchmark"
@@ -54,7 +54,7 @@ databases:
     password: "neo4j123"
     database: "neo4j"
   conf8:
-    db: "tigergraph-cloud"
+    db: "TigerGraph_Cloud"
     enabled: false
     username: "tigergraph"
     password: "PlumeBench"
