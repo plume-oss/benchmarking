@@ -4,6 +4,8 @@ case class BenchmarkResult(
     fileName: String,
     database: String,
     loadingAndCompiling: Long,
-    buildSoot: Long,
-    buildPasses: Long,
+    unitGraphBuilding: Long,
+    databaseWrite: Long,
+    databaseRead: Long,
+    scpgPasses: Long
 )

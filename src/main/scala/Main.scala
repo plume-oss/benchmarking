@@ -1,6 +1,7 @@
 package io.github.plume.oss
 
 import drivers._
+import metrics.{ExtractorTimeKey, ExtractorTimer}
 import util.ExtractorConst
 
 import org.apache.logging.log4j.core.LoggerContext
@@ -25,6 +26,8 @@ object Main {
     val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
     context.setConfigLocation(getClass.getResource(LOG4J2_XML).toURI)
     val config = parseConfig(CONFIG_PATH)
+    val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
+    logger.info(s"Running $iterations of the experiments")
     val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
@@ -34,11 +37,15 @@ object Main {
         Using.resource(driver) { d =>
           handleConnection(d)
           handleSchema(d)
-          files.foreach { f =>
+          for (i <- 1 to iterations)
+          {
             val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
-            logger.info(s"Running benchmark for ${f.getName} using driver $driverName")
-            d.clearGraph()
-            captureBenchmarkResult(runBenchmark(f, dbName, d))
+            logger.info(s"=== Running iteration $i on driver $driverName ===")
+            files.foreach { f =>
+              logger.info(s"--- Running benchmark for ${f.getName} ---")
+              d.clearGraph()
+              captureBenchmarkResult(runBenchmark(f, dbName, d))
+            }
           }
         }
         if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
@@ -63,19 +70,22 @@ object Main {
 
   def runBenchmark(f: JavaFile, dbName: String, driver: IDriver): BenchmarkResult = {
     val e = new Extractor(driver)
-    val s1 = System.nanoTime()
     logger.info("Loading file...")
     e.load(f)
-    val t1 = System.nanoTime() - s1
-    val s2 = System.nanoTime()
     logger.info("Initial Soot build...")
     e.project()
-    val t2 = System.nanoTime() - s2
-    val s3 = System.nanoTime()
     logger.info("Running internal passes...")
     e.postProject()
-    val t3 = System.nanoTime() - s3
-    BenchmarkResult(f.getName, dbName, t1, t2, t3)
+    val times = ExtractorTimer.INSTANCE.getTimes
+    BenchmarkResult(
+      fileName = f.getName,
+      database = dbName,
+      loadingAndCompiling = times.get(ExtractorTimeKey.LOADING_AND_COMPILING),
+      unitGraphBuilding = times.get(ExtractorTimeKey.UNIT_GRAPH_BUILDING),
+      databaseWrite = times.get(ExtractorTimeKey.DATABASE_WRITE),
+      databaseRead = times.get(ExtractorTimeKey.DATABASE_READ),
+      scpgPasses = times.get(ExtractorTimeKey.SCPG_PASSES)
+    )
   }
 
   def captureBenchmarkResult(b: BenchmarkResult) {
@@ -84,12 +94,14 @@ object Main {
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append(s"date,plumeVersion,fileName,database,loadingAndCompiling,buildSoot,buildPasses\n")
+        _.append(
+          s"DATE,PLUME_VERSION,FILE_NAME,DATABASE,LOADING_AND_COMPILING,UNIT_GRAPH_BUILDING,DATABASE_WRITE,DATABASE_READ,SCPG_PASSES\n"
+        )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
-        s"${LocalDateTime.now()},${ExtractorConst.INSTANCE.getPlumeVersion},${b.fileName},${b.database},${b.loadingAndCompiling},${b.buildSoot},${b.buildPasses}\n"
+        s"${LocalDateTime.now()},${ExtractorConst.INSTANCE.getPlumeVersion},${b.fileName},${b.database},${b.loadingAndCompiling},${b.unitGraphBuilding},${b.databaseWrite},${b.databaseRead},${b.scpgPasses}\n"
       )
     }
   }

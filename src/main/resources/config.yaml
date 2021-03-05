@@ -1,7 +1,8 @@
+iterations: 5
 databases:
   conf1:
     db: "tinkergraph"
-    enabled: true
+    enabled: false
   conf2:
     db: "overflowdb"
     enabled: false
