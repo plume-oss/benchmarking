@@ -1,7 +1,7 @@
 package io.github.plume.oss
 
 import drivers._
-import metrics.{ExtractorTimeKey, ExtractorTimer}
+import metrics.{ExtractorTimeKey, PlumeTimer}
 import util.ExtractorConst
 
 import org.apache.logging.log4j.core.LoggerContext
@@ -76,7 +76,7 @@ object Main {
     e.project()
     logger.info("Running internal passes...")
     e.postProject()
-    val times = ExtractorTimer.INSTANCE.getTimes
+    val times = PlumeTimer.INSTANCE.getTimes
     BenchmarkResult(
       fileName = f.getName,
       database = dbName,
@@ -127,31 +127,30 @@ object Main {
           .map { dbConf: java.util.LinkedHashMap[String, Any] =>
             val dbName = dbConf.getOrDefault("db", "unknown").asInstanceOf[String]
             dbName match {
-              case "tinkergraph" =>
+              case "TinkerGraph" =>
                 (dbName,
                  DriverCreator.createTinkerGraphDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case "overflowdb" =>
+              case "OverflowDB" =>
                 (dbName,
                  DriverCreator.createOverflowDbDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case s"janus$_" =>
+              case s"JanusGraph$_" =>
                 (dbName,
                  DriverCreator.createJanusGraphDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case s"tigergraph$_" =>
+              case s"TigerGraph$_" =>
                 (dbName,
                  DriverCreator.createTigerGraphDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case "neo4j" =>
+              case "Neo4j" =>
                 (dbName,
                  DriverCreator.createNeo4jDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case "neptune" =>
+              case "Neptune" =>
                 (dbName,
                  DriverCreator.createNeptuneDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case "unknown" => logger.warn(s"No database specified for configuration $config."); null
               case _         => logger.warn(s"Database name '$dbName' not registered. "); null
             }
           }
