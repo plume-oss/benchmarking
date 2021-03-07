@@ -13,5 +13,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+    volumes:
+      - '../conf/neo4j.conf:/bitnami/neo4j/conf/neo4j.conf'
     stdin_open: true
     tty: true
