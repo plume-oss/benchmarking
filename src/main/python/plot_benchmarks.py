@@ -26,7 +26,10 @@ def plot_cpg_performance(v: str, results: dict):
             ax = ax_tup[x, y]
             f_name = plots_files[fi]
             file_size = get_file_size(f_name)
-            ax.set_title("{} ({:.3f}Kb)".format(f_name, file_size))
+            if file_size > 1024:
+                ax.set_title("{} ({:.3f}Mb)".format(f_name, file_size / 1024))
+            else:
+                ax.set_title("{} ({:.3f}Kb)".format(f_name, file_size))
             ax.set_ylabel('Time Elapsed (min)')
             ax.set_xlabel('Database')
             lac, ugb, dbw, dbr, scpgp = [], [], [], [], []
