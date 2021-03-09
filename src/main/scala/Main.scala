@@ -27,6 +27,8 @@ object Main {
     context.setConfigLocation(getClass.getResource(LOG4J2_XML).toURI)
     val config = parseConfig(CONFIG_PATH)
     val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
+    PrettyPrinter.setLogger(logger)
+    PrettyPrinter.announcePlumeVersion()
     logger.info(s"Running $iterations of the experiments")
     val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
     logger.info(s"Found ${files.length} files to benchmark against.")
@@ -37,14 +39,17 @@ object Main {
         Using.resource(driver) { d =>
           handleConnection(d)
           handleSchema(d)
-          for (i <- 1 to iterations)
-          {
+          for (i <- 1 to iterations) {
             val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
-            logger.info(s"=== Running iteration $i on driver $driverName ===")
+            PrettyPrinter.announceIteration(i, driverName)
             files.foreach { f =>
-              logger.info(s"--- Running benchmark for ${f.getName} ---")
+              PrettyPrinter.announceBenchmark(f.getName)
               d.clearGraph()
-              captureBenchmarkResult(runBenchmark(f, dbName, d))
+              try {
+                captureBenchmarkResult(runBenchmark(f, dbName, d))
+              } catch {
+                case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
+              }
             }
           }
         }
@@ -72,12 +77,12 @@ object Main {
     val e = new Extractor(driver)
     logger.info("Loading file...")
     e.load(f)
-    logger.info("Initial Soot build...")
+    logger.info("Running base CPG passes...")
     e.project()
-    logger.info("Running internal passes...")
+    logger.info("Running SCPG passes...")
     e.postProject()
     val times = PlumeTimer.INSTANCE.getTimes
-    BenchmarkResult(
+    val b = BenchmarkResult(
       fileName = f.getName,
       database = dbName,
       loadingAndCompiling = times.get(ExtractorTimeKey.LOADING_AND_COMPILING),
@@ -86,6 +91,8 @@ object Main {
       databaseRead = times.get(ExtractorTimeKey.DATABASE_READ),
       scpgPasses = times.get(ExtractorTimeKey.SCPG_PASSES)
     )
+    PrettyPrinter.announceResults(b)
+    b
   }
 
   def captureBenchmarkResult(b: BenchmarkResult) {
@@ -151,7 +158,7 @@ object Main {
                 (dbName,
                  DriverCreator.createNeptuneDriver(dbConf),
                  dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
-              case _         => logger.warn(s"Database name '$dbName' not registered. "); null
+              case _ => logger.warn(s"Database name '$dbName' not registered. "); null
             }
           }
           .toArray
