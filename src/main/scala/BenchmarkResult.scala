@@ -12,10 +12,10 @@ case class BenchmarkResult(
   override def toString: String = s"BenchmarkResult { " +
     s"fileName=$fileName, " +
     s"database=$database, " +
-    s"loadingAndCompiling=${loadingAndCompiling*Math.pow(10, -9)}s }, " +
+    s"loadingAndCompiling=${loadingAndCompiling*Math.pow(10, -9)}s , " +
     s"unitGraphBuilding=${unitGraphBuilding*Math.pow(10, -9)}s, " +
     s"databaseWrite=${databaseWrite*Math.pow(10, -9)}s, " +
     s"databaseRead=${databaseRead*Math.pow(10, -9)}s, " +
-    s"scpgPasses=${scpgPasses*Math.pow(10, -9)}s, " +
+    s"scpgPasses=${scpgPasses*Math.pow(10, -9)}s " +
     " }"
 }
