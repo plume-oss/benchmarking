@@ -29,7 +29,7 @@ object Main {
     val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
     PrettyPrinter.setLogger(logger)
     PrettyPrinter.announcePlumeVersion()
-    logger.info(s"Running $iterations of the experiments")
+    logger.info(s"Running $iterations iterations of each benchmark")
     val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
     logger.info(s"Found ${files.length} files to benchmark against.")
     logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
@@ -87,6 +87,7 @@ object Main {
       database = dbName,
       loadingAndCompiling = times.get(ExtractorTimeKey.LOADING_AND_COMPILING),
       unitGraphBuilding = times.get(ExtractorTimeKey.UNIT_GRAPH_BUILDING),
+      baseCpgBuilding = times.get(ExtractorTimeKey.BASE_CPG_BUILDING),
       databaseWrite = times.get(ExtractorTimeKey.DATABASE_WRITE),
       databaseRead = times.get(ExtractorTimeKey.DATABASE_READ),
       scpgPasses = times.get(ExtractorTimeKey.SCPG_PASSES)
@@ -96,19 +97,35 @@ object Main {
   }
 
   def captureBenchmarkResult(b: BenchmarkResult) {
-    logger.info(s"Capturing benchmark for $b.")
     val csv = new JavaFile("./results.csv")
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append(
-          s"DATE,PLUME_VERSION,FILE_NAME,DATABASE,LOADING_AND_COMPILING,UNIT_GRAPH_BUILDING,DATABASE_WRITE,DATABASE_READ,SCPG_PASSES\n"
+        _.append("DATE," +
+          "PLUME_VERSION," +
+          "FILE_NAME," +
+          "DATABASE," +
+          "LOADING_AND_COMPILING," +
+          "UNIT_GRAPH_BUILDING," +
+          "BASE_CPG_BUILDING," +
+          "DATABASE_WRITE," +
+          "DATABASE_READ," +
+          "SCPG_PASSES\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
-        s"${LocalDateTime.now()},${ExtractorConst.INSTANCE.getPlumeVersion},${b.fileName},${b.database},${b.loadingAndCompiling},${b.unitGraphBuilding},${b.databaseWrite},${b.databaseRead},${b.scpgPasses}\n"
+        s"${LocalDateTime.now()}," +
+          s"${ExtractorConst.INSTANCE.getPlumeVersion}," +
+          s"${b.fileName}," +
+          s"${b.database}," +
+          s"${b.loadingAndCompiling}," +
+          s"${b.unitGraphBuilding}," +
+          s"${b.baseCpgBuilding}," +
+          s"${b.databaseWrite}," +
+          s"${b.databaseRead}," +
+          s"${b.scpgPasses}\n"
       )
     }
   }

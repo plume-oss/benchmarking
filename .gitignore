@@ -5,6 +5,6 @@
 /project/target/
 /project/project/target/
 /target/
-results.csv
+*.csv
 /venv/
 *.pdf

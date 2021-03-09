@@ -4,6 +4,9 @@ import util.ExtractorConst
 
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.time.LocalTime
+import java.util.concurrent.TimeUnit
+
 object PrettyPrinter {
 
   var logger: Logger = LoggerFactory.getLogger(PrettyPrinter.getClass)
@@ -17,40 +20,41 @@ object PrettyPrinter {
   }
 
   def announceIteration(i: Int, d: String): Unit = {
-    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     logger.info(
-      s"$i${if (i % 10 == 1) "st" else if (i % 10 == 2) "nd" else if (i % 10 == 3) "rd" else "th"} on driver $d"
+      s"$i${if (i % 10 == 1) "st" else if (i % 10 == 2) "nd" else if (i % 10 == 3) "rd" else "th"} iteration on driver $d"
     )
-    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
   }
 
   def announceBenchmark(f: String): Unit = {
-    logger.info(s"-----------------------------------------------------")
+    logger.info(s"--------------------------------------------------------------------")
     logger.info(s"Running benchmark on: $f")
-
+    logger.info(s"--------------------------------------------------------------------")
   }
 
   def announceResults(b: BenchmarkResult): Unit = {
-    logger.info(s" Benchmark results:")
+    val totalTime = b.loadingAndCompiling + b.unitGraphBuilding + b.scpgPasses + b.baseCpgBuilding
+    logger.info(s"")
+    logger.info(s"Benchmark results:")
     logger.info(s"")
     logger.info(s"\tLoading and Compiling.........${readableTime(b.loadingAndCompiling)}")
     logger.info(s"\tUnit Graph Building...........${readableTime(b.unitGraphBuilding)}")
+    logger.info(s"\tBase CPG Building.............${readableTime(b.baseCpgBuilding)}")
     logger.info(s"\tSCPG Passes...................${readableTime(b.scpgPasses)}")
-    logger.info(s"\t=======================Total: ${readableTime(b.loadingAndCompiling + b.unitGraphBuilding + b.scpgPasses)}")
+    logger.info(s"\t=======================Total: ${readableTime(totalTime)}")
     logger.info(s"\tDatabase Writes...............${readableTime(b.databaseWrite)}")
     logger.info(s"\tDatabase Reads................${readableTime(b.databaseRead)}")
-    logger.info(s"-----------------------------------------------------")
   }
 
   def readableTime(nanoTime: Long): String =
-    nanoTime match {
-      case it if Math.pow(10, 3).toInt until Math.pow(10, 9).toInt contains it =>
-        s"${it * Math.pow(10, -9)} s"
-      case it if Math.pow(10, 9).toInt until Math.pow(10, 9).toInt * 60 contains it =>
-        s"${it * Math.pow(10, -9) / 60} min"
-      case it if Math.pow(10, 9).toInt * 60 until Math.pow(10, 9).toInt * Math.pow(60, 2).toInt contains it =>
-        s"${it * Math.pow(10, -9) / Math.pow(60, 2)} h"
-      case it => s"$it ns"
-    }
+    LocalTime
+      .of(
+        TimeUnit.NANOSECONDS.toHours(nanoTime).toInt,
+        (TimeUnit.NANOSECONDS.toMinutes(nanoTime) - TimeUnit.NANOSECONDS.toHours(nanoTime) * 60).toInt,
+        (TimeUnit.NANOSECONDS.toSeconds(nanoTime) - TimeUnit.NANOSECONDS.toMinutes(nanoTime) * 60).toInt,
+        (nanoTime - TimeUnit.NANOSECONDS.toMicros(nanoTime) * 1000).toInt
+      )
+      .toString
 
 }
