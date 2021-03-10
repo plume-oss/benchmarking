@@ -27,6 +27,7 @@ object DockerManager {
     val healthChecks = ListBuffer.empty[String]
     if (containers.isEmpty) healthChecks += dbName else healthChecks ++= containers
     logger.info(s"Docker Compose file found for $dbName, starting...")
+    closeAnyDockerContainers(dbName) // Easiest way to clear the db
     val dockerComposeUp = Process(
       Seq("docker-compose", "-f", toDockerComposeFile(dbName).getAbsolutePath, "up", "--remove-orphans")
     )
