@@ -34,17 +34,19 @@ object PrettyPrinter {
   }
 
   def announceResults(b: BenchmarkResult): Unit = {
-    val totalTime = b.loadingAndCompiling + b.unitGraphBuilding + b.scpgPasses + b.baseCpgBuilding
+    val totalTime = b.compilingAndUnpacking + b.soot + b.scpgPasses + b.baseCpgBuilding
+    val dbTime = b.databaseRead + b.databaseWrite
     logger.info(s"")
     logger.info(s"Benchmark results:")
     logger.info(s"")
-    logger.info(s"\tLoading and Compiling.........${readableTime(b.loadingAndCompiling)}")
-    logger.info(s"\tUnit Graph Building...........${readableTime(b.unitGraphBuilding)}")
+    logger.info(s"\tCompiling and Unpacking.......${readableTime(b.compilingAndUnpacking)}")
+    logger.info(s"\tSoot Related Processing.......${readableTime(b.soot)}")
     logger.info(s"\tBase CPG Building.............${readableTime(b.baseCpgBuilding)}")
     logger.info(s"\tSCPG Passes...................${readableTime(b.scpgPasses)}")
-    logger.info(s"\t=======================Total: ${readableTime(totalTime)}")
+    logger.info(s"\t=======================Total: ${readableTime(totalTime)} (wall clock)")
     logger.info(s"\tDatabase Writes...............${readableTime(b.databaseWrite)}")
     logger.info(s"\tDatabase Reads................${readableTime(b.databaseRead)}")
+    logger.info(s"\t=======================Total: ${readableTime(dbTime)} (CPU clock)")
   }
 
   def readableTime(nanoTime: Long): String =

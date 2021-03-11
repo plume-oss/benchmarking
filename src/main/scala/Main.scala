@@ -74,19 +74,13 @@ object Main {
     }
 
   def runBenchmark(f: JavaFile, dbName: String, driver: IDriver): BenchmarkResult = {
-    val e = new Extractor(driver)
-    logger.info("Loading file...")
-    e.load(f)
-    logger.info("Running base CPG passes...")
-    e.project()
-    logger.info("Running SCPG passes...")
-    e.postProject()
+    new Extractor(driver).load(f).project()
     val times = PlumeTimer.INSTANCE.getTimes
     val b = BenchmarkResult(
       fileName = f.getName,
       database = dbName,
-      loadingAndCompiling = times.get(ExtractorTimeKey.LOADING_AND_COMPILING),
-      unitGraphBuilding = times.get(ExtractorTimeKey.UNIT_GRAPH_BUILDING),
+      compilingAndUnpacking = times.get(ExtractorTimeKey.COMPILING_AND_UNPACKING),
+      soot = times.get(ExtractorTimeKey.SOOT),
       baseCpgBuilding = times.get(ExtractorTimeKey.BASE_CPG_BUILDING),
       databaseWrite = times.get(ExtractorTimeKey.DATABASE_WRITE),
       databaseRead = times.get(ExtractorTimeKey.DATABASE_READ),
@@ -105,8 +99,8 @@ object Main {
           "PLUME_VERSION," +
           "FILE_NAME," +
           "DATABASE," +
-          "LOADING_AND_COMPILING," +
-          "UNIT_GRAPH_BUILDING," +
+          "COMPILING_AND_UNPACKING," +
+          "SOOT," +
           "BASE_CPG_BUILDING," +
           "DATABASE_WRITE," +
           "DATABASE_READ," +
@@ -120,8 +114,8 @@ object Main {
           s"${ExtractorConst.INSTANCE.getPlumeVersion}," +
           s"${b.fileName}," +
           s"${b.database}," +
-          s"${b.loadingAndCompiling}," +
-          s"${b.unitGraphBuilding}," +
+          s"${b.compilingAndUnpacking}," +
+          s"${b.soot}," +
           s"${b.baseCpgBuilding}," +
           s"${b.databaseWrite}," +
           s"${b.databaseRead}," +

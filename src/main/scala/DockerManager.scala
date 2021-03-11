@@ -28,6 +28,7 @@ object DockerManager {
     if (containers.isEmpty) healthChecks += dbName else healthChecks ++= containers
     logger.info(s"Docker Compose file found for $dbName, starting...")
     closeAnyDockerContainers(dbName) // Easiest way to clear the db
+    Thread.sleep(3000)
     val dockerComposeUp = Process(
       Seq("docker-compose", "-f", toDockerComposeFile(dbName).getAbsolutePath, "up", "--remove-orphans")
     )
@@ -35,7 +36,7 @@ object DockerManager {
     dockerComposeUp.run(ProcessLogger(_ => ()))
     var status: Byte = 1
     while (status == 1) {
-      Thread.sleep(2500)
+      Thread.sleep(4000)
       status = healthChecks.map(performHealthCheck).foldRight(0)(_ | _).toByte
     }
   }
@@ -59,7 +60,7 @@ object DockerManager {
     } catch {
       case _: StringIndexOutOfBoundsException => // Usually happens just as the services have been created
       case e: IllegalAccessError              => e.printStackTrace()
-      case e: RuntimeException                => logger.warn(s"${e.getMessage}. This may be due to the container still being created.")
+      case e: RuntimeException                => logger.warn(s"${e.getMessage}. This may be due to the container still being created.", e)
     }
     1
   }
