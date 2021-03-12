@@ -14,23 +14,26 @@ object PrettyPrinter {
   def setLogger(logger: Logger): Unit = this.logger = logger
 
   def announcePlumeVersion(): Unit = {
-    logger.info("===============")
-    logger.info(s"\tPLUME v${ExtractorConst.INSTANCE.getPlumeVersion}")
-    logger.info("===============")
+    val bar = "==========================================================================="
+    val centerText = s"PLUME v${ExtractorConst.INSTANCE.getPlumeVersion}"
+    val numSpaces = (bar.length - centerText.length) / 2
+    logger.info(bar)
+    logger.info(s"${" " * numSpaces}$centerText")
+    logger.info(bar)
   }
 
   def announceIteration(i: Int, d: String): Unit = {
-    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     logger.info(
       s"$i${if (i % 10 == 1) "st" else if (i % 10 == 2) "nd" else if (i % 10 == 3) "rd" else "th"} iteration on driver $d"
     )
-    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
   }
 
   def announceBenchmark(f: String): Unit = {
-    logger.info(s"--------------------------------------------------------------------")
+    logger.info(s"---------------------------------------------------------------------------")
     logger.info(s"Running benchmark on: $f")
-    logger.info(s"--------------------------------------------------------------------")
+    logger.info(s"---------------------------------------------------------------------------")
   }
 
   def announceResults(b: BenchmarkResult): Unit = {

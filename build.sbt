@@ -6,7 +6,7 @@ scalaVersion := "2.13.4"
 
 idePackagePrefix := Some("io.github.plume.oss")
 
-val plume_version = "0.3.1"
+val plume_version = "0.3.2"
 val snakeyaml_version = "1.27"
 val log4j_version = "2.11.2"
 val circle_version = "0.14.0-M4"
