@@ -4,57 +4,51 @@ import drivers._
 import metrics.{ExtractorTimeKey, PlumeTimer}
 import util.ExtractorConst
 
-import org.apache.logging.log4j.core.LoggerContext
 import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.time.LocalDateTime
+import java.util
 import scala.jdk.CollectionConverters
 import scala.util.Using
 
-object Main {
+object Main extends App {
 
   lazy val logger: Logger = LoggerFactory.getLogger(Main.getClass)
-  val LOG4J2_XML = "../../../../log4j2.xml"
   val CONFIG_PATH = "../../../../config.yaml"
   val PROGRAMS_PATH = "../../../../programs"
   val DOCKER_PATH = "../../../../docker"
 
-  def main(args: Array[String]): Unit = {
-    import org.apache.logging.log4j.LogManager
-    val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
-    context.setConfigLocation(getClass.getResource(LOG4J2_XML).toURI)
-    val config = parseConfig(CONFIG_PATH)
-    val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
-    PrettyPrinter.setLogger(logger)
-    PrettyPrinter.announcePlumeVersion()
-    logger.info(s"Running $iterations iterations of each benchmark")
-    val files = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
-    logger.info(s"Found ${files.length} files to benchmark against.")
-    logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
-    getDrivers(config).foreach {
-      case (dbName, driver, containers) =>
-        if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName, containers)
-        Using.resource(driver) { d =>
-          handleConnection(d)
-          handleSchema(d)
-          for (i <- 1 to iterations) {
-            val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
-            PrettyPrinter.announceIteration(i, driverName)
-            files.foreach { f =>
-              PrettyPrinter.announceBenchmark(f.getName)
-              d.clearGraph()
-              try {
-                captureBenchmarkResult(runBenchmark(f, dbName, d))
-              } catch {
-                case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
-              }
+  val config: util.LinkedHashMap[String, Any] = parseConfig(CONFIG_PATH)
+  val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
+  PrettyPrinter.setLogger(logger)
+  PrettyPrinter.announcePlumeVersion()
+  logger.info(s"Running $iterations iterations of each benchmark")
+  val files: Array[JavaFile] = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
+  logger.info(s"Found ${files.length} files to benchmark against.")
+  logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
+  getDrivers(config).foreach {
+    case (dbName, driver, containers) =>
+      if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName, containers)
+      Using.resource(driver) { d =>
+        handleConnection(d)
+        handleSchema(d)
+        for (i <- 1 to iterations) {
+          val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
+          PrettyPrinter.announceIteration(i, driverName)
+          files.foreach { f =>
+            PrettyPrinter.announceBenchmark(f.getName)
+            d.clearGraph()
+            try {
+              captureBenchmarkResult(runBenchmark(f, dbName, d))
+            } catch {
+              case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
             }
           }
         }
-        if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
-    }
+      }
+      if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
   }
 
   def handleSchema(driver: IDriver): Unit =
@@ -95,16 +89,17 @@ object Main {
     if (!csv.exists()) {
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append("DATE," +
-          "PLUME_VERSION," +
-          "FILE_NAME," +
-          "DATABASE," +
-          "COMPILING_AND_UNPACKING," +
-          "SOOT," +
-          "BASE_CPG_BUILDING," +
-          "DATABASE_WRITE," +
-          "DATABASE_READ," +
-          "SCPG_PASSES\n"
+        _.append(
+          "DATE," +
+            "PLUME_VERSION," +
+            "FILE_NAME," +
+            "DATABASE," +
+            "COMPILING_AND_UNPACKING," +
+            "SOOT," +
+            "BASE_CPG_BUILDING," +
+            "DATABASE_WRITE," +
+            "DATABASE_READ," +
+            "SCPG_PASSES\n"
         )
       }
     }
@@ -133,16 +128,18 @@ object Main {
 
   def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver, List[String])] =
     config.getOrDefault("databases", {
-      Map("conf0" -> Map("db" -> "tinkergraph", "enabled" -> "true"))
+      CollectionConverters.MapHasAsJava(
+        Map("conf0" -> CollectionConverters.MapHasAsJava(Map("db" -> "tinkergraph", "enabled" -> "true")).asJava)
+      ).asJava
     }) match {
-      case dbs: java.util.LinkedHashMap[String, Any] =>
+      case dbs: java.util.Map[String, Any] =>
         dbs
           .entrySet()
           .stream()
           .map {
-            _.getValue.asInstanceOf[java.util.LinkedHashMap[String, Any]]
+            _.getValue.asInstanceOf[java.util.Map[String, Any]]
           }
-          .map { dbConf: java.util.LinkedHashMap[String, Any] =>
+          .map { dbConf: java.util.Map[String, Any] =>
             val dbName = dbConf.getOrDefault("db", "unknown").asInstanceOf[String]
             dbName match {
               case "TinkerGraph" =>

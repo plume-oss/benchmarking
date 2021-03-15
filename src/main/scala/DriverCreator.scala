@@ -6,13 +6,13 @@ import scala.reflect.io.File
 
 object DriverCreator {
 
-  def createTinkerGraphDriver(config: java.util.LinkedHashMap[String, Any]): TinkerGraphDriver =
+  def createTinkerGraphDriver(config: java.util.Map[String, Any]): TinkerGraphDriver =
     if (config.getOrDefault("enabled", false) == true)
       DriverFactory.invoke(GraphDatabase.TINKER_GRAPH).asInstanceOf[TinkerGraphDriver]
     else
       null
 
-  def createOverflowDbDriver(config: java.util.LinkedHashMap[String, Any]): OverflowDbDriver =
+  def createOverflowDbDriver(config: java.util.Map[String, Any]): OverflowDbDriver =
     if (config.getOrDefault("enabled", false) == true) {
 
       val storageLoc = config.getOrDefault("storage", "/tmp/plume/cpg.bin").asInstanceOf[String]
@@ -27,14 +27,14 @@ object DriverCreator {
     } else
       null
 
-  def createJanusGraphDriver(config: java.util.LinkedHashMap[String, Any]): JanusGraphDriver =
+  def createJanusGraphDriver(config: java.util.Map[String, Any]): JanusGraphDriver =
     if (config.getOrDefault("enabled", false) == true) {
       DriverFactory.invoke(GraphDatabase.JANUS_GRAPH).asInstanceOf[JanusGraphDriver]
         .remoteConfig(config.get("remote_config").asInstanceOf[String])
     } else
       null
 
-  def createNeptuneDriver(config: java.util.LinkedHashMap[String, Any]): NeptuneDriver =
+  def createNeptuneDriver(config: java.util.Map[String, Any]): NeptuneDriver =
     if (config.getOrDefault("enabled", false) == true) {
       DriverFactory.invoke(GraphDatabase.NEPTUNE).asInstanceOf[NeptuneDriver]
         .addHostnames(config.getOrDefault("hostnames", List("127.0.0.1")).asInstanceOf[List[String]]: _*)
@@ -43,7 +43,7 @@ object DriverCreator {
     } else
       null
 
-  def createTigerGraphDriver(config: java.util.LinkedHashMap[String, Any]): TigerGraphDriver =
+  def createTigerGraphDriver(config: java.util.Map[String, Any]): TigerGraphDriver =
     if (config.getOrDefault("enabled", false) == true) {
       DriverFactory.invoke(GraphDatabase.TIGER_GRAPH).asInstanceOf[TigerGraphDriver]
         .hostname(config.getOrDefault("hostname", "127.0.0.1").asInstanceOf[String])
@@ -56,7 +56,7 @@ object DriverCreator {
     } else
       null
 
-  def createNeo4jDriver(config: java.util.LinkedHashMap[String, Any]): Neo4jDriver =
+  def createNeo4jDriver(config: java.util.Map[String, Any]): Neo4jDriver =
     if (config.getOrDefault("enabled", false) == true) {
       DriverFactory.invoke(GraphDatabase.NEO4J).asInstanceOf[Neo4jDriver]
         .hostname(config.getOrDefault("hostname", "127.0.0.1").asInstanceOf[String])
