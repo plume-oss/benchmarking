@@ -4,8 +4,7 @@ import util.ExtractorConst
 
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time.LocalTime
-import java.util.concurrent.TimeUnit
+import java.time.Duration
 
 object PrettyPrinter {
 
@@ -37,29 +36,22 @@ object PrettyPrinter {
   }
 
   def announceResults(b: BenchmarkResult): Unit = {
-    val totalTime = b.compilingAndUnpacking + b.soot + b.scpgPasses + b.baseCpgBuilding
+    val totalTime = b.compilingAndUnpacking + b.soot + b.programStructureBuilding + b.dataFlowPasses + b.baseCpgBuilding
     val dbTime = b.databaseRead + b.databaseWrite
     logger.info(s"")
     logger.info(s"Benchmark results:")
     logger.info(s"")
     logger.info(s"\tCompiling and Unpacking.......${readableTime(b.compilingAndUnpacking)}")
     logger.info(s"\tSoot Related Processing.......${readableTime(b.soot)}")
+    logger.info(s"\tProgram Structure Building....${readableTime(b.programStructureBuilding)}")
     logger.info(s"\tBase CPG Building.............${readableTime(b.baseCpgBuilding)}")
-    logger.info(s"\tSCPG Passes...................${readableTime(b.scpgPasses)}")
+    logger.info(s"\tSCPG Passes...................${readableTime(b.dataFlowPasses)}")
     logger.info(s"\t=======================Total: ${readableTime(totalTime)} (wall clock)")
     logger.info(s"\tDatabase Writes...............${readableTime(b.databaseWrite)}")
     logger.info(s"\tDatabase Reads................${readableTime(b.databaseRead)}")
     logger.info(s"\t=======================Total: ${readableTime(dbTime)} (CPU clock)")
   }
 
-  def readableTime(nanoTime: Long): String =
-    LocalTime
-      .of(
-        TimeUnit.NANOSECONDS.toHours(nanoTime).toInt,
-        (TimeUnit.NANOSECONDS.toMinutes(nanoTime) - TimeUnit.NANOSECONDS.toHours(nanoTime) * 60).toInt,
-        (TimeUnit.NANOSECONDS.toSeconds(nanoTime) - TimeUnit.NANOSECONDS.toMinutes(nanoTime) * 60).toInt,
-        (nanoTime - TimeUnit.NANOSECONDS.toMicros(nanoTime) * 1000).toInt
-      )
-      .toString
+  def readableTime(nanoTime: Long): String = Duration.ofNanos(nanoTime).toString
 
 }

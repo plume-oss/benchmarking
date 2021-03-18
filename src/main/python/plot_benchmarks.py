@@ -32,21 +32,24 @@ def plot_cpg_performance(v: str, results: dict):
                 ax.set_title("{} ({:.3f}Kb)".format(f_name, file_size))
             ax.set_ylabel('Wall Clock Time Elapsed (min)')
             ax.set_xlabel('Database')
-            lac, ugb, cpg, scpgp = [], [], [], []
+            lac, ugb, pstr, cpg, scpgp = [], [], [], [], []
             for db in x_axis_dbs:
                 # Build each column
                 lac.append(np.mean([int(x["COMPILING_AND_UNPACKING"]) * 10 ** -11 for x in results if
                                     x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
                 ugb.append(np.mean([int(x["SOOT"]) * 10 ** -11 for x in results if
                                     x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
+                pstr.append(np.mean([int(x["PROGRAM_STRUCTURE_BUILDING"]) * 10 ** -11 for x in results if
+                                    x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
                 cpg.append(np.mean([int(x["BASE_CPG_BUILDING"]) * 10 ** -11 for x in results if
                                       x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-                scpgp.append(np.mean([int(x["SCPG_PASSES"]) * 10 ** -11 for x in results if
+                scpgp.append(np.mean([int(x["DATA_FLOW_PASS"]) * 10 ** -11 for x in results if
                                       x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
             ax.bar(x_axis_dbs, lac, 0.35, label='Loading and Compiling')
             ax.bar(x_axis_dbs, ugb, 0.35, label='Soot Related Processing')
+            ax.bar(x_axis_dbs, cpg, 0.35, label='Program Structure Building')
             ax.bar(x_axis_dbs, cpg, 0.35, label='Base CPG Building')
-            ax.bar(x_axis_dbs, scpgp, 0.35, label='Running SCPG Passes')
+            ax.bar(x_axis_dbs, scpgp, 0.35, label='Running Data Flow Passes')
             fi += 1
             ax.label_outer()
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -104,10 +107,11 @@ with open('results.csv') as csv_file:
             'DATABASE': str(row["DATABASE"]),
             'COMPILING_AND_UNPACKING': int(row["COMPILING_AND_UNPACKING"]),
             'SOOT': int(row["SOOT"]),
+            'PROGRAM_STRUCTURE_BUILDING': int(row["PROGRAM_STRUCTURE_BUILDING"]),
             'BASE_CPG_BUILDING': int(row["BASE_CPG_BUILDING"]),
             'DATABASE_WRITE': int(row["DATABASE_WRITE"]),
             'DATABASE_READ': int(row["DATABASE_READ"]),
-            'SCPG_PASSES': int(row["SCPG_PASSES"])
+            'DATA_FLOW_PASS': int(row["DATA_FLOW_PASS"])
         })
 
     for (ver, res) in plots_per_version.items():

@@ -29,6 +29,7 @@
 
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"/>
+            <LevelRangeFilter minLevel="WARN" maxLevel="WARN" onMatch="DENY" onMismatch="NEUTRAL"/>
         </Console>
     </Appenders>
     <Loggers>
@@ -50,7 +51,7 @@
         </Logger>
         <Logger name="io.github.plume.oss" level="info" additivity="false">
             <AppenderRef ref="console" level="info"/>
-            <AppenderRef ref="plumeFileLogger" level="error"/>
+            <AppenderRef ref="plumeFileLogger" level="info"/>
         </Logger>
 
         <Root level="info">

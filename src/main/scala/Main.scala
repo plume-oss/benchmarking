@@ -39,8 +39,8 @@ object Main extends App {
           PrettyPrinter.announceIteration(i, driverName)
           files.foreach { f =>
             PrettyPrinter.announceBenchmark(f.getName)
-            d.clearGraph()
             try {
+              d.clearGraph()
               captureBenchmarkResult(runBenchmark(f, dbName, d))
             } catch {
               case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
@@ -75,11 +75,13 @@ object Main extends App {
       database = dbName,
       compilingAndUnpacking = times.get(ExtractorTimeKey.COMPILING_AND_UNPACKING),
       soot = times.get(ExtractorTimeKey.SOOT),
+      programStructureBuilding = times.get(ExtractorTimeKey.PROGRAM_STRUCTURE_BUILDING),
       baseCpgBuilding = times.get(ExtractorTimeKey.BASE_CPG_BUILDING),
       databaseWrite = times.get(ExtractorTimeKey.DATABASE_WRITE),
       databaseRead = times.get(ExtractorTimeKey.DATABASE_READ),
-      scpgPasses = times.get(ExtractorTimeKey.SCPG_PASSES)
+      dataFlowPasses = times.get(ExtractorTimeKey.DATA_FLOW_PASS)
     )
+    PlumeTimer.INSTANCE.reset()
     PrettyPrinter.announceResults(b)
     b
   }
@@ -96,10 +98,11 @@ object Main extends App {
             "DATABASE," +
             "COMPILING_AND_UNPACKING," +
             "SOOT," +
+            "PROGRAM_STRUCTURE_BUILDING," +
             "BASE_CPG_BUILDING," +
             "DATABASE_WRITE," +
             "DATABASE_READ," +
-            "SCPG_PASSES\n"
+            "DATA_FLOW_PASS\n"
         )
       }
     }
@@ -111,10 +114,11 @@ object Main extends App {
           s"${b.database}," +
           s"${b.compilingAndUnpacking}," +
           s"${b.soot}," +
+          s"${b.programStructureBuilding}," +
           s"${b.baseCpgBuilding}," +
           s"${b.databaseWrite}," +
           s"${b.databaseRead}," +
-          s"${b.scpgPasses}\n"
+          s"${b.dataFlowPasses}\n"
       )
     }
   }
@@ -127,11 +131,15 @@ object Main extends App {
   }
 
   def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver, List[String])] =
-    config.getOrDefault("databases", {
-      CollectionConverters.MapHasAsJava(
-        Map("conf0" -> CollectionConverters.MapHasAsJava(Map("db" -> "tinkergraph", "enabled" -> "true")).asJava)
-      ).asJava
-    }) match {
+    config.getOrDefault(
+      "databases", {
+        CollectionConverters
+          .MapHasAsJava(
+            Map("conf0" -> CollectionConverters.MapHasAsJava(Map("db" -> "tinkergraph", "enabled" -> "true")).asJava)
+          )
+          .asJava
+      }
+    ) match {
       case dbs: java.util.Map[String, Any] =>
         dbs
           .entrySet()
