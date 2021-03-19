@@ -49,9 +49,9 @@
             <AppenderRef ref="console"/>
             <AppenderRef ref="shiftleftFileLogger" level="warn"/>
         </Logger>
-        <Logger name="io.github.plume.oss" level="info" additivity="false">
+        <Logger name="io.github.plume.oss" level="debug" additivity="false">
             <AppenderRef ref="console" level="info"/>
-            <AppenderRef ref="plumeFileLogger" level="info"/>
+            <AppenderRef ref="plumeFileLogger" level="warn"/>
         </Logger>
 
         <Root level="info">
