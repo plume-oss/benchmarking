@@ -126,7 +126,6 @@ object Main extends App {
 
   def parseConfig(configPath: String): java.util.LinkedHashMap[String, Any] = {
     val config = new Yaml()
-    new JavaFile(getClass.getResource("/programs").getFile).listFiles().foreach(println)
     Using.resource(getClass.getResourceAsStream(configPath)) { is =>
       return config.load(is).asInstanceOf[java.util.LinkedHashMap[String, Any]]
     }
