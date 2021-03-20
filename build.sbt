@@ -5,6 +5,7 @@ version := "0.1"
 scalaVersion := "2.13.4"
 
 idePackagePrefix := Some("io.github.plume.oss")
+run := Defaults.runTask(fullClasspath in Runtime, mainClass in run in Compile, runner in run).evaluated
 
 val plume_version = "0.3.7"
 val snakeyaml_version = "1.27"
@@ -28,3 +29,5 @@ ThisBuild / resolvers ++= Seq(
   Resolver.jcenterRepo,
   "jitpack" at "https://jitpack.io"
 )
+
+mainClass in assembly := Some("io.github.plume.oss.Main")
