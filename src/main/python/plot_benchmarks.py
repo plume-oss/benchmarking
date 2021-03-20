@@ -57,7 +57,7 @@ def plot_cpg_performance(v: str, results: dict):
     plt.legend(by_label.values(), by_label.keys(), loc='lower center', bbox_to_anchor=[-0.1, -0.7])
     fig.subplots_adjust(bottom=0.25)
     fig.suptitle("CPG Performance | Plume Version {}".format(v), fontsize=20)
-    fig.savefig("PlumeV{}_CPG_Performance.pdf".format(v))
+    fig.savefig("./results/PlumeV{}_CPG_Performance.pdf".format(v))
 
 def plot_db_performance(v: str, results: dict):
     # x-axis are the databases
@@ -92,10 +92,10 @@ def plot_db_performance(v: str, results: dict):
     plt.legend(by_label.values(), by_label.keys(), loc='lower center', bbox_to_anchor=[-0.1, -0.7])
     fig.subplots_adjust(bottom=0.25)
     fig.suptitle("Database Performance | Plume Version {}".format(v), fontsize=20)
-    fig.savefig("PlumeV{}_DB_Performance.pdf".format(v))
+    fig.savefig("./results/PlumeV{}_DB_Performance.pdf".format(v))
 
 
-with open('results.csv') as csv_file:
+with open('./results/results.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
     plots_per_version = {}
     for row in csv_reader:

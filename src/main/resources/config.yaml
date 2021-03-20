@@ -1,13 +1,13 @@
-iterations: 5
+iterations: 1
 databases:
   conf1:
     db: "TinkerGraph"
-    enabled: false
+    enabled: true
   conf2:
     db: "OverflowDB"
-    enabled: false
+    enabled: true
     storage: "/tmp/plume/cpg.bin"
-    set_overflow: true
+    set_overflow: false
     set_heap_percentage_threshold: 80
     set_serialization_stats_enabled: false
   conf3:
@@ -18,7 +18,7 @@ databases:
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf4:
     db: "JanusGraph_Scylla_ElasticSearch"
-    enabled: false
+    enabled: true
     containers:
       - "janus-plume-benchmark"
       - "scylla-plume-benchmark"
@@ -26,7 +26,7 @@ databases:
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf5:
     db: "TigerGraph"
-    enabled: false
+    enabled: true
     containers:
       - "tigergraph-plume-benchmark"
     username: "tigergraph"
@@ -45,7 +45,7 @@ databases:
     key_cert_chain_file: "src/test/resources/conf/SFSRootCAG2.pem"
   conf7:
     db: "Neo4j"
-    enabled: false
+    enabled: true
     containers:
       - "neo4j-plume-benchmark"
     hostname: "127.0.0.1"

@@ -16,9 +16,9 @@ import scala.util.Using
 object Main extends App {
 
   lazy val logger: Logger = LoggerFactory.getLogger(Main.getClass)
-  val CONFIG_PATH = "../../../../config.yaml"
-  val PROGRAMS_PATH = "../../../../programs"
-  val DOCKER_PATH = "../../../../docker"
+  val CONFIG_PATH = "/config.yaml"
+  val PROGRAMS_PATH = "/programs"
+  val DOCKER_PATH = "/docker"
 
   val config: util.LinkedHashMap[String, Any] = parseConfig(CONFIG_PATH)
   val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
@@ -87,8 +87,9 @@ object Main extends App {
   }
 
   def captureBenchmarkResult(b: BenchmarkResult) {
-    val csv = new JavaFile("./results.csv")
+    val csv = new JavaFile("./results/result.csv")
     if (!csv.exists()) {
+      new JavaFile("./results/").mkdir()
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
@@ -125,6 +126,7 @@ object Main extends App {
 
   def parseConfig(configPath: String): java.util.LinkedHashMap[String, Any] = {
     val config = new Yaml()
+    new JavaFile(getClass.getResource("/programs").getFile).listFiles().foreach(println)
     Using.resource(getClass.getResourceAsStream(configPath)) { is =>
       return config.load(is).asInstanceOf[java.util.LinkedHashMap[String, Any]]
     }
