@@ -7,13 +7,14 @@ scalaVersion := "2.13.4"
 idePackagePrefix := Some("io.github.plume.oss")
 run := Defaults.runTask(fullClasspath in Runtime, mainClass in run in Compile, runner in run).evaluated
 
-val plume_version = "0.3.7"
+val plume_version = "0.3.8"
 val snakeyaml_version = "1.27"
 val log4j_version = "2.11.2"
 val circle_version = "0.14.0-M4"
 
 libraryDependencies ++= Seq(
   "io.github.plume-oss" % "plume" % plume_version exclude ("io.github.plume-oss", "cpgconv"),
+  "org.cache2k" % "cache2k-core" % "2.0.0.Final",
   "org.apache.logging.log4j" % "log4j-core" % log4j_version,
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j_version,
   "org.yaml" % "snakeyaml" % snakeyaml_version
