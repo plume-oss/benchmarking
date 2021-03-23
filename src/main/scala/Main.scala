@@ -1,9 +1,10 @@
 package io.github.plume.oss
 
 import drivers._
-import metrics.{ExtractorTimeKey, PlumeTimer}
+import metrics.{CacheMetrics, ExtractorTimeKey, PlumeTimer}
 import util.ExtractorConst
 
+import io.github.plume.oss.store.LocalCache
 import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
@@ -25,9 +26,9 @@ object Main extends App {
   PrettyPrinter.setLogger(logger)
   PrettyPrinter.announcePlumeVersion()
   logger.info(s"Running $iterations iterations of each benchmark")
-  val files: Array[JavaFile] = getFilesToBenchmarkAgainst(PROGRAMS_PATH)
+  val files: List[Program] = getPrograms(config)
   logger.info(s"Found ${files.length} files to benchmark against.")
-  logger.debug(s"The files are: ${files.map(_.getName()).mkString(",")}")
+  logger.debug(s"The files are: ${files.map(_.name).mkString(",")}")
   getDrivers(config).foreach {
     case (dbName, driver, containers) =>
       if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName, containers)
@@ -38,12 +39,15 @@ object Main extends App {
           val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
           PrettyPrinter.announceIteration(i, driverName)
           files.foreach { f =>
-            PrettyPrinter.announceBenchmark(f.getName)
+            PrettyPrinter.announceBenchmark(f.name)
             try {
               d.clearGraph()
-              captureBenchmarkResult(runBenchmark(f, dbName, d))
+              captureBenchmarkResult(runBenchmark(f.initJar, f.name, "BUILD", dbName, d))
+              captureBenchmarkResult(runBenchmark(f.updateJar, f.name, "UPDATE", dbName, d))
             } catch {
               case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
+            } finally {
+              LocalCache.INSTANCE.clear()
             }
           }
         }
@@ -67,11 +71,12 @@ object Main extends App {
       case _                   =>
     }
 
-  def runBenchmark(f: JavaFile, dbName: String, driver: IDriver): BenchmarkResult = {
+  def runBenchmark(f: JavaFile, name: String, phase: String, dbName: String, driver: IDriver): BenchmarkResult = {
     new Extractor(driver).load(f).project()
     val times = PlumeTimer.INSTANCE.getTimes
     val b = BenchmarkResult(
-      fileName = f.getName,
+      fileName = name,
+      phase = phase,
       database = dbName,
       compilingAndUnpacking = times.get(ExtractorTimeKey.COMPILING_AND_UNPACKING),
       soot = times.get(ExtractorTimeKey.SOOT),
@@ -79,9 +84,12 @@ object Main extends App {
       baseCpgBuilding = times.get(ExtractorTimeKey.BASE_CPG_BUILDING),
       databaseWrite = times.get(ExtractorTimeKey.DATABASE_WRITE),
       databaseRead = times.get(ExtractorTimeKey.DATABASE_READ),
-      dataFlowPasses = times.get(ExtractorTimeKey.DATA_FLOW_PASS)
+      dataFlowPasses = times.get(ExtractorTimeKey.DATA_FLOW_PASS),
+      cacheHits = CacheMetrics.INSTANCE.getHits,
+      cacheMisses = CacheMetrics.INSTANCE.getMisses
     )
     PlumeTimer.INSTANCE.reset()
+    CacheMetrics.INSTANCE.reset()
     PrettyPrinter.announceResults(b)
     b
   }
@@ -96,6 +104,7 @@ object Main extends App {
           "DATE," +
             "PLUME_VERSION," +
             "FILE_NAME," +
+            "PHASE," +
             "DATABASE," +
             "COMPILING_AND_UNPACKING," +
             "SOOT," +
@@ -112,6 +121,7 @@ object Main extends App {
         s"${LocalDateTime.now()}," +
           s"${ExtractorConst.INSTANCE.getPlumeVersion}," +
           s"${b.fileName}," +
+          s"${b.phase}," +
           s"${b.database}," +
           s"${b.compilingAndUnpacking}," +
           s"${b.soot}," +
@@ -192,7 +202,28 @@ object Main extends App {
       case _ => List.empty[(String, IDriver, List[String])]
     }
 
-  def getFilesToBenchmarkAgainst(prefixPath: String): Array[JavaFile] =
-    new JavaFile(getClass.getResource(prefixPath).getFile).listFiles()
+  def getPrograms(config: util.LinkedHashMap[String, Any]): List[Program] = {
+    val ps = config.get("programs").asInstanceOf[java.util.LinkedHashMap[String, Any]]
+    ps.entrySet()
+      .stream()
+      .map {
+        _.getValue.asInstanceOf[java.util.Map[String, Any]]
+      }
+      .filter { pConf: java.util.Map[String, Any] =>
+        pConf.getOrDefault("enabled", false).asInstanceOf[Boolean]
+      }
+      .map { pConf =>
+        val initPath = s"$PROGRAMS_PATH/${pConf.get("init-jar").asInstanceOf[String]}.jar"
+        val updatePath = s"$PROGRAMS_PATH/${pConf.get("update-jar").asInstanceOf[String]}.jar"
+        Program(
+          name = pConf.get("name").asInstanceOf[String],
+          initJar = new JavaFile(getClass.getResource(initPath).getFile),
+          updateJar = new JavaFile(getClass.getResource(updatePath).getFile)
+        )
+      }
+      .toArray
+      .toList
+      .asInstanceOf[List[Program]]
+  }
 
 }

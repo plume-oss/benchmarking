@@ -1,7 +1,12 @@
 package io.github.plume.oss
 
+import java.io.{File => JavaFile}
+
+case class Program(name: String, initJar: JavaFile, updateJar: JavaFile)
+
 case class BenchmarkResult(
     fileName: String,
+    phase: String,
     database: String,
     compilingAndUnpacking: Long,
     soot: Long,
@@ -9,7 +14,9 @@ case class BenchmarkResult(
     baseCpgBuilding: Long,
     databaseWrite: Long,
     databaseRead: Long,
-    dataFlowPasses: Long
+    dataFlowPasses: Long,
+    cacheHits: Long,
+    cacheMisses: Long
 ) {
   override def toString: String =
     s"BenchmarkResult { " +
@@ -22,5 +29,7 @@ case class BenchmarkResult(
       s"databaseWrite=${databaseWrite * Math.pow(10, -9)}s, " +
       s"databaseRead=${databaseRead * Math.pow(10, -9)}s, " +
       s"dataFlowPasses=${dataFlowPasses * Math.pow(10, -9)}s " +
+      s"cacheHits=${cacheHits}s, " +
+      s"cacheMisses=${cacheMisses}s " +
       "}"
 }

@@ -1,4 +1,17 @@
 iterations: 1
+
+programs:
+  conf1:
+    enabled: true
+    name: "FasterXML/jackson-databind"
+    init-jar: "492fb802380f38ea3a5a31446bc53cb895cca029"
+    update-jar: "4adcbff5373bf0bde7a12760a83e340762b03aa0"
+  conf2:
+    enabled: true
+    name: "apache/tinkerpop/gremlin-driver"
+    init-jar: "8729fd4ce1711b29bc0b90670e87df33e91f4f09"
+    update-jar: "ee61241999eeb12b9d3fc8d64a3f9a06f6ba47f0"
+
 databases:
   conf1:
     db: "TinkerGraph"

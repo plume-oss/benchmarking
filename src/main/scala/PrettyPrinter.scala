@@ -2,7 +2,7 @@ package io.github.plume.oss
 
 import util.ExtractorConst
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.Duration
 
@@ -39,8 +39,9 @@ object PrettyPrinter {
     val totalTime = b.compilingAndUnpacking + b.soot + b.programStructureBuilding + b.dataFlowPasses + b.baseCpgBuilding
     val dbTime = b.databaseRead + b.databaseWrite
     logger.info(s"")
-    logger.info(s"Benchmark results:")
+    logger.info(s"Benchmark results of ${b.fileName}")
     logger.info(s"")
+    logger.info(s"PHASE ${b.phase}")
     logger.info(s"\tCompiling and Unpacking.......${readableTime(b.compilingAndUnpacking)}")
     logger.info(s"\tSoot Related Processing.......${readableTime(b.soot)}")
     logger.info(s"\tProgram Structure Building....${readableTime(b.programStructureBuilding)}")
@@ -50,6 +51,9 @@ object PrettyPrinter {
     logger.info(s"\tDatabase Writes...............${readableTime(b.databaseWrite)}")
     logger.info(s"\tDatabase Reads................${readableTime(b.databaseRead)}")
     logger.info(s"\t=======================Total: ${readableTime(dbTime)} (CPU clock)")
+    val cacheTotal = (b.cacheMisses + b.cacheHits).toDouble
+    logger.info(s"\tCache Hits....................${b.cacheHits} / ${(b.cacheHits / cacheTotal) * 100}%")
+    logger.info(s"\tCache Misses..................${b.cacheMisses} / ${(b.cacheMisses / cacheTotal) * 100}%")
   }
 
   def readableTime(nanoTime: Long): String = {
