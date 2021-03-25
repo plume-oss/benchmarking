@@ -2,9 +2,9 @@ package io.github.plume.oss
 
 import drivers._
 import metrics.{CacheMetrics, ExtractorTimeKey, PlumeTimer}
+import store.LocalCache
 import util.ExtractorConst
 
-import io.github.plume.oss.store.LocalCache
 import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
@@ -26,6 +26,7 @@ object Main extends App {
   PrettyPrinter.setLogger(logger)
   PrettyPrinter.announcePlumeVersion()
   logger.info(s"Running $iterations iterations of each benchmark")
+  val experiment: Experiment = getExperiment(config)
   val files: List[Program] = getPrograms(config)
   logger.info(s"Found ${files.length} files to benchmark against.")
   logger.debug(s"The files are: ${files.map(_.name).mkString(",")}")
@@ -42,8 +43,24 @@ object Main extends App {
             PrettyPrinter.announceBenchmark(f.name)
             try {
               d.clearGraph()
-              captureBenchmarkResult(runBenchmark(f.initJar, f.name, "BUILD", dbName, d))
-              captureBenchmarkResult(runBenchmark(f.updateJar, f.name, "UPDATE", dbName, d))
+              // Run first build
+              captureBenchmarkResult(runBenchmark(f.jars.head, f.name, "INITIAL", dbName, d))
+              // Run updates
+              if (experiment.runUpdates) {
+                f.jars.drop(1).zipWithIndex.foreach {
+                  case (jar, i) =>
+                    captureBenchmarkResult(runBenchmark(jar, f.name, s"UPDATE$i", dbName, d))
+                }
+              }
+              // Run full builds
+              if (experiment.runFullBuilds) {
+                f.jars.drop(1).zipWithIndex.foreach {
+                  case (jar, i) =>
+                    LocalCache.INSTANCE.clear()
+                    d.clearGraph()
+                    captureBenchmarkResult(runBenchmark(jar, f.name, s"BUILD$i", dbName, d))
+                }
+              }
             } catch {
               case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
             } finally {
@@ -72,6 +89,7 @@ object Main extends App {
     }
 
   def runBenchmark(f: JavaFile, name: String, phase: String, dbName: String, driver: IDriver): BenchmarkResult = {
+    logger.info(s"Using file ${f.getName}")
     new Extractor(driver).load(f).project()
     val times = PlumeTimer.INSTANCE.getTimes
     val b = BenchmarkResult(
@@ -213,17 +231,39 @@ object Main extends App {
         pConf.getOrDefault("enabled", false).asInstanceOf[Boolean]
       }
       .map { pConf =>
-        val initPath = s"$PROGRAMS_PATH/${pConf.get("init-jar").asInstanceOf[String]}.jar"
-        val updatePath = s"$PROGRAMS_PATH/${pConf.get("update-jar").asInstanceOf[String]}.jar"
+        val listOfJars = CollectionConverters
+          .ListHasAsScala(
+            pConf
+              .getOrDefault("jars", new util.ArrayList[String]())
+              .asInstanceOf[util.ArrayList[String]]
+          )
+          .asScala
+          .map { f =>
+            new JavaFile(getClass.getResource(s"$PROGRAMS_PATH/$f.jar").getFile)
+          }
+          .reverse.toList
         Program(
           name = pConf.get("name").asInstanceOf[String],
-          initJar = new JavaFile(getClass.getResource(initPath).getFile),
-          updateJar = new JavaFile(getClass.getResource(updatePath).getFile)
+          jars = listOfJars
         )
       }
       .toArray
       .toList
       .asInstanceOf[List[Program]]
   }
+
+  def getExperiment(config: util.LinkedHashMap[String, Any]): Experiment =
+    Experiment(
+      runUpdates = config
+        .get("experiment")
+        .asInstanceOf[util.LinkedHashMap[String, Any]]
+        .getOrDefault("run-updates", false)
+        .asInstanceOf[Boolean],
+      runFullBuilds = config
+        .get("experiment")
+        .asInstanceOf[util.LinkedHashMap[String, Any]]
+        .getOrDefault("run-full-builds", false)
+        .asInstanceOf[Boolean]
+    )
 
 }

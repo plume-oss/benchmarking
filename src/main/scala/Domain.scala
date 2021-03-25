@@ -2,7 +2,9 @@ package io.github.plume.oss
 
 import java.io.{File => JavaFile}
 
-case class Program(name: String, initJar: JavaFile, updateJar: JavaFile)
+case class Experiment(runUpdates: Boolean, runFullBuilds: Boolean)
+
+case class Program(name: String, jars: List[JavaFile])
 
 case class BenchmarkResult(
     fileName: String,

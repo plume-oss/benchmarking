@@ -1,25 +1,50 @@
 iterations: 1
 
+experiment:
+  # Will do an initial build and keep cache and not clear graph
+  run-updates: true
+  # Will do an initial build and discard cache and clear graph between builds
+  run-full-builds: false
+
 programs:
   conf1:
-    enabled: true
+    enabled: false
     name: "FasterXML/jackson-databind"
-    init-jar: "492fb802380f38ea3a5a31446bc53cb895cca029"
-    update-jar: "4adcbff5373bf0bde7a12760a83e340762b03aa0"
+    jars: # Newest to oldest
+      - "4adcbff5373bf0bde7a12760a83e340762b03aa0"
+      - "492fb802380f38ea3a5a31446bc53cb895cca029"
+      - "99e4e19aba9691b3a6b4f47078a3f6eb28cac81b"
+      - "0df9053cbaa8ab3695adb0d2dc0c5c0ec400d7c8"
+      - "2c85bd6499205256056eb8be03f0d52a27b12981"
+
   conf2:
     enabled: true
     name: "apache/tinkerpop/gremlin-driver"
-    init-jar: "8729fd4ce1711b29bc0b90670e87df33e91f4f09"
-    update-jar: "ee61241999eeb12b9d3fc8d64a3f9a06f6ba47f0"
+    jars:
+      - "ee61241999eeb12b9d3fc8d64a3f9a06f6ba47f0"
+      - "8729fd4ce1711b29bc0b90670e87df33e91f4f09"
+      - "e242460c7797ab3e041816d788d859fcb9e8e00a"
+      - "43f729216015c8f2374b42c1b619a16d1e00396e"
+      - "4624355bfeba3c27da9e8141fa93604cf840e9cd"
+
+  conf3:
+    enabled: false
+    name: "neo4j/neo4j"
+    jars:
+      - "622c62762e7a7ed6431e983b0293f54f67b7f16f"
+      - "50a71a00b5fbaf1f1e71b0fe05147f78f996e7fb"
+      - "8901950334f63bdefba7cc08de78e7ae9a1a2405"
+      - "475aa29a91b8217e01443c587866cdc4c33fd98c"
+      - "df4d8bf6236d72e99d606c3c28c602606bf5650d"
 
 databases:
   conf1:
     db: "TinkerGraph"
-    enabled: true
+    enabled: false
   conf2:
     db: "OverflowDB"
     enabled: true
-    storage: "/tmp/plume/cpg.bin"
+    storage: "/tmp/plume/cpg-benchmark.bin"
     set_overflow: false
     set_heap_percentage_threshold: 80
     set_serialization_stats_enabled: false
@@ -31,7 +56,7 @@ databases:
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf4:
     db: "JanusGraph_Scylla_ElasticSearch"
-    enabled: true
+    enabled: false
     containers:
       - "janus-plume-benchmark"
       - "scylla-plume-benchmark"
@@ -39,7 +64,7 @@ databases:
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf5:
     db: "TigerGraph"
-    enabled: true
+    enabled: false
     containers:
       - "tigergraph-plume-benchmark"
     username: "tigergraph"
@@ -58,7 +83,7 @@ databases:
     key_cert_chain_file: "src/test/resources/conf/SFSRootCAG2.pem"
   conf7:
     db: "Neo4j"
-    enabled: true
+    enabled: false
     containers:
       - "neo4j-plume-benchmark"
     hostname: "127.0.0.1"
