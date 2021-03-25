@@ -29,9 +29,9 @@ object PrettyPrinter {
     logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
   }
 
-  def announceBenchmark(f: String): Unit = {
+  def announceBenchmark(name: String, commit: String): Unit = {
     logger.info(s"---------------------------------------------------------------------------")
-    logger.info(s"Running benchmark on: $f")
+    logger.info(s"$name @ $commit")
     logger.info(s"---------------------------------------------------------------------------")
   }
 
@@ -54,6 +54,7 @@ object PrettyPrinter {
     val cacheTotal = (b.cacheMisses + b.cacheHits).toDouble
     logger.info(s"\tCache Hits....................${b.cacheHits} / ${(b.cacheHits / cacheTotal) * 100}%")
     logger.info(s"\tCache Misses..................${b.cacheMisses} / ${(b.cacheMisses / cacheTotal) * 100}%")
+    logger.info(s"")
   }
 
   def readableTime(nanoTime: Long): String = {

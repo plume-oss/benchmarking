@@ -27,9 +27,9 @@ object Main extends App {
   PrettyPrinter.announcePlumeVersion()
   logger.info(s"Running $iterations iterations of each benchmark")
   val experiment: Experiment = getExperiment(config)
-  val files: List[Program] = getPrograms(config)
-  logger.info(s"Found ${files.length} files to benchmark against.")
-  logger.debug(s"The files are: ${files.map(_.name).mkString(",")}")
+  val programs: List[Program] = getPrograms(config)
+  logger.info(s"Found ${programs.length} programs to benchmark against.")
+  logger.debug(s"The files are: ${programs.map(_.name).mkString(",")}")
   getDrivers(config).foreach {
     case (dbName, driver, containers) =>
       if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName, containers)
@@ -39,26 +39,26 @@ object Main extends App {
         for (i <- 1 to iterations) {
           val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
           PrettyPrinter.announceIteration(i, driverName)
-          files.foreach { f =>
-            PrettyPrinter.announceBenchmark(f.name)
+          programs.foreach { p =>
+
             try {
               d.clearGraph()
               // Run first build
-              captureBenchmarkResult(runBenchmark(f.jars.head, f.name, "INITIAL", dbName, d))
+              captureBenchmarkResult(runBenchmark(p.jars.head, p.name, "INITIAL", dbName, d))
               // Run updates
               if (experiment.runUpdates) {
-                f.jars.drop(1).zipWithIndex.foreach {
+                p.jars.drop(1).zipWithIndex.foreach {
                   case (jar, i) =>
-                    captureBenchmarkResult(runBenchmark(jar, f.name, s"UPDATE$i", dbName, d))
+                    captureBenchmarkResult(runBenchmark(jar, p.name, s"UPDATE$i", dbName, d))
                 }
               }
               // Run full builds
               if (experiment.runFullBuilds) {
-                f.jars.drop(1).zipWithIndex.foreach {
+                p.jars.drop(1).zipWithIndex.foreach {
                   case (jar, i) =>
                     LocalCache.INSTANCE.clear()
                     d.clearGraph()
-                    captureBenchmarkResult(runBenchmark(jar, f.name, s"BUILD$i", dbName, d))
+                    captureBenchmarkResult(runBenchmark(jar, p.name, s"BUILD$i", dbName, d))
                 }
               }
             } catch {
@@ -89,7 +89,7 @@ object Main extends App {
     }
 
   def runBenchmark(f: JavaFile, name: String, phase: String, dbName: String, driver: IDriver): BenchmarkResult = {
-    logger.info(s"Using file ${f.getName}")
+    PrettyPrinter.announceBenchmark(name, f.getName.stripSuffix(".jar"))
     new Extractor(driver).load(f).project()
     val times = PlumeTimer.INSTANCE.getTimes
     val b = BenchmarkResult(

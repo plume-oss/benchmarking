@@ -18,7 +18,7 @@ programs:
       - "2c85bd6499205256056eb8be03f0d52a27b12981"
 
   conf2:
-    enabled: true
+    enabled: false
     name: "apache/tinkerpop/gremlin-driver"
     jars:
       - "ee61241999eeb12b9d3fc8d64a3f9a06f6ba47f0"
@@ -28,22 +28,22 @@ programs:
       - "4624355bfeba3c27da9e8141fa93604cf840e9cd"
 
   conf3:
-    enabled: false
+    enabled: true
     name: "neo4j/neo4j"
     jars:
-      - "622c62762e7a7ed6431e983b0293f54f67b7f16f"
       - "50a71a00b5fbaf1f1e71b0fe05147f78f996e7fb"
       - "8901950334f63bdefba7cc08de78e7ae9a1a2405"
-      - "475aa29a91b8217e01443c587866cdc4c33fd98c"
       - "df4d8bf6236d72e99d606c3c28c602606bf5650d"
+      - "15b4b2ae7b20784cdd1f966066aef0f17f19204e"
+      - "02bb75f297595f822a2ef24437fa1d88489bf119"
 
 databases:
   conf1:
     db: "TinkerGraph"
-    enabled: false
+    enabled: true
   conf2:
     db: "OverflowDB"
-    enabled: true
+    enabled: false
     storage: "/tmp/plume/cpg-benchmark.bin"
     set_overflow: false
     set_heap_percentage_threshold: 80
