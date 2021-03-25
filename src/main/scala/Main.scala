@@ -44,25 +44,7 @@ object Main extends App {
           PrettyPrinter.announceIteration(i, driverName)
           programs.foreach { p =>
             try {
-              d.clearGraph()
-              // Run first build
-              captureBenchmarkResult(runBenchmark(p.jars.head, p.name, "INITIAL", dbName, d))
-              // Run updates
-              if (experiment.runUpdates) {
-                p.jars.drop(1).zipWithIndex.foreach {
-                  case (jar, i) =>
-                    captureBenchmarkResult(runBenchmark(jar, p.name, s"UPDATE$i", dbName, d))
-                }
-              }
-              // Run full builds
-              if (experiment.runFullBuilds) {
-                p.jars.drop(1).zipWithIndex.foreach {
-                  case (jar, i) =>
-                    LocalCache.INSTANCE.clear()
-                    d.clearGraph()
-                    captureBenchmarkResult(runBenchmark(jar, p.name, s"BUILD$i", dbName, d))
-                }
-              }
+              runExperiment(d, p, dbName)
             } catch {
               case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
             } finally {
@@ -72,6 +54,28 @@ object Main extends App {
         }
       }
       if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
+  }
+
+  def runExperiment(d: IDriver, p: Program, dbName: String): Unit = {
+    d.clearGraph()
+    // Run first build
+    captureBenchmarkResult(runBenchmark(p.jars.head, p.name, "INITIAL", dbName, d))
+    // Run updates
+    if (experiment.runUpdates) {
+      p.jars.drop(1).zipWithIndex.foreach {
+        case (jar, i) =>
+          captureBenchmarkResult(runBenchmark(jar, p.name, s"UPDATE$i", dbName, d))
+      }
+    }
+    // Run full builds
+    if (experiment.runFullBuilds) {
+      p.jars.drop(1).zipWithIndex.foreach {
+        case (jar, i) =>
+          LocalCache.INSTANCE.clear()
+          d.clearGraph()
+          captureBenchmarkResult(runBenchmark(jar, p.name, s"BUILD$i", dbName, d))
+      }
+    }
   }
 
   def handleSchema(driver: IDriver): Unit =
