@@ -25,12 +25,15 @@ object Main extends App {
   val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
   PrettyPrinter.setLogger(logger)
   PrettyPrinter.announcePlumeVersion()
+
   logger.info(s"Running $iterations iterations of each benchmark")
   val experiment: Experiment = getExperiment(config)
   val programs: List[Program] = getPrograms(config)
-  logger.info(s"Found ${programs.length} programs to benchmark against.")
+  val drivers = getDrivers(config)
+
+  logger.info(s"Found ${programs.length} programs to benchmark against ${drivers.length} drivers.")
   logger.debug(s"The files are: ${programs.map(_.name).mkString(",")}")
-  getDrivers(config).foreach {
+  drivers.foreach {
     case (dbName, driver, containers) =>
       if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName, containers)
       Using.resource(driver) { d =>
@@ -40,7 +43,6 @@ object Main extends App {
           val driverName = driver.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
           PrettyPrinter.announceIteration(i, driverName)
           programs.foreach { p =>
-
             try {
               d.clearGraph()
               // Run first build
