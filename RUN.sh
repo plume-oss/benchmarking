@@ -1,3 +1,3 @@
 #!/bin/bash
-export SBT_OPTS="-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=32G -Xmx32G"
+export SBT_OPTS="-XX:+CMSClassUnloadingEnabled -Xss2M -Xmx30G"
 sbt run
