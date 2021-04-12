@@ -31,7 +31,7 @@ object Main extends App {
   val experiment: Experiment = getExperiment(config)
   val programs: List[Program] = getPrograms(config)
   val drivers = getDrivers(config)
-  CacheOptions.INSTANCE.setCacheSize(config.getOrDefault("cache-size", 100000L).asInstanceOf[Long])
+  CacheOptions.INSTANCE.setCacheSize(config.getOrDefault("cache-size", 100000L).toString.toLong)
 
   logger.info(s"Found ${programs.length} programs to benchmark against ${drivers.length} drivers.")
   logger.debug(s"The files are: ${programs.map(_.name).mkString(",")}")
