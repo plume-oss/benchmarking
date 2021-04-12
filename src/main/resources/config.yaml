@@ -1,14 +1,14 @@
 iterations: 1
-
+cache-size: 100000
 experiment:
   # Will do an initial build and keep cache and not clear graph
   run-updates: true
   # Will do an initial build and discard cache and clear graph between builds
-  run-full-builds: false
+  run-full-builds: true
 
 programs:
   conf1:
-    enabled: false
+    enabled: true
     name: "FasterXML/jackson-databind"
     jars: # Newest to oldest
       - "4adcbff5373bf0bde7a12760a83e340762b03aa0"
@@ -18,7 +18,7 @@ programs:
       - "2c85bd6499205256056eb8be03f0d52a27b12981"
 
   conf2:
-    enabled: false
+    enabled: true
     name: "apache/tinkerpop/gremlin-driver"
     jars:
       - "ee61241999eeb12b9d3fc8d64a3f9a06f6ba47f0"
@@ -40,7 +40,7 @@ programs:
 databases:
   conf1:
     db: "TinkerGraph"
-    enabled: true
+    enabled: false
   conf2:
     db: "OverflowDB"
     enabled: false
@@ -51,12 +51,14 @@ databases:
   conf3:
     db: "JanusGraph_BerkeleyJE_Lucene"
     enabled: false
+    use-docker: true
     containers:
       - "janus-berkeleyje-lucene"
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf4:
     db: "JanusGraph_Scylla_ElasticSearch"
     enabled: false
+    use-docker: true
     containers:
       - "janus-plume-benchmark"
       - "scylla-plume-benchmark"
@@ -65,6 +67,7 @@ databases:
   conf5:
     db: "TigerGraph"
     enabled: false
+    use-docker: true
     containers:
       - "tigergraph-plume-benchmark"
     username: "tigergraph"
@@ -84,6 +87,7 @@ databases:
   conf7:
     db: "Neo4j"
     enabled: false
+    use-docker: true
     containers:
       - "neo4j-plume-benchmark"
     hostname: "127.0.0.1"
@@ -91,13 +95,4 @@ databases:
     username: "neo4j"
     password: "neo4j123"
     database: "neo4j"
-  conf8:
-    db: "TigerGraph_Cloud"
-    enabled: false
-    username: "tigergraph"
-    password: "PlumeBench"
-    hostname: "plume-benchmarking-1.i.tgcloud.io"
-    restPpPort: 9000
-    gsqlPort: 14240
-    secure: true
-    # auth_key: ""
+

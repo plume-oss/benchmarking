@@ -5,6 +5,7 @@ import metrics.{CacheMetrics, ExtractorTimeKey, PlumeTimer}
 import store.LocalCache
 import util.ExtractorConst
 
+import options.CacheOptions
 import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
@@ -30,12 +31,16 @@ object Main extends App {
   val experiment: Experiment = getExperiment(config)
   val programs: List[Program] = getPrograms(config)
   val drivers = getDrivers(config)
+  CacheOptions.INSTANCE.setCacheSize(config.getOrDefault("cache-size", 100000L).asInstanceOf[Long])
 
   logger.info(s"Found ${programs.length} programs to benchmark against ${drivers.length} drivers.")
   logger.debug(s"The files are: ${programs.map(_.name).mkString(",")}")
   drivers.foreach {
-    case (dbName, driver, containers) =>
-      if (DockerManager.hasDockerDependency(dbName)) DockerManager.startDockerFile(dbName, containers)
+    case (dbName, driver, containers, conf) =>
+      if (conf.getOrDefault("use-docker", false).asInstanceOf[Boolean] &&
+          DockerManager.hasDockerDependency(dbName)) {
+        DockerManager.startDockerFile(dbName, containers)
+      }
       Using.resource(driver) { d =>
         handleConnection(d)
         handleSchema(d)
@@ -53,7 +58,10 @@ object Main extends App {
           }
         }
       }
-      if (DockerManager.hasDockerDependency(dbName)) DockerManager.closeAnyDockerContainers(dbName)
+      if (conf.getOrDefault("use-docker", false).asInstanceOf[Boolean] &&
+          DockerManager.hasDockerDependency(dbName)) {
+        DockerManager.closeAnyDockerContainers(dbName)
+      }
   }
 
   def runExperiment(d: IDriver, p: Program, dbName: String): Unit = {
@@ -165,7 +173,9 @@ object Main extends App {
     }
   }
 
-  def getDrivers(config: java.util.LinkedHashMap[String, Any]): List[(String, IDriver, List[String])] =
+  def getDrivers(
+      config: java.util.LinkedHashMap[String, Any]
+  ): List[(String, IDriver, List[String], java.util.LinkedHashMap[String, Any])] =
     config.getOrDefault(
       "databases", {
         CollectionConverters
@@ -188,42 +198,48 @@ object Main extends App {
               case "TinkerGraph" =>
                 (dbName,
                  DriverCreator.createTinkerGraphDriver(dbConf),
-                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]],
+                 dbConf)
               case "OverflowDB" =>
                 (dbName,
                  DriverCreator.createOverflowDbDriver(dbConf),
-                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]],
+                 dbConf)
               case s"JanusGraph$_" =>
                 (dbName,
                  DriverCreator.createJanusGraphDriver(dbConf),
-                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]],
+                 dbConf)
               case s"TigerGraph$_" =>
                 (dbName,
                  DriverCreator.createTigerGraphDriver(dbConf),
-                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]],
+                 dbConf)
               case "Neo4j" =>
                 (dbName,
                  DriverCreator.createNeo4jDriver(dbConf),
-                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]],
+                 dbConf)
               case "Neptune" =>
                 (dbName,
                  DriverCreator.createNeptuneDriver(dbConf),
-                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]])
+                 dbConf.getOrDefault("containers", new java.util.ArrayList()).asInstanceOf[java.util.ArrayList[String]],
+                 dbConf)
               case _ => logger.warn(s"Database name '$dbName' not registered. "); null
             }
           }
           .toArray
           .toList
           .map {
-            case (x, y, z) =>
-              (x, y, CollectionConverters.ListHasAsScala(z.asInstanceOf[java.util.ArrayList[String]]).asScala.toList)
+            case (x, y, z, u) =>
+              (x, y, CollectionConverters.ListHasAsScala(z.asInstanceOf[java.util.ArrayList[String]]).asScala.toList, u)
           }
-          .asInstanceOf[List[(String, IDriver, List[String])]]
-          .filterNot { tup: (String, IDriver, List[String]) =>
+          .asInstanceOf[List[(String, IDriver, List[String], java.util.LinkedHashMap[String, Any])]]
+          .filterNot { tup: (String, IDriver, List[String], java.util.LinkedHashMap[String, Any]) =>
             tup == null || tup._2 == null
           }
 
-      case _ => List.empty[(String, IDriver, List[String])]
+      case _ => List.empty[(String, IDriver, List[String], java.util.LinkedHashMap[String, Any])]
     }
 
   def getPrograms(config: util.LinkedHashMap[String, Any]): List[Program] = {
@@ -247,7 +263,8 @@ object Main extends App {
           .map { f =>
             new JavaFile(getClass.getResource(s"$PROGRAMS_PATH/$f.jar").getFile)
           }
-          .reverse.toList
+          .reverse
+          .toList
         Program(
           name = pConf.get("name").asInstanceOf[String],
           jars = listOfJars
