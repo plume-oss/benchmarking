@@ -83,7 +83,7 @@ databases:
     hostnames:
       - "127.0.0.1"
     port: 8182
-    key_cert_chain_file: "src/test/resources/conf/SFSRootCAG2.pem"
+    key_cert_chain_file: "src/main/resources/conf/SFSRootCAG2.pem"
   conf7:
     db: "Neo4j"
     enabled: false
