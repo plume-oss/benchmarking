@@ -37,7 +37,7 @@ object DriverCreator {
   def createNeptuneDriver(config: java.util.Map[String, Any]): NeptuneDriver =
     if (config.getOrDefault("enabled", false) == true) {
       val driver = DriverFactory.invoke(GraphDatabase.NEPTUNE).asInstanceOf[NeptuneDriver]
-        .keyCertChainFile(config.getOrDefault("key_cert_chain_file", "src/test/resources/conf/SFSRootCAG2.pem").asInstanceOf[String])
+        .keyCertChainFile(config.getOrDefault("key_cert_chain_file", "src/main/resources/conf/SFSRootCAG2.pem").asInstanceOf[String])
         .port(config.getOrDefault("port", 8182).asInstanceOf[Int])
       config.get("hostnames").asInstanceOf[java.util.ArrayList[String]].forEach { host => driver.addHostnames(host)}
       driver
