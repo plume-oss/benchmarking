@@ -72,6 +72,56 @@ def update_build_perf(f: str, db: str, rs: List[Benchmark]):
 # TODO: Plot database reads/writes
 # TODO: Plot vertices/edges of each program
 
+def program_sizes():
+    fig, ax = plt.subplots()
+    ax.set_title("Initial Program Code Statistics")
+    ax.set_xlabel("Codebase")
+    ax.set_ylabel("Count")
+    data = [
+        # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
+        [701, 119, 40],  # Application Classes
+        [161, 133, 140],  # Library Classes
+        [7839, 1020, 491],  # Application Methods
+        [18106 - 7839, 9445 - 1020, 2680 - 491],  # Library Methods
+        [2060, 519, 220],  # Application Fields
+        [2813, 2150, 363]  # Library Fields
+    ]
+    x = np.arange(3)
+    ax.bar(x + 0.00, data[0], width=0.25, label="Application Classes")
+    ax.bar(x + 0.00, data[2], width=0.25, label="Application Methods")
+    ax.bar(x + 0.00, data[4], width=0.25, label="Application Fields")
+    ax.bar(x + 0.25, data[1], width=0.25, label="Library Classes")
+    ax.bar(x + 0.25, data[3], width=0.25, label="Library Methods")
+    ax.bar(x + 0.25, data[5], width=0.25, label="Library Fields")
+    plt.xticks([0.125, 1.125, 2.125],
+               ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
+               rotation=15)
+    plt.legend()
+    fig.subplots_adjust(bottom=0.28)
+    fig.savefig("./results/Plume_JAR_CODE_STATS.pdf")
+
+
+def graph_sizes():
+    fig, ax = plt.subplots()
+    ax.set_title("Initial Program Graph Statistics")
+    ax.set_xlabel("Codebase")
+    ax.set_ylabel("Count (thousands)")
+    data = [
+        # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
+        [752261, 256898, 61251],  # Vertices
+        [3829346, 778624, 222928],  # Edges
+    ]
+    x = np.arange(3)
+    ax.bar(x + 0.00, [d / 1000 for d in data[0]], width=0.25, label="Vertices")
+    ax.bar(x + 0.25, [d / 1000 for d in data[1]], width=0.25, label="Edges")
+    plt.xticks([0.25, 1.25, 2.25],
+               ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
+               rotation=15)
+    plt.legend()
+    fig.subplots_adjust(bottom=0.28)
+    fig.savefig("./results/Plume_JAR_GRAPH_STATS.pdf")
+
+
 with open('./results/result.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
     results = []
@@ -96,7 +146,10 @@ with open('./results/result.csv') as csv_file:
             results_per_db_jar[(r.file_name, r.database)] = [r]
         else:
             results_per_db_jar[(r.file_name, r.database)].append(r)
-
+    # Plot stats of programs
+    program_sizes()
+    graph_sizes()
+    # Plot results
     for ((f, db), r) in results_per_db_jar.items():
         update_build_perf(f, db, r)
     plt.clf()
