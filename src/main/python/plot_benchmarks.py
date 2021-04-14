@@ -64,13 +64,61 @@ def update_build_perf(f: str, db: str, rs: List[Benchmark]):
     ax.errorbar([1, 2, 3, 4], [ns_to_s(t) for t in [u0, u1, u2, u3]], [ns_to_s(t) for t in [du0, du1, du2, du3]],
                 color='b', marker='x', linestyle='None', label="Incremental Update")
     plt.legend()
-    fig.savefig("./results/Plume_BUILD_UPDATE_{}_{}.pdf".format(f.replace('/', '_'), db))
+    fig.savefig("./results/build_updates_{}_{}.pdf".format(f.split("/")[-1], db))
 
 
-# TODO: Plot average update/build against each database
+def avg_db_build_update(rs: List[Benchmark]):
+    dbs = set([r.database for r in rs])
+    fs = set([r.file_name for r in rs])
+
+    # Map (File, Database) -> AVG
+    avg_build = {}
+    avg_update = {}
+    for db in dbs:
+        for f in fs:
+            avg_build[(f, db)] = np.mean(
+                [ns_to_s(r.total_time()) for r in rs if r.file_name == f and r.database == db and "BUILD" in r.phase])
+            avg_update[(f, db)] = np.mean(
+                [ns_to_s(r.total_time()) for r in rs if r.file_name == f and r.database == db and "UPDATE" in r.phase])
+
+    def plot_as_bars(xs: dict, type: str):
+        data = {}
+        for ((f, db), avg) in xs.items():
+            if db not in data.keys():
+                data[db] = [0, 0, 0]
+            if "jackson" in f:
+                data[db][0] = avg
+            elif "gremlin" in f:
+                data[db][1] = avg
+            elif "neo4j" in f:
+                data[db][2] = avg
+
+        fig, ax = plt.subplots()
+        ax.set_title("Average {} Time Per Database".format(type))
+        ax.set_xlabel("Application/Library")
+        ax.set_ylabel("Time Elapsed (logarithmic)")
+        ax.set_yscale('log')
+
+        x = np.arange(3)
+        i = 0.00
+        for (db, avg) in data.items():
+            ax.bar(x + i, avg, width=0.25, label=db)
+            i += 0.25
+
+        plt.legend()
+        fig.subplots_adjust(bottom=0.28)
+        plt.xticks([0.25, 1.25, 2.25],
+                   ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
+                   rotation=15)
+        fig.savefig("./results/db_{}_stats.pdf".format(type.lower()))
+
+    plot_as_bars(avg_update, "Update")
+    plot_as_bars(avg_build, "Build")
+
+
 # TODO: Plot cache results
 # TODO: Plot database reads/writes
-# TODO: Plot vertices/edges of each program
+
 
 def program_sizes():
     fig, ax = plt.subplots()
@@ -98,7 +146,7 @@ def program_sizes():
                rotation=15)
     plt.legend()
     fig.subplots_adjust(bottom=0.28)
-    fig.savefig("./results/Plume_JAR_CODE_STATS.pdf")
+    fig.savefig("./results/jar_code_stats.pdf")
 
 
 def graph_sizes():
@@ -119,7 +167,7 @@ def graph_sizes():
                rotation=15)
     plt.legend()
     fig.subplots_adjust(bottom=0.28)
-    fig.savefig("./results/Plume_JAR_GRAPH_STATS.pdf")
+    fig.savefig("./results/jar_graph_stats.pdf")
 
 
 with open('./results/result.csv') as csv_file:
@@ -142,6 +190,7 @@ with open('./results/result.csv') as csv_file:
 
     results_per_db_jar = {}
     for r in results:
+        # Get (File, Database) -> [Results]
         if (r.file_name, r.database) not in results_per_db_jar.keys():
             results_per_db_jar[(r.file_name, r.database)] = [r]
         else:
@@ -152,4 +201,6 @@ with open('./results/result.csv') as csv_file:
     # Plot results
     for ((f, db), r) in results_per_db_jar.items():
         update_build_perf(f, db, r)
+
+    avg_db_build_update(results)
     plt.clf()
