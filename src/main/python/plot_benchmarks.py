@@ -1,120 +1,102 @@
 import csv
-import math
-from pathlib import Path
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-'''
-Returns size in megabytes
-'''
-def get_file_size(f_name: str):
-    size = Path('./src/main/resources/programs/{}'.format(f_name)).stat().st_size
-    return size / 1024
 
-def plot_cpg_performance(v: str, results: dict):
-    # x-axis are the databases
-    x_axis_dbs = list(set([x["DATABASE"] for x in results]))
-    # each subplot is the file name
-    plots_files = list(set([x["FILE_NAME"] for x in results]))
-    xg, yg = math.floor(len(plots_files) / 2), math.ceil(len(plots_files) / 2)
-    fig, ax_tup = plt.subplots(xg, yg, figsize=(8, 8))
+class Benchmark:
+    def __init__(self, plume_version, file_name, phase, database, compiling_and_unpacking, soot, program_structure,
+                 base_cpg, db_read, db_write, df_pass):
+        self.plume_version = plume_version
+        self.file_name = file_name
+        self.phase = phase
+        self.database = database
+        self.compiling_and_unpacking = compiling_and_unpacking
+        self.soot = soot
+        self.program_structure = program_structure
+        self.base_cpg = base_cpg
+        self.db_read = db_read
+        self.db_write = db_write
+        self.df_pass = df_pass
 
-    fi = 0
-    for x in range(xg):
-        for y in range(yg):
-            ax = ax_tup[x, y]
-            f_name = plots_files[fi]
-            file_size = get_file_size(f_name)
-            if file_size > 1024:
-                ax.set_title("{} ({:.3f}Mb)".format(f_name, file_size / 1024))
-            else:
-                ax.set_title("{} ({:.3f}Kb)".format(f_name, file_size))
-            ax.set_ylabel('Wall Clock Time Elapsed (min)')
-            ax.set_xlabel('Database')
-            lac, ugb, pstr, cpg, scpgp = [], [], [], [], []
-            for db in x_axis_dbs:
-                # Build each column
-                lac.append(np.mean([int(x["COMPILING_AND_UNPACKING"]) * 10 ** -11 for x in results if
-                                    x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-                ugb.append(np.mean([int(x["SOOT"]) * 10 ** -11 for x in results if
-                                    x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-                pstr.append(np.mean([int(x["PROGRAM_STRUCTURE_BUILDING"]) * 10 ** -11 for x in results if
-                                    x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-                cpg.append(np.mean([int(x["BASE_CPG_BUILDING"]) * 10 ** -11 for x in results if
-                                      x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-                scpgp.append(np.mean([int(x["DATA_FLOW_PASS"]) * 10 ** -11 for x in results if
-                                      x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-            ax.bar(x_axis_dbs, lac, 0.35, label='Loading and Compiling')
-            ax.bar(x_axis_dbs, ugb, 0.35, label='Soot Related Processing')
-            ax.bar(x_axis_dbs, cpg, 0.35, label='Program Structure Building')
-            ax.bar(x_axis_dbs, cpg, 0.35, label='Base CPG Building')
-            ax.bar(x_axis_dbs, scpgp, 0.35, label='Running Data Flow Passes')
-            fi += 1
-            ax.label_outer()
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), loc='lower center', bbox_to_anchor=[-0.1, -0.7])
-    fig.subplots_adjust(bottom=0.25)
-    fig.suptitle("CPG Performance | Plume Version {}".format(v), fontsize=20)
-    fig.savefig("./results/PlumeV{}_CPG_Performance.pdf".format(v))
+    def total_time(self):
+        return self.compiling_and_unpacking + self.soot + self.program_structure + self.base_cpg + self.df_pass
 
-def plot_db_performance(v: str, results: dict):
-    # x-axis are the databases
-    x_axis_dbs = list(set([x["DATABASE"] for x in results]))
-    # each subplot is the file name
-    plots_files = list(set([x["FILE_NAME"] for x in results]))
-    xg, yg = math.floor(len(plots_files) / 2), math.ceil(len(plots_files) / 2)
-    fig, ax_tup = plt.subplots(xg, yg, figsize=(8, 8))
+    def __str__(self):
+        return "Benchmark({}, {}, {})".format(self.file_name, self.database, self.total_time())
 
-    fi = 0
-    for x in range(xg):
-        for y in range(yg):
-            ax = ax_tup[x, y]
-            f_name = plots_files[fi]
-            file_size = get_file_size(f_name)
-            ax.set_title("{} ({:.3f}Kb)".format(f_name, file_size))
-            ax.set_ylabel('CPU Clock Time Elapsed (min)')
-            ax.set_xlabel('Database')
-            dbw, dbr = [], []
-            for db in x_axis_dbs:
-                # Build each column
-                dbw.append(np.mean([int(x["DATABASE_WRITE"]) * 10 ** -11 for x in results if
-                                    x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-                dbr.append(np.mean([int(x["DATABASE_READ"]) * 10 ** -11 for x in results if
-                                    x["DATABASE"] == db and x["FILE_NAME"] == f_name]))
-            ax.bar(x_axis_dbs, dbw, 0.35, label='Database Writes')
-            ax.bar(x_axis_dbs, dbr, 0.35, label='Database Reads')
-            fi += 1
-            ax.label_outer()
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), loc='lower center', bbox_to_anchor=[-0.1, -0.7])
-    fig.subplots_adjust(bottom=0.25)
-    fig.suptitle("Database Performance | Plume Version {}".format(v), fontsize=20)
-    fig.savefig("./results/PlumeV{}_DB_Performance.pdf".format(v))
+    def __repr__(self):
+        return str(self)
 
 
-with open('./results/results.csv') as csv_file:
+def avg(rs: List[Benchmark], phase: str):
+    return np.mean([r.total_time() for r in rs if r.phase == phase])
+
+
+def stdd(rs: List[Benchmark], phase: str):
+    return np.std([r.total_time() for r in rs if r.phase == phase])
+
+
+def ns_to_s(ns):
+    return ns * 10e-9
+
+
+def update_build_perf(f: str, db: str, rs: List[Benchmark]):
+    fig, ax = plt.subplots()
+    ax.set_title("{}: {}".format(db, f))
+    ax.set_xlabel("Code Increments")
+    ax.set_ylabel("Time Elapsed (s)")
+    init, init_std = avg(rs, "INITIAL"), stdd(rs, "INITIAL")
+    b0, db0 = avg(rs, "BUILD0"), stdd(rs, "BUILD0")
+    b1, db1 = avg(rs, "BUILD1"), stdd(rs, "BUILD1")
+    b2, db2 = avg(rs, "BUILD2"), stdd(rs, "BUILD2")
+    b3, db3 = avg(rs, "BUILD3"), stdd(rs, "BUILD3")
+    u0, du0 = avg(rs, "UPDATE0"), stdd(rs, "UPDATE0")
+    u1, du1 = avg(rs, "UPDATE1"), stdd(rs, "UPDATE1")
+    u2, du2 = avg(rs, "UPDATE2"), stdd(rs, "UPDATE2")
+    u3, du3 = avg(rs, "UPDATE3"), stdd(rs, "UPDATE3")
+    plt.xticks([])
+    ax.errorbar([0], [ns_to_s(t) for t in [init]], [ns_to_s(t) for t in [init_std]], color='g', marker='o',
+                linestyle='None', label="Initial Build")
+    ax.errorbar([1, 2, 3, 4], [ns_to_s(t) for t in [b0, b1, b2, b3]], [ns_to_s(t) for t in [db0, db1, db2, db3]],
+                color='r', marker='x', linestyle='None', label="Full Build")
+    ax.errorbar([1, 2, 3, 4], [ns_to_s(t) for t in [u0, u1, u2, u3]], [ns_to_s(t) for t in [du0, du1, du2, du3]],
+                color='b', marker='x', linestyle='None', label="Incremental Update")
+    plt.legend()
+    fig.savefig("./results/Plume_BUILD_UPDATE_{}_{}.pdf".format(f.replace('/', '_'), db))
+
+
+# TODO: Plot average update/build against each database
+# TODO: Plot cache results
+# TODO: Plot database reads/writes
+# TODO: Plot vertices/edges of each program
+
+with open('./results/result.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
-    plots_per_version = {}
+    results = []
     for row in csv_reader:
-        plumeV = str(row["PLUME_VERSION"])
-        if plumeV not in plots_per_version:
-            plots_per_version[plumeV] = []
-        plots_per_version[plumeV].append({
-            'FILE_NAME': str(row["FILE_NAME"]),
-            'DATABASE': str(row["DATABASE"]),
-            'COMPILING_AND_UNPACKING': int(row["COMPILING_AND_UNPACKING"]),
-            'SOOT': int(row["SOOT"]),
-            'PROGRAM_STRUCTURE_BUILDING': int(row["PROGRAM_STRUCTURE_BUILDING"]),
-            'BASE_CPG_BUILDING': int(row["BASE_CPG_BUILDING"]),
-            'DATABASE_WRITE': int(row["DATABASE_WRITE"]),
-            'DATABASE_READ': int(row["DATABASE_READ"]),
-            'DATA_FLOW_PASS': int(row["DATA_FLOW_PASS"])
-        })
+        results.append(Benchmark(
+            plume_version=str(row["PLUME_VERSION"]),
+            file_name=str(row["FILE_NAME"]),
+            phase=str(row["PHASE"]),
+            database=str(row["DATABASE"]),
+            compiling_and_unpacking=int(row["COMPILING_AND_UNPACKING"]),
+            soot=int(row["SOOT"]),
+            program_structure=int(row["PROGRAM_STRUCTURE_BUILDING"]),
+            base_cpg=int(row["BASE_CPG_BUILDING"]),
+            db_write=int(row["DATABASE_WRITE"]),
+            db_read=int(row["DATABASE_READ"]),
+            df_pass=int(row["DATA_FLOW_PASS"])
+        ))
 
-    for (ver, res) in plots_per_version.items():
-        plot_cpg_performance(ver, res)
-        plot_db_performance(ver, res)
-        plt.clf()
+    results_per_db_jar = {}
+    for r in results:
+        if (r.file_name, r.database) not in results_per_db_jar.keys():
+            results_per_db_jar[(r.file_name, r.database)] = [r]
+        else:
+            results_per_db_jar[(r.file_name, r.database)].append(r)
+
+    for ((f, db), r) in results_per_db_jar.items():
+        update_build_perf(f, db, r)
+    plt.clf()
