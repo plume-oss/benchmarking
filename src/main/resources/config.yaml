@@ -45,7 +45,7 @@ databases:
     db: "OverflowDB"
     enabled: false
     storage: "/tmp/plume/cpg-benchmark.bin"
-    set_overflow: false
+    set_overflow: true
     set_heap_percentage_threshold: 80
     set_serialization_stats_enabled: false
   conf3:
