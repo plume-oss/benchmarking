@@ -156,8 +156,8 @@ def graph_sizes():
     ax.set_ylabel("Count (thousands)")
     data = [
         # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
-        [752261, 256898, 61251],  # Vertices
-        [3829346, 778624, 222928],  # Edges
+        [555867, 132543, 42907],  # Vertices
+        [3017313, 504138, 172136],  # Edges
     ]
     x = np.arange(3)
     ax.bar(x + 0.00, [d / 1000 for d in data[0]], width=0.25, label="Vertices")
