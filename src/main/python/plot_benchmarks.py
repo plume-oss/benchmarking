@@ -39,7 +39,7 @@ def stdd(rs: List[Benchmark], phase: str):
 
 
 def ns_to_s(ns):
-    return ns * 10e-9
+    return ns * 1e-9
 
 
 def update_build_perf(f: str, db: str, rs: List[Benchmark]):
@@ -77,7 +77,7 @@ def avg_db_build_update(rs: List[Benchmark]):
     for db in dbs:
         for f in fs:
             avg_build[(f, db)] = np.mean(
-                [ns_to_s(r.total_time()) for r in rs if r.file_name == f and r.database == db and "BUILD" in r.phase])
+                [ns_to_s(r.total_time()) for r in rs if r.file_name == f and r.database == db and ("BUILD" in r.phase or "INIT" in r.phase)])
             avg_update[(f, db)] = np.mean(
                 [ns_to_s(r.total_time()) for r in rs if r.file_name == f and r.database == db and "UPDATE" in r.phase])
 
@@ -96,8 +96,7 @@ def avg_db_build_update(rs: List[Benchmark]):
         fig, ax = plt.subplots()
         ax.set_title("Average {} Time Per Database".format(type))
         ax.set_xlabel("Application/Library")
-        ax.set_ylabel("Time Elapsed (logarithmic)")
-        ax.set_yscale('log')
+        ax.set_ylabel("Time Elapsed (seconds)")
 
         x = np.arange(3)
         i = 0.00
@@ -121,51 +120,69 @@ def avg_db_build_update(rs: List[Benchmark]):
 
 
 def program_sizes():
-    fig, ax = plt.subplots()
-    ax.set_title("Initial Program Code Statistics")
-    ax.set_xlabel("Codebase")
-    ax.set_ylabel("Count")
-    data = [
+    def plot_program_sizes(data, lbl):
+        fig, ax = plt.subplots()
+        ax.set_title("Initial Commit {} Code Statistics".format(lbl))
+        ax.set_xlabel("GitHub Repository")
+        ax.set_ylabel("Count")
+        x = np.arange(3)
+        ax.bar(x + 0.00, data[0], width=0.25, label="Classes")
+        ax.bar(x + 0.25, data[1], width=0.25, label="Methods")
+        ax.bar(x + 0.50, data[2], width=0.25, label="Fields")
+        plt.xticks([0.125, 1.125, 2.125],
+                   ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
+                   rotation=15)
+        for i, v in enumerate(data[0]):
+            ax.text(i - 0.1, v + 100, str(v))
+        for i, v in enumerate(data[1]):
+            ax.text(i + 0.12, v + 100, str(v))
+        for i, v in enumerate(data[2]):
+            ax.text(i + 0.40, v + 100, str(v))
+        plt.legend()
+        plt.ylim([0, max(data[1]) + 600])
+        fig.subplots_adjust(bottom=0.28)
+        fig.savefig("./results/jar_{}_code_stats.pdf".format(lbl.lower().replace(" ", "_")))
+
+    app_data = [
         # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
         [701, 119, 40],  # Application Classes
-        [161, 133, 140],  # Library Classes
         [7839, 1020, 491],  # Application Methods
+        [2060, 519, 220]  # Application Fields
+    ]
+    lib_data = [
+        [161, 133, 140],  # Library Classes
         [18106 - 7839, 9445 - 1020, 2680 - 491],  # Library Methods
-        [2060, 519, 220],  # Application Fields
         [2813, 2150, 363]  # Library Fields
     ]
-    x = np.arange(3)
-    ax.bar(x + 0.00, data[0], width=0.25, label="Application Classes")
-    ax.bar(x + 0.00, data[2], width=0.25, label="Application Methods")
-    ax.bar(x + 0.00, data[4], width=0.25, label="Application Fields")
-    ax.bar(x + 0.25, data[1], width=0.25, label="Library Classes")
-    ax.bar(x + 0.25, data[3], width=0.25, label="Library Methods")
-    ax.bar(x + 0.25, data[5], width=0.25, label="Library Fields")
-    plt.xticks([0.125, 1.125, 2.125],
-               ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
-               rotation=15)
-    plt.legend()
-    fig.subplots_adjust(bottom=0.28)
-    fig.savefig("./results/jar_code_stats.pdf")
+
+    plot_program_sizes(app_data, "Project")
+    plot_program_sizes(lib_data, "External Library")
 
 
 def graph_sizes():
     fig, ax = plt.subplots()
-    ax.set_title("Initial Program Graph Statistics")
-    ax.set_xlabel("Codebase")
-    ax.set_ylabel("Count (thousands)")
+    ax.set_title("Initial Commit Graph Statistics")
+    ax.set_xlabel("GitHub Repository")
+    ax.set_ylabel("Count")
     data = [
         # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
         [555867, 132543, 42907],  # Vertices
         [3017313, 504138, 172136],  # Edges
     ]
     x = np.arange(3)
-    ax.bar(x + 0.00, [d / 1000 for d in data[0]], width=0.25, label="Vertices")
-    ax.bar(x + 0.25, [d / 1000 for d in data[1]], width=0.25, label="Edges")
+    vs = [d for d in data[0]]
+    es = [d for d in data[1]]
+    ax.bar(x + 0.00, vs, width=0.25, label="Vertices")
+    ax.bar(x + 0.25, es, width=0.25, label="Edges")
+    for i, v in enumerate(vs):
+        ax.text(i - 0.15, v + 100000, str(v))
+    for i, v in enumerate(es):
+        ax.text(i + 0.10, v + 100000, str(v))
     plt.xticks([0.25, 1.25, 2.25],
                ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
                rotation=15)
     plt.legend()
+    plt.ylim([0, max(es) + 300000])
     fig.subplots_adjust(bottom=0.28)
     fig.savefig("./results/jar_graph_stats.pdf")
 
