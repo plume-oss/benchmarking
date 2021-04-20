@@ -57,12 +57,18 @@ def update_build_perf(f: str, db: str, rs: List[Benchmark]):
     u2, du2 = avg(rs, "UPDATE2"), stdd(rs, "UPDATE2")
     u3, du3 = avg(rs, "UPDATE3"), stdd(rs, "UPDATE3")
     plt.xticks([])
+    bs = [ns_to_s(t) for t in [b0, b1, b2, b3]]
+    us = [ns_to_s(t) for t in [u0, u1, u2, u3]]
     ax.errorbar([0], [ns_to_s(t) for t in [init]], [ns_to_s(t) for t in [init_std]], color='g', marker='o',
                 linestyle='None', label="Initial Build")
-    ax.errorbar([1, 2, 3, 4], [ns_to_s(t) for t in [b0, b1, b2, b3]], [ns_to_s(t) for t in [db0, db1, db2, db3]],
+    ax.errorbar([1, 2, 3, 4], bs, [ns_to_s(t) for t in [db0, db1, db2, db3]],
                 color='r', marker='x', linestyle='None', label="Full Build")
-    ax.errorbar([1, 2, 3, 4], [ns_to_s(t) for t in [u0, u1, u2, u3]], [ns_to_s(t) for t in [du0, du1, du2, du3]],
+    ax.errorbar([1, 2, 3, 4], us, [ns_to_s(t) for t in [du0, du1, du2, du3]],
                 color='b', marker='x', linestyle='None', label="Incremental Update")
+    for i, v in enumerate([ns_to_s(init)] + bs):
+        ax.text(i + 0.05, v, str("{:.2f}s".format(v)))
+    for i, v in enumerate(us):
+        ax.text(i + 1.05, v, str("{:.2f}s".format(v)))
     plt.legend()
     fig.savefig("./results/build_updates_{}_{}.pdf".format(f.split("/")[-1], db))
 
