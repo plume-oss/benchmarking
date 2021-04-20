@@ -4,6 +4,11 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
+lbl_font = {
+    'family' : 'DejaVu Sans',
+    'weight' : 'normal',
+    'size'   : 8
+}
 
 class Benchmark:
     def __init__(self, plume_version, file_name, phase, database, compiling_and_unpacking, soot, program_structure,
@@ -38,6 +43,31 @@ def stdd(rs: List[Benchmark], phase: str):
     return np.std([r.total_time() for r in rs if r.phase == phase])
 
 
+def str_to_ns(ns, unit='s'):
+    nanos = np.timedelta64(ns, 'ns')
+    unit_time = np.timedelta64(1, unit)
+    return nanos / unit_time
+
+intervals = (
+    ('h', 3.6e+6),
+    ('m', 60 * 1000),
+    ('s', 1000),
+    ('ms', 1),
+    )
+
+def display_time(ms, granularity=2):
+    result = []
+
+    for name, count in intervals:
+        value = ms // count
+        if value:
+            ms -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{:.0f}{}".format(value, name))
+    return ''.join(result[:granularity])
+
+
 def ns_to_s(ns):
     return ns * 1e-9
 
@@ -45,7 +75,7 @@ def ns_to_s(ns):
 def update_build_perf(f: str, db: str, rs: List[Benchmark]):
     fig, ax = plt.subplots()
     ax.set_title("{}: {}".format(db, f))
-    ax.set_xlabel("Code Increments")
+    # ax.set_xlabel("Code Increments")
     ax.set_ylabel("Time Elapsed (s)")
     init, init_std = avg(rs, "INITIAL"), stdd(rs, "INITIAL")
     b0, db0 = avg(rs, "BUILD0"), stdd(rs, "BUILD0")
@@ -56,7 +86,7 @@ def update_build_perf(f: str, db: str, rs: List[Benchmark]):
     u1, du1 = avg(rs, "UPDATE1"), stdd(rs, "UPDATE1")
     u2, du2 = avg(rs, "UPDATE2"), stdd(rs, "UPDATE2")
     u3, du3 = avg(rs, "UPDATE3"), stdd(rs, "UPDATE3")
-    plt.xticks([])
+    plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
     bs = [ns_to_s(t) for t in [b0, b1, b2, b3]]
     us = [ns_to_s(t) for t in [u0, u1, u2, u3]]
     ax.errorbar([0], [ns_to_s(t) for t in [init]], [ns_to_s(t) for t in [init_std]], color='g', marker='o',
@@ -65,11 +95,13 @@ def update_build_perf(f: str, db: str, rs: List[Benchmark]):
                 color='r', marker='x', linestyle='None', label="Full Build")
     ax.errorbar([1, 2, 3, 4], us, [ns_to_s(t) for t in [du0, du1, du2, du3]],
                 color='b', marker='x', linestyle='None', label="Incremental Update")
-    for i, v in enumerate([ns_to_s(init)] + bs):
-        ax.text(i + 0.05, v, str("{:.2f}s".format(v)))
-    for i, v in enumerate(us):
-        ax.text(i + 1.05, v, str("{:.2f}s".format(v)))
-    plt.legend()
+    for i, v in enumerate([ns_to_s(t) for t in [init, b0, b1, b2, b3]]):
+        ax.text(i + 0.05, v, display_time(v * 1000))
+    for i, v in enumerate([ns_to_s(t) for t in [u0, u1, u2, u3]]):
+        ax.text(i + 1.05, v, display_time(v * 1000))
+    plt.legend(loc="lower left", ncol=3, bbox_to_anchor=(0., -.3, 1., .102), mode="expand")
+    fig.set_size_inches(9, 3.5)
+    fig.subplots_adjust(bottom=0.2)
     fig.savefig("./results/build_updates_{}_{}.pdf".format(f.split("/")[-1], db))
 
 
@@ -83,9 +115,9 @@ def avg_db_build_update(rs: List[Benchmark]):
     for db in dbs:
         for f in fs:
             avg_build[(f, db)] = np.mean(
-                [ns_to_s(r.total_time()) for r in rs if r.file_name == f and r.database == db and ("BUILD" in r.phase or "INIT" in r.phase)])
+                [str_to_ns(r.total_time()) for r in rs if r.file_name == f and r.database == db and ("BUILD" in r.phase or "INIT" in r.phase)])
             avg_update[(f, db)] = np.mean(
-                [ns_to_s(r.total_time()) for r in rs if r.file_name == f and r.database == db and "UPDATE" in r.phase])
+                [str_to_ns(r.total_time()) for r in rs if r.file_name == f and r.database == db and "UPDATE" in r.phase])
 
     def plot_as_bars(xs: dict, type: str):
         data = {}
@@ -101,20 +133,26 @@ def avg_db_build_update(rs: List[Benchmark]):
 
         fig, ax = plt.subplots()
         ax.set_title("Average {} Time Per Database".format(type))
-        ax.set_xlabel("Application/Library")
-        ax.set_ylabel("Time Elapsed (seconds)")
+        ax.set_xlabel("Project")
+        ax.set_ylabel("Time Elapsed (Logarithmic)")
 
         x = np.arange(3)
         i = 0.00
+        max_avg = 0
         for (db, avg) in data.items():
-            ax.bar(x + i, avg, width=0.25, label=db)
-            i += 0.25
-
+            inc = 1.0 / len(data.items()) - 0.025
+            ax.bar(x + i, avg, width=inc, label=db)
+            for j, v in enumerate(avg):
+                ax.text(j + i - 0.125, v, display_time(v * 1000), font=lbl_font)
+            if max(avg) > max_avg:
+                max_avg = max(avg)
+            i += inc
+        plt.yscale('log')
+        plt.xticks([0.345, 1.345, 2.345],
+                   ['jackson-databind', 'gremlin-driver', 'neo4j'])
+        ymin, ymax = ax.get_ylim()
+        plt.ylim([ymin, ymax + ymax * 0.10])
         plt.legend()
-        fig.subplots_adjust(bottom=0.28)
-        plt.xticks([0.25, 1.25, 2.25],
-                   ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
-                   rotation=15)
         fig.savefig("./results/db_{}_stats.pdf".format(type.lower()))
 
     plot_as_bars(avg_update, "Update")
@@ -136,8 +174,7 @@ def program_sizes():
         ax.bar(x + 0.25, data[1], width=0.25, label="Methods")
         ax.bar(x + 0.50, data[2], width=0.25, label="Fields")
         plt.xticks([0.125, 1.125, 2.125],
-                   ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
-                   rotation=15)
+                   ['jackson-databind', 'gremlin-driver', 'neo4j'])
         for i, v in enumerate(data[0]):
             ax.text(i - 0.1, v + 100, str(v))
         for i, v in enumerate(data[1]):
@@ -189,7 +226,6 @@ def graph_sizes():
                rotation=15)
     plt.legend()
     plt.ylim([0, max(es) + 300000])
-    fig.subplots_adjust(bottom=0.28)
     fig.savefig("./results/jar_graph_stats.pdf")
 
 
