@@ -23,7 +23,7 @@ object Main extends App {
   val PROGRAMS_PATH = "/programs"
   val DOCKER_PATH = "/docker"
   val FILE_PREF = s"${ResourceCompilationUtil.INSTANCE.getTEMP_DIR}${nsc.io.File.separator}cpg-benchmark"
-
+  io.github.plume.oss.util.PlumeKeyProvider.INSTANCE.setKeyPoolSize(4000000)
   val config: util.LinkedHashMap[String, Any] = parseConfig(CONFIG_PATH)
   val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
   PrettyPrinter.setLogger(logger)
