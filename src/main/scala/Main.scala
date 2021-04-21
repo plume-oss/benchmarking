@@ -1,11 +1,11 @@
 package io.github.plume.oss
 
 import drivers._
-import metrics.{CacheMetrics, ExtractorTimeKey, PlumeTimer}
-import store.LocalCache
-import util.ExtractorConst
-
+import metrics.{CacheMetrics, DriverTimeKey, ExtractorTimeKey, PlumeTimer}
 import options.CacheOptions
+import store.LocalCache
+import util.{ExtractorConst, ResourceCompilationUtil}
+
 import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
@@ -13,6 +13,7 @@ import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.time.LocalDateTime
 import java.util
 import scala.jdk.CollectionConverters
+import scala.tools.nsc
 import scala.util.Using
 
 object Main extends App {
@@ -21,6 +22,7 @@ object Main extends App {
   val CONFIG_PATH = "/config.yaml"
   val PROGRAMS_PATH = "/programs"
   val DOCKER_PATH = "/docker"
+  val FILE_PREF = s"${ResourceCompilationUtil.INSTANCE.getTEMP_DIR}${nsc.io.File.separator}cpg-benchmark"
 
   val config: util.LinkedHashMap[String, Any] = parseConfig(CONFIG_PATH)
   val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
@@ -65,18 +67,36 @@ object Main extends App {
   }
 
   def runExperiment(d: IDriver, p: Program, dbName: String): Unit = {
-    d.clearGraph()
-    // Run first build
-    captureBenchmarkResult(runBenchmark(p.jars.head, p.name, "INITIAL", dbName, d))
-    // Run updates
-    if (experiment.runUpdates) {
+    // Run live updates
+    if (experiment.runLiveUpdates) {
+      d.clearGraph()
+      runInitBuild(d, p, dbName)
       p.jars.drop(1).zipWithIndex.foreach {
         case (jar, i) =>
           captureBenchmarkResult(runBenchmark(jar, p.name, s"UPDATE$i", dbName, d))
       }
     }
+    // Run disconnected updates
+    if (experiment.runDisconnectedUpdates) {
+      d.clearGraph()
+      clearSerializedFiles()
+      runInitBuild(d, p, dbName)
+      closeConnection(d)
+      p.jars.drop(1).zipWithIndex.foreach {
+        case (jar, i) =>
+          LocalCache.INSTANCE.clear()
+          openConnection(d)
+          captureBenchmarkResult(runBenchmark(jar, p.name, s"DISCUPT$i", dbName, d))
+          closeConnection(d)
+      }
+      handleConnection(d)
+      clearSerializedFiles()
+    }
     // Run full builds
     if (experiment.runFullBuilds) {
+      LocalCache.INSTANCE.clear()
+      d.clearGraph()
+      runInitBuild(d, p, dbName)
       p.jars.drop(1).zipWithIndex.foreach {
         case (jar, i) =>
           LocalCache.INSTANCE.clear()
@@ -84,6 +104,11 @@ object Main extends App {
           captureBenchmarkResult(runBenchmark(jar, p.name, s"BUILD$i", dbName, d))
       }
     }
+  }
+
+  def runInitBuild(d: IDriver, p: Program, dbName: String): Unit = {
+    // Run first build
+    captureBenchmarkResult(runBenchmark(p.jars.head, p.name, "INITIAL", dbName, d))
   }
 
   def handleSchema(driver: IDriver): Unit =
@@ -102,23 +127,80 @@ object Main extends App {
       case _                   =>
     }
 
+  def clearSerializedFiles(): Unit = {
+    val kryo = new JavaFile(FILE_PREF + ".kryo")
+    val bin = new JavaFile(FILE_PREF + ".bin")
+    try {
+      kryo.delete()
+    } catch {
+      case _: Exception =>
+    }
+    try {
+      bin.delete()
+    } catch {
+      case _: Exception =>
+    }
+  }
+
+  def openConnection(driver: IDriver): Unit =
+    driver match {
+      case w: TinkerGraphDriver =>
+        if (w.getConnected) w.close()
+        w.connect()
+        try {
+          w.importGraph(FILE_PREF + ".kryo")
+        } catch {
+          case _: Exception => logger.debug("TinkerGraph export does not exist yet.")
+        }
+      case x: GremlinDriver =>
+        if (x.getConnected) x.close()
+        x.connect()
+      case y: OverflowDbDriver =>
+        if (y.getConnected$plume) y.close()
+        y.storageLocation(FILE_PREF + ".bin")
+        y.connect()
+      case z: Neo4jDriver =>
+        if (z.getConnected) z.close()
+        z.connect()
+      case _ =>
+    }
+
+  def closeConnection(driver: IDriver): Unit =
+    driver match {
+      case w: TinkerGraphDriver =>
+        try {
+          w.exportGraph(FILE_PREF + ".kryo")
+        } catch {
+          case _: Exception => logger.debug("TinkerGraph export does not exist yet.")
+        } finally {
+          w.close()
+        }
+      case x: GremlinDriver    => x.close()
+      case y: OverflowDbDriver => y.close()
+      case z: Neo4jDriver      => z.close()
+      case _                   =>
+    }
+
   def runBenchmark(f: JavaFile, name: String, phase: String, dbName: String, driver: IDriver): BenchmarkResult = {
     PrettyPrinter.announceBenchmark(name, f.getName.stripSuffix(".jar"))
     new Extractor(driver).load(f).project()
-    val times = PlumeTimer.INSTANCE.getTimes
+    val extractorTimes = PlumeTimer.INSTANCE.getExtractorTimes
+    val driverTimes = PlumeTimer.INSTANCE.getDriverTimes
     val b = BenchmarkResult(
       fileName = name,
       phase = phase,
       database = dbName,
-      compilingAndUnpacking = times.get(ExtractorTimeKey.COMPILING_AND_UNPACKING),
-      soot = times.get(ExtractorTimeKey.SOOT),
-      programStructureBuilding = times.get(ExtractorTimeKey.PROGRAM_STRUCTURE_BUILDING),
-      baseCpgBuilding = times.get(ExtractorTimeKey.BASE_CPG_BUILDING),
-      databaseWrite = times.get(ExtractorTimeKey.DATABASE_WRITE),
-      databaseRead = times.get(ExtractorTimeKey.DATABASE_READ),
-      dataFlowPasses = times.get(ExtractorTimeKey.DATA_FLOW_PASS),
+      compilingAndUnpacking = extractorTimes.get(ExtractorTimeKey.COMPILING_AND_UNPACKING),
+      soot = extractorTimes.get(ExtractorTimeKey.SOOT),
+      programStructureBuilding = extractorTimes.get(ExtractorTimeKey.PROGRAM_STRUCTURE_BUILDING),
+      baseCpgBuilding = extractorTimes.get(ExtractorTimeKey.BASE_CPG_BUILDING),
+      databaseWrite = driverTimes.get(DriverTimeKey.DATABASE_WRITE),
+      databaseRead = driverTimes.get(DriverTimeKey.DATABASE_READ),
+      dataFlowPasses = extractorTimes.get(ExtractorTimeKey.DATA_FLOW_PASS),
       cacheHits = CacheMetrics.INSTANCE.getHits,
-      cacheMisses = CacheMetrics.INSTANCE.getMisses
+      cacheMisses = CacheMetrics.INSTANCE.getMisses,
+      connectDeserialize = driverTimes.get(DriverTimeKey.CONNECT_DESERIALIZE),
+      disconnectSerialize = driverTimes.get(DriverTimeKey.DISCONNECT_SERIALIZE)
     )
     PlumeTimer.INSTANCE.reset()
     CacheMetrics.INSTANCE.reset()
@@ -144,7 +226,12 @@ object Main extends App {
             "BASE_CPG_BUILDING," +
             "DATABASE_WRITE," +
             "DATABASE_READ," +
-            "DATA_FLOW_PASS\n"
+            "DATA_FLOW_PASS," +
+            "CACHE_HITS," +
+            "CACHE_MISSES," +
+            "CONNECT_DESERIALIZE," +
+            "DISCONNECT_SERIALIZE" +
+            "\n"
         )
       }
     }
@@ -161,7 +248,11 @@ object Main extends App {
           s"${b.baseCpgBuilding}," +
           s"${b.databaseWrite}," +
           s"${b.databaseRead}," +
-          s"${b.dataFlowPasses}\n"
+          s"${b.cacheHits}" +
+          s"${b.cacheMisses}," +
+          s"${b.dataFlowPasses}," +
+          s"${b.connectDeserialize}," +
+          s"${b.disconnectSerialize}\n"
       )
     }
   }
@@ -277,10 +368,15 @@ object Main extends App {
 
   def getExperiment(config: util.LinkedHashMap[String, Any]): Experiment =
     Experiment(
-      runUpdates = config
+      runLiveUpdates = config
         .get("experiment")
         .asInstanceOf[util.LinkedHashMap[String, Any]]
         .getOrDefault("run-updates", false)
+        .asInstanceOf[Boolean],
+      runDisconnectedUpdates = config
+        .get("experiment")
+        .asInstanceOf[util.LinkedHashMap[String, Any]]
+        .getOrDefault("run-disconnected-updates", false)
         .asInstanceOf[Boolean],
       runFullBuilds = config
         .get("experiment")

@@ -2,7 +2,7 @@ package io.github.plume.oss
 
 import java.io.{File => JavaFile}
 
-case class Experiment(runUpdates: Boolean, runFullBuilds: Boolean)
+case class Experiment(runLiveUpdates: Boolean, runDisconnectedUpdates: Boolean, runFullBuilds: Boolean)
 
 case class Program(name: String, jars: List[JavaFile])
 
@@ -18,7 +18,9 @@ case class BenchmarkResult(
     databaseRead: Long,
     dataFlowPasses: Long,
     cacheHits: Long,
-    cacheMisses: Long
+    cacheMisses: Long,
+    connectDeserialize: Long,
+    disconnectSerialize: Long
 ) {
   override def toString: String =
     s"BenchmarkResult { " +
@@ -32,6 +34,8 @@ case class BenchmarkResult(
       s"databaseRead=${databaseRead * Math.pow(10, -9)}s, " +
       s"dataFlowPasses=${dataFlowPasses * Math.pow(10, -9)}s " +
       s"cacheHits=${cacheHits}s, " +
-      s"cacheMisses=${cacheMisses}s " +
+      s"cacheMisses=${cacheMisses}s, " +
+      s"connectDeserialize=${connectDeserialize}s, " +
+      s"disconnectSerialize=${disconnectSerialize}s " +
       "}"
 }

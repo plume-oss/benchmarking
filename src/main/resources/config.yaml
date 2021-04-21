@@ -3,6 +3,8 @@ cache-size: 100000
 experiment:
   # Will do an initial build and keep cache and not clear graph
   run-updates: true
+  # Will do an initial build and remove cache/export graph/reconnect etc.
+  run-disconnected-updates: true
   # Will do an initial build and discard cache and clear graph between builds
   run-full-builds: true
 
