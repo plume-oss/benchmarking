@@ -248,9 +248,9 @@ object Main extends App {
           s"${b.baseCpgBuilding}," +
           s"${b.databaseWrite}," +
           s"${b.databaseRead}," +
-          s"${b.cacheHits}" +
-          s"${b.cacheMisses}," +
           s"${b.dataFlowPasses}," +
+          s"${b.cacheHits}," +
+          s"${b.cacheMisses}," +
           s"${b.connectDeserialize}," +
           s"${b.disconnectSerialize}\n"
       )

@@ -14,7 +14,8 @@ lbl_font = {
 
 class Benchmark:
     def __init__(self, plume_version, file_name, phase, database, compiling_and_unpacking, soot, program_structure,
-                 base_cpg, db_read, db_write, df_pass):
+                 base_cpg, db_read, db_write, df_pass, cache_hits, cache_misses, connect_deserialize,
+                 disconnect_serialize):
         self.plume_version = plume_version
         self.file_name = file_name
         self.phase = phase
@@ -26,6 +27,10 @@ class Benchmark:
         self.db_read = db_read
         self.db_write = db_write
         self.df_pass = df_pass
+        self.cache_hits = cache_hits
+        self.cache_misses = cache_misses
+        self.connect_deserialize = connect_deserialize
+        self.disconnect_serialize = disconnect_serialize
 
     def total_time(self):
         return self.compiling_and_unpacking + self.soot + self.program_structure + self.base_cpg + self.df_pass
@@ -76,11 +81,8 @@ def ns_to_s(ns):
     return ns * 1e-9
 
 
-def update_build_perf(f: str, db: str, rs: List[Benchmark]):
-    fig, ax = plt.subplots()
-    ax.set_title("{}: {}".format(db, f))
-    # ax.set_xlabel("Code Increments")
-    ax.set_ylabel("Time Elapsed (s)")
+def update_build_perf(db: str, ax, rs: List[Benchmark]):
+    ax.set_title(db)
     init, init_std = avg(rs, "INITIAL"), stdd(rs, "INITIAL")
     b0, db0 = avg(rs, "BUILD0"), stdd(rs, "BUILD0")
     b1, db1 = avg(rs, "BUILD1"), stdd(rs, "BUILD1")
@@ -90,31 +92,36 @@ def update_build_perf(f: str, db: str, rs: List[Benchmark]):
     u1, du1 = avg(rs, "UPDATE1"), stdd(rs, "UPDATE1")
     u2, du2 = avg(rs, "UPDATE2"), stdd(rs, "UPDATE2")
     u3, du3 = avg(rs, "UPDATE3"), stdd(rs, "UPDATE3")
-    plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
+    d0, dd0 = avg(rs, "DISCUPT0"), stdd(rs, "DISCUPT0")
+    d1, dd1 = avg(rs, "DISCUPT1"), stdd(rs, "DISCUPT1")
+    d2, dd2 = avg(rs, "DISCUPT2"), stdd(rs, "DISCUPT2")
+    d3, dd3 = avg(rs, "DISCUPT3"), stdd(rs, "DISCUPT3")
+
     bs = [ns_to_s(t) for t in [b0, b1, b2, b3]]
     us = [ns_to_s(t) for t in [u0, u1, u2, u3]]
+    ds = [ns_to_s(t) for t in [d0, d1, d2, d3]]
     ax.errorbar([0], [ns_to_s(t) for t in [init]], [ns_to_s(t) for t in [init_std]], color='g', marker='o',
                 linestyle='None', label="Initial Build")
     ax.errorbar([1, 2, 3, 4], bs, [ns_to_s(t) for t in [db0, db1, db2, db3]],
                 color='r', marker='x', linestyle='None', label="Full Build")
     ax.errorbar([1, 2, 3, 4], us, [ns_to_s(t) for t in [du0, du1, du2, du3]],
-                color='b', marker='x', linestyle='None', label="Incremental Update")
+                color='b', marker='x', linestyle='None', label="Online Update")
+    ax.errorbar([1, 2, 3, 4], ds, [ns_to_s(t) for t in [dd0, dd1, dd2, dd3]],
+                color='m', marker='x', linestyle='None', label="Disconnected Update")
     for i, v in enumerate([ns_to_s(t) for t in [init, b0, b1, b2, b3]]):
         ax.text(i + 0.05, v, display_time(v * 1000))
     for i, v in enumerate([ns_to_s(t) for t in [u0, u1, u2, u3]]):
         ax.text(i + 1.05, v, display_time(v * 1000))
-    plt.legend(loc="lower left", ncol=3, bbox_to_anchor=(0., -.3, 1., .102), mode="expand")
-    fig.set_size_inches(9, 3.5)
-    fig.subplots_adjust(bottom=0.2)
-    fig.savefig("./results/build_updates_{}_{}.pdf".format(f.split("/")[-1], db))
+    for i, v in enumerate([ns_to_s(t) for t in [d0, d1, d2, d3]]):
+        ax.text(i + 1.05, v, display_time(v * 1000))
 
 
 def repo_commit_deltas():
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, sharey=True)
     fig.suptitle("Changes Since Last Commit Per Commit")
-    ax1.set_title("Class Changes per Project")
-    ax2.set_title("Method Changes per Project")
-    ax3.set_title("Field Changes per Project")
+    ax1.set_title("Class Changes Per Project")
+    ax2.set_title("Method Changes Per Project")
+    ax3.set_title("Field Changes Per Project")
 
     x = [0, 1, 2, 3]
     classes = [
@@ -160,6 +167,7 @@ def avg_db_build_update(rs: List[Benchmark]):
     # Map (File, Database) -> AVG
     avg_build = {}
     avg_update = {}
+    avg_disupdt = {}
     for db in dbs:
         for f in fs:
             avg_build[(f, db)] = np.mean(
@@ -168,6 +176,9 @@ def avg_db_build_update(rs: List[Benchmark]):
             avg_update[(f, db)] = np.mean(
                 [str_to_ns(r.total_time()) for r in rs if
                  r.file_name == f and r.database == db and "UPDATE" in r.phase])
+            avg_disupdt[(f, db)] = np.mean(
+                [str_to_ns(r.total_time()) for r in rs if
+                 r.file_name == f and r.database == db and "DISCUPT" in r.phase])
 
     def plot_as_bars(xs: dict, type: str):
         data = {}
@@ -205,7 +216,8 @@ def avg_db_build_update(rs: List[Benchmark]):
         plt.legend()
         fig.savefig("./results/db_{}_stats.pdf".format(type.lower()))
 
-    plot_as_bars(avg_update, "Update")
+    plot_as_bars(avg_update, "Online Update")
+    plot_as_bars(avg_disupdt, "Disconnected Update")
     plot_as_bars(avg_build, "Build")
 
 
@@ -294,10 +306,16 @@ with open('./results/result.csv') as csv_file:
             base_cpg=int(row["BASE_CPG_BUILDING"]),
             db_write=int(row["DATABASE_WRITE"]),
             db_read=int(row["DATABASE_READ"]),
-            df_pass=int(row["DATA_FLOW_PASS"])
+            df_pass=int(row["DATA_FLOW_PASS"]),
+            cache_hits=int(row["CACHE_HITS"]),
+            cache_misses=int(row["CACHE_MISSES"]),
+            connect_deserialize=int(row["CONNECT_DESERIALIZE"]),
+            disconnect_serialize=int(row["DISCONNECT_SERIALIZE"])
         ))
 
     results_per_db_jar = {}
+    fs = set([x.file_name for x in results])
+    dbs = set([x.database for x in results])
     for r in results:
         # Get (File, Database) -> [Results]
         if (r.file_name, r.database) not in results_per_db_jar.keys():
@@ -309,8 +327,19 @@ with open('./results/result.csv') as csv_file:
     graph_sizes()
     repo_commit_deltas()
     # Plot results
-    for ((f, db), r) in results_per_db_jar.items():
-        update_build_perf(f, db, r)
+    for f in fs:
+        fig, ax = plt.subplots(nrows=len(dbs), ncols=1, sharex=True, squeeze=False)
+        i = 0
+        for ((fname, db), r) in results_per_db_jar.items():
+            if f == fname:
+                update_build_perf(db, ax[i, 0], r)
+                i += 1
+        fig.subplots_adjust(bottom=0.2)
+        plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
+        fig.suptitle('Build and Update Results for {}'.format(f))
+        fig.text(0.04, 0.5, 'Time Elapsed (s)', va='center', rotation='vertical')
+        plt.legend(loc="lower left", ncol=4, bbox_to_anchor=(-.1, -.5, 1.2, .102), mode="expand")
+        fig.savefig("./results/build_updates_{}.pdf".format(f.split("/")[-1]))
 
     avg_db_build_update(results)
     plt.clf()
