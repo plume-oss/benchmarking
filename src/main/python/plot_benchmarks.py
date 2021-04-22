@@ -108,12 +108,14 @@ def update_build_perf(db: str, ax, rs: List[Benchmark]):
                 color='b', marker='x', linestyle='None', label="Online Update")
     ax.errorbar([1, 2, 3, 4], ds, [ns_to_s(t) for t in [dd0, dd1, dd2, dd3]],
                 color='m', marker='x', linestyle='None', label="Disconnected Update")
-    for i, v in enumerate([ns_to_s(t) for t in [init, b0, b1, b2, b3]]):
-        ax.text(i + 0.05, v, display_time(v * 1000))
+    # Add text
+    ax.text(0.05, ns_to_s(init), display_time(ns_to_s(init) * 1000), color="g")
+    for i, v in enumerate([ns_to_s(t) for t in [b0, b1, b2, b3]]):
+        ax.text(i + 1.05, v, display_time(v * 1000), color="r")
     for i, v in enumerate([ns_to_s(t) for t in [u0, u1, u2, u3]]):
-        ax.text(i + 1.05, v, display_time(v * 1000))
+        ax.text(i + 1.05, v, display_time(v * 1000), color="b")
     for i, v in enumerate([ns_to_s(t) for t in [d0, d1, d2, d3]]):
-        ax.text(i + 1.05, v, display_time(v * 1000))
+        ax.text(i + .55, v, display_time(v * 1000), color="m")
 
 
 def repo_commit_deltas():
@@ -338,7 +340,10 @@ with open('./results/result.csv') as csv_file:
         plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
         fig.suptitle('Build and Update Results for {}'.format(f))
         fig.text(0.04, 0.5, 'Time Elapsed (s)', va='center', rotation='vertical')
-        plt.legend(loc="lower left", ncol=4, bbox_to_anchor=(-.1, -.5, 1.2, .102), mode="expand")
+        plt.legend(loc="lower center", ncol=4, bbox_to_anchor=(-.05, -.9, 1.1, .102), mode="expand")
+        fig.tight_layout(pad=1.0)
+        fig.set_size_inches(9, 8)
+        fig.subplots_adjust(bottom=0.2)
         fig.savefig("./results/build_updates_{}.pdf".format(f.split("/")[-1]))
 
     avg_db_build_update(results)
