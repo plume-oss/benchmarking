@@ -3,12 +3,14 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 lbl_font = {
-    'family' : 'DejaVu Sans',
-    'weight' : 'normal',
-    'size'   : 8
+    'family': 'DejaVu Sans',
+    'weight': 'normal',
+    'size': 8
 }
+
 
 class Benchmark:
     def __init__(self, plume_version, file_name, phase, database, compiling_and_unpacking, soot, program_structure,
@@ -48,12 +50,14 @@ def str_to_ns(ns, unit='s'):
     unit_time = np.timedelta64(1, unit)
     return nanos / unit_time
 
+
 intervals = (
     ('h', 3.6e+6),
     ('m', 60 * 1000),
     ('s', 1000),
     ('ms', 1),
-    )
+)
+
 
 def display_time(ms, granularity=2):
     result = []
@@ -105,6 +109,50 @@ def update_build_perf(f: str, db: str, rs: List[Benchmark]):
     fig.savefig("./results/build_updates_{}_{}.pdf".format(f.split("/")[-1], db))
 
 
+def repo_commit_deltas():
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, sharey=True)
+    fig.suptitle("Changes Since Last Commit Per Commit")
+    ax1.set_title("Class Changes per Project")
+    ax2.set_title("Method Changes per Project")
+    ax3.set_title("Field Changes per Project")
+
+    x = [0, 1, 2, 3]
+    classes = [
+        [7, 8, 9, 13],  # Jackson
+        [18, 32, 120, 34],  # Gremlin
+        [3, 4, 11, 12]  # Neo4j
+    ]
+    methods = [
+        [3, 1, 1, 10],  # Jackson
+        [139, 29, 8, 11],  # Gremlin
+        [4, 4, 22, 8],  # Neo4j
+    ]
+    fields = [
+        [46, 49, 70, 98],  # Jackson
+        [123, 191, 191, 197],  # Gremlin
+        [13, 21, 108, 121],  # Neo4j
+    ]
+    plt.xticks(x, ["Commit 1", "Commit 2", "Commit 3", "Commit 4"])
+    markers = ['o', 'x', 'v']
+    projects = {'Jackson Databind': 'b', 'Gremlin Driver': 'g', 'Neo4j': 'r'}
+
+    i = 0
+    for p, col in projects.items():
+        ax1.scatter(x, classes[i], color=col, marker=markers[0])
+        ax2.scatter(x, methods[i], color=col, marker=markers[1])
+        ax3.scatter(x, fields[i], color=col, marker=markers[2])
+        i += 1
+
+    custom_lines = [Line2D([0], [0], color=projects['Jackson Databind'], lw=4, label='Jackson Databind'),
+                    Line2D([0], [0], color=projects['Gremlin Driver'], lw=4, label='Gremlin Driver'),
+                    Line2D([0], [0], color=projects['Neo4j'], lw=4, label='Neo4j')]
+    plt.legend(handles=custom_lines)
+    fig.set_size_inches(9, 6)
+    fig.text(0.5, 0.04, 'Commit', ha='center')
+    fig.text(0.04, 0.5, 'Number of Changes Since Last Commit', va='center', rotation='vertical')
+    fig.savefig("./results/project_deltas.pdf")
+
+
 def avg_db_build_update(rs: List[Benchmark]):
     dbs = set([r.database for r in rs])
     fs = set([r.file_name for r in rs])
@@ -115,9 +163,11 @@ def avg_db_build_update(rs: List[Benchmark]):
     for db in dbs:
         for f in fs:
             avg_build[(f, db)] = np.mean(
-                [str_to_ns(r.total_time()) for r in rs if r.file_name == f and r.database == db and ("BUILD" in r.phase or "INIT" in r.phase)])
+                [str_to_ns(r.total_time()) for r in rs if
+                 r.file_name == f and r.database == db and ("BUILD" in r.phase or "INIT" in r.phase)])
             avg_update[(f, db)] = np.mean(
-                [str_to_ns(r.total_time()) for r in rs if r.file_name == f and r.database == db and "UPDATE" in r.phase])
+                [str_to_ns(r.total_time()) for r in rs if
+                 r.file_name == f and r.database == db and "UPDATE" in r.phase])
 
     def plot_as_bars(xs: dict, type: str):
         data = {}
@@ -257,6 +307,7 @@ with open('./results/result.csv') as csv_file:
     # Plot stats of programs
     program_sizes()
     graph_sizes()
+    repo_commit_deltas()
     # Plot results
     for ((f, db), r) in results_per_db_jar.items():
         update_build_perf(f, db, r)
