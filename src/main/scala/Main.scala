@@ -96,7 +96,6 @@ object Main extends App {
     if (experiment.runFullBuilds) {
       LocalCache.INSTANCE.clear()
       d.clearGraph()
-      runInitBuild(d, p, dbName)
       p.jars.drop(1).zipWithIndex.foreach {
         case (jar, i) =>
           LocalCache.INSTANCE.clear()
