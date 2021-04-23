@@ -78,6 +78,7 @@ object Main extends App {
     }
     // Run disconnected updates
     if (experiment.runDisconnectedUpdates) {
+      LocalCache.INSTANCE.clear()
       d.clearGraph()
       clearSerializedFiles()
       runInitBuild(d, p, dbName)
