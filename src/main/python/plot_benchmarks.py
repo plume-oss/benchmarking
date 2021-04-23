@@ -142,23 +142,25 @@ def repo_commit_deltas():
         [13, 21, 108, 121],  # Neo4j
     ]
     plt.xticks(x, ["Commit 1", "Commit 2", "Commit 3", "Commit 4"])
-    markers = ['o', 'x', 'v']
+    markers = ['o', 'o', 'o']
     projects = {'Jackson Databind': 'b', 'Gremlin Driver': 'g', 'Neo4j': 'r'}
 
     i = 0
     for p, col in projects.items():
-        ax1.scatter(x, classes[i], color=col, marker=markers[0])
-        ax2.scatter(x, methods[i], color=col, marker=markers[1])
-        ax3.scatter(x, fields[i], color=col, marker=markers[2])
+        ax1.plot(x, classes[i], color=col, marker=markers[0])
+        ax2.plot(x, methods[i], color=col, marker=markers[1])
+        ax3.plot(x, fields[i], color=col, marker=markers[2])
         i += 1
 
     custom_lines = [Line2D([0], [0], color=projects['Jackson Databind'], lw=4, label='Jackson Databind'),
                     Line2D([0], [0], color=projects['Gremlin Driver'], lw=4, label='Gremlin Driver'),
                     Line2D([0], [0], color=projects['Neo4j'], lw=4, label='Neo4j')]
-    plt.legend(handles=custom_lines)
+    # plt.legend(handles=custom_lines)
     fig.set_size_inches(9, 6)
-    fig.text(0.5, 0.04, 'Commit', ha='center')
+    fig.text(0.5, 0.1, 'Commit', ha='center')
     fig.text(0.04, 0.5, 'Number of Changes Since Last Commit', va='center', rotation='vertical')
+    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(-.05, -.8, 1.1, .01), mode="expand", handles=custom_lines)
+    fig.subplots_adjust(bottom=0.18)
     fig.savefig("./results/project_deltas.pdf")
 
 
