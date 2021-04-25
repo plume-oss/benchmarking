@@ -240,7 +240,7 @@ def program_sizes():
         ax.bar(x + 0.00, data[0], width=0.25, label="Classes")
         ax.bar(x + 0.25, data[1], width=0.25, label="Methods")
         ax.bar(x + 0.50, data[2], width=0.25, label="Fields")
-        plt.xticks([0.125, 1.125, 2.125],
+        plt.xticks([0.25, 1.25, 2.25],
                    ['jackson-databind', 'gremlin-driver', 'neo4j'])
         for i, v in enumerate(data[0]):
             ax.text(i - 0.1, v + 100, str(v))
@@ -288,9 +288,8 @@ def graph_sizes():
         ax.text(i - 0.15, v + 100000, str(v))
     for i, v in enumerate(es):
         ax.text(i + 0.10, v + 100000, str(v))
-    plt.xticks([0.25, 1.25, 2.25],
-               ['FasterXML/jackson-databind', 'apache/tinkerpop/gremlin-driver', 'neo4j/neo4j'],
-               rotation=15)
+    plt.xticks([0.125, 1.125, 2.125],
+               ['jackson-databind', 'gremlin-driver', 'neo4j'])
     plt.legend()
     plt.ylim([0, max(es) + 300000])
     fig.savefig("./results/jar_graph_stats.pdf")
