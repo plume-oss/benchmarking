@@ -213,12 +213,13 @@ def avg_db_build_update(rs: List[Benchmark]):
                 max_avg = max(avg)
             i += inc
         plt.yscale('log')
+        plt.yticks([])
         plt.xticks([0.345, 1.345, 2.345],
                    ['jackson-databind', 'gremlin-driver', 'neo4j'])
         ymin, ymax = ax.get_ylim()
         plt.ylim([ymin, ymax + ymax * 0.10])
         plt.legend()
-        fig.savefig("./results/db_{}_stats.pdf".format(type.lower()))
+        fig.savefig("./results/db_{}_stats.pdf".format(type.replace(' ', '_').lower()))
 
     plot_as_bars(avg_update, "Online Update")
     plot_as_bars(avg_disupdt, "Disconnected Update")
@@ -332,20 +333,19 @@ with open('./results/result.csv') as csv_file:
     repo_commit_deltas()
     # Plot results
     for f in fs:
-        fig, ax = plt.subplots(nrows=len(dbs), ncols=1, sharex=True, squeeze=False)
+        fig, ax = plt.subplots(nrows=len(dbs), ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * len(dbs)), tight_layout=False)
+        # fig.set_size_inches(9, 8)
+        # fig.subplots_adjust(bottom=0.2)
         i = 0
         for ((fname, db), r) in results_per_db_jar.items():
             if f == fname:
                 update_build_perf(db, ax[i, 0], r)
                 i += 1
-        fig.subplots_adjust(bottom=0.2)
+                
         plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
-        fig.suptitle('Build and Update Results for {}'.format(f))
+        fig.suptitle(f, y=.95)
         fig.text(0.04, 0.5, 'Time Elapsed (s)', va='center', rotation='vertical')
-        plt.legend(loc="lower center", ncol=4, bbox_to_anchor=(-.05, -.9, 1.1, .102), mode="expand")
-        fig.tight_layout(pad=1.0)
-        fig.set_size_inches(9, 8)
-        fig.subplots_adjust(bottom=0.2)
+        plt.legend(loc="lower center", ncol=4, bbox_to_anchor=(-.05, -0.45, 1.1, .102), mode="expand")
         fig.savefig("./results/build_updates_{}.pdf".format(f.split("/")[-1]))
 
     avg_db_build_update(results)
