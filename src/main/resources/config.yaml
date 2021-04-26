@@ -67,6 +67,25 @@ databases:
       - "elastic-plume-benchmark"
     remote_config: "src/main/resources/conf/remote-graph.properties"
   conf5:
+    db: "Neptune"
+    enabled: false
+    hostnames:
+      - "127.0.0.1"
+    port: 8182
+    key_cert_chain_file: "src/main/resources/conf/SFSRootCAG2.pem"
+    id_storage_location: "/tmp/plume/"
+  conf6:
+    db: "Neo4j"
+    enabled: false
+    use-docker: true
+    containers:
+      - "neo4j-plume-benchmark"
+    hostname: "127.0.0.1"
+    port: 7687
+    username: "neo4j"
+    password: "neo4j123"
+    database: "neo4j"
+  conf7:
     db: "TigerGraph"
     enabled: false
     use-docker: true
@@ -79,22 +98,3 @@ databases:
     gsqlPort: 14240
     secure: false
 #    auth_key: "secret"
-  conf6:
-    db: "Neptune"
-    enabled: false
-    hostnames:
-      - "127.0.0.1"
-    port: 8182
-    key_cert_chain_file: "src/main/resources/conf/SFSRootCAG2.pem"
-  conf7:
-    db: "Neo4j"
-    enabled: false
-    use-docker: true
-    containers:
-      - "neo4j-plume-benchmark"
-    hostname: "127.0.0.1"
-    port: 7687
-    username: "neo4j"
-    password: "neo4j123"
-    database: "neo4j"
-

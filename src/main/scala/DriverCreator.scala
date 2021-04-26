@@ -39,6 +39,7 @@ object DriverCreator {
       val driver = DriverFactory.invoke(GraphDatabase.NEPTUNE).asInstanceOf[NeptuneDriver]
         .keyCertChainFile(config.getOrDefault("key_cert_chain_file", "src/main/resources/conf/SFSRootCAG2.pem").asInstanceOf[String])
         .port(config.getOrDefault("port", 8182).asInstanceOf[Int])
+        .idStorageLocation(config.getOrDefault("id_storage_location", "/tmp/plume/").asInstanceOf[String])
       config.get("hostnames").asInstanceOf[java.util.ArrayList[String]].forEach { host => driver.addHostnames(host)}
       driver
     } else
