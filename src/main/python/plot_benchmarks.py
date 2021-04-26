@@ -250,7 +250,6 @@ def program_sizes():
             ax.text(i + 0.40, v + 100, str(v))
         plt.legend()
         plt.ylim([0, max(data[1]) + 600])
-        fig.subplots_adjust(bottom=0.28)
         fig.savefig("./results/jar_{}_code_stats.pdf".format(lbl.lower().replace(" ", "_")))
 
     app_data = [
