@@ -294,6 +294,61 @@ def graph_sizes():
     fig.savefig("./results/jar_graph_stats.pdf")
 
 
+def plot_build_updates(f):
+    fig, ax = plt.subplots(nrows=len(dbs), ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * len(dbs)),
+                           tight_layout=False)
+    i = 0
+    for ((fname, db), r) in results_per_db_jar.items():
+        if f == fname:
+            update_build_perf(db, ax[i, 0], r)
+            i += 1
+    plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
+    fig.suptitle(f, y=.95)
+    fig.text(0.04, 0.5, 'Time Elapsed (s)', va='center', rotation='vertical')
+    plt.legend(loc="lower center", ncol=4, bbox_to_anchor=(-.05, -0.45, 1.1, .102), mode="expand")
+    fig.savefig("./results/build_updates_{}.pdf".format(f.split("/")[-1]))
+
+
+def plot_cache_results(rs: List[Benchmark]):
+    phases = ["BUILD", "UPDATE", "DISCUPT"]
+    readable_phases = ["Full Build", "Online Update", "Disconnected Update"]
+
+    fs = set([x.file_name for x in rs])
+    # Plot per phase
+    fig, axes = plt.subplots(nrows=len(phases), ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * len(dbs)),
+                             tight_layout=False)
+    results_per_phase = {}
+    i = 0
+    x = np.arange(3)
+    for j, p in enumerate(phases):
+        results_per_phase[p] = {}
+
+        avg_cache_hits = []
+        avg_cache_misses = []
+        for f in fs:
+            results_per_phase[p][f] = {
+                "Cache Hits": np.average([r.cache_hits for r in rs if r.file_name == f and p in r.phase]),
+                "Cache Misses": np.average([r.cache_misses for r in rs if r.file_name == f and p in r.phase])
+            }
+            avg_cache_hits.append(np.average([r.cache_hits for r in rs if r.file_name == f and p in r.phase]))
+            avg_cache_misses.append(np.average([r.cache_misses for r in rs if r.file_name == f and p in r.phase]))
+        ax = axes[i, 0]
+        ax.set_title(readable_phases[j])
+
+        ax.bar(x + 0.00, avg_cache_hits, width=0.25, color='tab:blue')
+        ax.bar(x + 0.25, avg_cache_misses, width=0.25, color='tab:orange')
+        i += 1
+
+    plt.xticks([0.125, 1.125, 2.125], fs)
+    custom_lines = [Line2D([0], [0], color='tab:blue', lw=4, label='Cache Hits'),
+                    Line2D([0], [0], color='tab:orange', lw=4, label='Cache Misses')]
+    fig.suptitle("Cache Metrics Per Project", y=.95)
+    fig.text(0.04, 0.5, 'Cache Operation Count (%)', va='center', rotation='vertical')
+    fig.text(0.5, 0.06, 'GitHub Repository', ha='center')
+    plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.235, -0.4, .5, .102), mode="expand", handles=custom_lines)
+    fig.savefig("./results/cache_metrics.pdf")
+
+
 with open('./results/result.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
     results = []
@@ -331,20 +386,7 @@ with open('./results/result.csv') as csv_file:
     repo_commit_deltas()
     # Plot results
     for f in fs:
-        fig, ax = plt.subplots(nrows=len(dbs), ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * len(dbs)), tight_layout=False)
-        # fig.set_size_inches(9, 8)
-        # fig.subplots_adjust(bottom=0.2)
-        i = 0
-        for ((fname, db), r) in results_per_db_jar.items():
-            if f == fname:
-                update_build_perf(db, ax[i, 0], r)
-                i += 1
-                
-        plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
-        fig.suptitle(f, y=.95)
-        fig.text(0.04, 0.5, 'Time Elapsed (s)', va='center', rotation='vertical')
-        plt.legend(loc="lower center", ncol=4, bbox_to_anchor=(-.05, -0.45, 1.1, .102), mode="expand")
-        fig.savefig("./results/build_updates_{}.pdf".format(f.split("/")[-1]))
-
+        plot_build_updates(f)
+    plot_cache_results(results)
     avg_db_build_update(results)
     plt.clf()
