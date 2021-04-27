@@ -317,26 +317,25 @@ def plot_cache_results(rs: List[Benchmark]):
     # Plot per phase
     fig, axes = plt.subplots(nrows=len(phases), ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * len(dbs)),
                              tight_layout=False)
-    results_per_phase = {}
     i = 0
     x = np.arange(3)
     for j, p in enumerate(phases):
-        results_per_phase[p] = {}
-
         avg_cache_hits = []
         avg_cache_misses = []
         for f in fs:
-            results_per_phase[p][f] = {
-                "Cache Hits": np.average([r.cache_hits for r in rs if r.file_name == f and p in r.phase]),
-                "Cache Misses": np.average([r.cache_misses for r in rs if r.file_name == f and p in r.phase])
-            }
             avg_cache_hits.append(np.average([r.cache_hits for r in rs if r.file_name == f and p in r.phase]))
             avg_cache_misses.append(np.average([r.cache_misses for r in rs if r.file_name == f and p in r.phase]))
         ax = axes[i, 0]
         ax.set_title(readable_phases[j])
 
-        ax.bar(x + 0.00, avg_cache_hits, width=0.25, color='tab:blue')
-        ax.bar(x + 0.25, avg_cache_misses, width=0.25, color='tab:orange')
+        perc_hits = []
+        perc_misses = []
+        for a in range(len(fs)):
+            perc_hits.append(avg_cache_hits[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
+            perc_misses.append(avg_cache_misses[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
+
+        ax.bar(x + 0.00, perc_hits, width=0.25, color='tab:blue')
+        ax.bar(x + 0.25, perc_misses, width=0.25, color='tab:orange')
         i += 1
 
     plt.xticks([0.125, 1.125, 2.125], fs)
