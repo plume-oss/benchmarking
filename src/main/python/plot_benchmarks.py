@@ -328,14 +328,21 @@ def plot_cache_results(rs: List[Benchmark]):
         ax = axes[i, 0]
         ax.set_title(readable_phases[j])
 
-        perc_hits = []
-        perc_misses = []
+        perc_hits = np.array([])
+        perc_misses = np.array([])
         for a in range(len(fs)):
-            perc_hits.append(avg_cache_hits[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
-            perc_misses.append(avg_cache_misses[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
+            perc_hits = np.append(perc_hits, avg_cache_hits[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
+            perc_misses = np.append(perc_misses, avg_cache_misses[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
+
+        perc_hits = np.multiply(perc_hits, 100)
+        perc_misses = np.multiply(perc_misses, 100)
 
         ax.bar(x + 0.00, perc_hits, width=0.25, color='tab:blue')
         ax.bar(x + 0.25, perc_misses, width=0.25, color='tab:orange')
+        for k, v in enumerate(perc_hits):
+            ax.text(k - 0.1, v, str("{:.2f}%".format(v)))
+        for k, v in enumerate(perc_misses):
+            ax.text(k + 0.15, v, str("{:.2f}%".format(v)))
         i += 1
 
     plt.xticks([0.125, 1.125, 2.125], fs)
