@@ -21,7 +21,7 @@ storage = {
     "OverflowDB" :{
         "jackson-databind": {"Program Size": 1510177, "Uncompressed": 47513600, "Compressed (tar.lz)": 24806855},
         "gremlin-driver": {"Program Size": 247808, "Uncompressed": 9121792, "Compressed (tar.lz)": 4615893},
-        "neo4j": {"Program Size": 141312, "Uncompressed": 3035136, "Compressed (tar.lz)": 4615893}
+        "neo4j": {"Program Size": 141312, "Uncompressed": 3035136, "Compressed (tar.lz)": 1661492}
     }
 }
 
@@ -400,17 +400,21 @@ def plot_inmem_storage():
     ]
     overflow_data = [
         # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
-        [overflowdb_storage["jackson-databind"]["Program Size"], tinker_storage["gremlin-driver"]["Program Size"], tinker_storage["neo4j"]["Program Size"]],  # Program Size
-        [overflowdb_storage["jackson-databind"]["Uncompressed"], tinker_storage["gremlin-driver"]["Uncompressed"], tinker_storage["neo4j"]["Uncompressed"]],  # Uncompressed CPG
-        [overflowdb_storage["jackson-databind"]["Compressed (tar.lz)"], tinker_storage["gremlin-driver"]["Compressed (tar.lz)"], tinker_storage["neo4j"]["Compressed (tar.lz)"]] # Compressed CPG
+        [overflowdb_storage["jackson-databind"]["Program Size"], overflowdb_storage["gremlin-driver"]["Program Size"], overflowdb_storage["neo4j"]["Program Size"]],  # Program Size
+        [overflowdb_storage["jackson-databind"]["Uncompressed"], overflowdb_storage["gremlin-driver"]["Uncompressed"], overflowdb_storage["neo4j"]["Uncompressed"]],  # Uncompressed CPG
+        [overflowdb_storage["jackson-databind"]["Compressed (tar.lz)"], overflowdb_storage["gremlin-driver"]["Compressed (tar.lz)"], overflowdb_storage["neo4j"]["Compressed (tar.lz)"]] # Compressed CPG
     ]
     x = np.arange(3)
 
     def plot_storage(ax, data, title):
         ax.set_title(title)
-        ax.bar(x + 0.00, data[0], width=0.25, label="Program Size")
+        ax.bar(x + 0.00, data[0], width=0.25, label="JAR Size")
         ax.bar(x + 0.25, data[1], width=0.25, label="Uncompressed CPG")
         ax.bar(x + 0.50, data[2], width=0.25, label="Compressed CPG (tar.lz)")
+        ax.set_yscale('log')
+        ymin, ymax = ax.get_ylim()
+        ax.set_ylim([ymin, ymax * 1.5])
+        ax.set_yticks([])
         for i, v in enumerate(data[0]):
             ax.text(i - 0.15, v + 10000, display_storage(v))
         for i, v in enumerate(data[1]):
@@ -424,8 +428,8 @@ def plot_inmem_storage():
     fig.subplots_adjust(bottom=0.18)
     plot_storage(axes[0, 0], tinker_data, "TinkerGraph")
     plot_storage(axes[1, 0], overflow_data, "OverflowDB")
-    plt.yscale('log')
     plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -.5, 1, .01), mode="expand")
+    
     plt.xticks([0.25, 1.25, 2.25],
                ['jackson-databind', 'gremlin-driver', 'neo4j'])
     fig.savefig("./results/inmem_storage_footprint.pdf")
