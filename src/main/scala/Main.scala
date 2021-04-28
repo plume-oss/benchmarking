@@ -67,6 +67,13 @@ object Main extends App {
   }
 
   def runExperiment(d: IDriver, p: Program, dbName: String): Unit = {
+    // Run build and export
+    if (experiment.runBuildAndStore) {
+      d.clearGraph()
+      runInitBuild(d, p, dbName)
+      closeConnection(d)
+      openConnection(d)
+    }
     // Run live updates
     if (experiment.runLiveUpdates) {
       d.clearGraph()
@@ -368,6 +375,10 @@ object Main extends App {
 
   def getExperiment(config: util.LinkedHashMap[String, Any]): Experiment =
     Experiment(
+      runBuildAndStore = config.get("experiment")
+        .asInstanceOf[util.LinkedHashMap[String, Any]]
+        .getOrDefault("run-build-and-store", false)
+        .asInstanceOf[Boolean],
       runLiveUpdates = config
         .get("experiment")
         .asInstanceOf[util.LinkedHashMap[String, Any]]

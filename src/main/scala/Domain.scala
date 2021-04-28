@@ -2,7 +2,12 @@ package io.github.plume.oss
 
 import java.io.{File => JavaFile}
 
-case class Experiment(runLiveUpdates: Boolean, runDisconnectedUpdates: Boolean, runFullBuilds: Boolean)
+case class Experiment(
+  runBuildAndStore: Boolean,
+  runLiveUpdates: Boolean,
+  runDisconnectedUpdates: Boolean,
+  runFullBuilds: Boolean
+)
 
 case class Program(name: String, jars: List[JavaFile])
 
