@@ -69,6 +69,7 @@ object Main extends App {
   def runExperiment(d: IDriver, p: Program, dbName: String): Unit = {
     // Run build and export
     if (experiment.runBuildAndStore) {
+      Thread.sleep(2500) // Sleep to enable probes to start empty and properly
       d.clearGraph()
       runInitBuild(d, p, dbName)
       closeConnection(d)

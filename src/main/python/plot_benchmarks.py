@@ -11,6 +11,20 @@ lbl_font = {
     'size': 8
 }
 
+# Size in bytes
+storage = {
+    "TinkerGraph" :{
+        "FasterXML/jackson-databind": {"Program Size": 1510177, "Uncompressed": 230708501, "Compressed (tar.lz)": 35882737},
+        "apache/tinkerpop/gremlin-driver": {"Program Size": 247808, "Uncompressed": 44098404, "Compressed (tar.lz)": 6692506},
+        "neo4j/neo4j": {"Program Size": 141312, "Uncompressed": 14532096, "Compressed (tar.lz)": 2230272}
+    },
+    "OverflowDB" :{
+        "FasterXML/jackson-databind": {"Program Size": 1510177, "Uncompressed": 47513600, "Compressed (tar.lz)": 24806855},
+        "apache/tinkerpop/gremlin-driver": {"Program Size": 247808, "Uncompressed": 9121792, "Compressed (tar.lz)": 4615893},
+        "neo4j/neo4j": {"Program Size": 141312, "Uncompressed": 3035136, "Compressed (tar.lz)": 4615893}
+    }
+}
+
 
 class Benchmark:
     def __init__(self, plume_version, file_name, phase, database, compiling_and_unpacking, soot, program_structure,
@@ -224,10 +238,6 @@ def avg_db_build_update(rs: List[Benchmark]):
     plot_as_bars(avg_update, "Online Update")
     plot_as_bars(avg_disupdt, "Disconnected Update")
     plot_as_bars(avg_build, "Build")
-
-
-# TODO: Plot cache results
-# TODO: Plot database reads/writes
 
 
 def program_sizes():
