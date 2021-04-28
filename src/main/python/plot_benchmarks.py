@@ -14,14 +14,14 @@ lbl_font = {
 # Size in bytes
 storage = {
     "TinkerGraph" :{
-        "FasterXML/jackson-databind": {"Program Size": 1510177, "Uncompressed": 230708501, "Compressed (tar.lz)": 35882737},
-        "apache/tinkerpop/gremlin-driver": {"Program Size": 247808, "Uncompressed": 44098404, "Compressed (tar.lz)": 6692506},
-        "neo4j/neo4j": {"Program Size": 141312, "Uncompressed": 14532096, "Compressed (tar.lz)": 2230272}
+        "jackson-databind": {"Program Size": 1510177, "Uncompressed": 230708501, "Compressed (tar.lz)": 35882737},
+        "gremlin-driver": {"Program Size": 247808, "Uncompressed": 44098404, "Compressed (tar.lz)": 6692506},
+        "neo4j": {"Program Size": 141312, "Uncompressed": 14532096, "Compressed (tar.lz)": 2230272}
     },
     "OverflowDB" :{
-        "FasterXML/jackson-databind": {"Program Size": 1510177, "Uncompressed": 47513600, "Compressed (tar.lz)": 24806855},
-        "apache/tinkerpop/gremlin-driver": {"Program Size": 247808, "Uncompressed": 9121792, "Compressed (tar.lz)": 4615893},
-        "neo4j/neo4j": {"Program Size": 141312, "Uncompressed": 3035136, "Compressed (tar.lz)": 4615893}
+        "jackson-databind": {"Program Size": 1510177, "Uncompressed": 47513600, "Compressed (tar.lz)": 24806855},
+        "gremlin-driver": {"Program Size": 247808, "Uncompressed": 9121792, "Compressed (tar.lz)": 4615893},
+        "neo4j": {"Program Size": 141312, "Uncompressed": 3035136, "Compressed (tar.lz)": 4615893}
     }
 }
 
@@ -77,11 +77,31 @@ intervals = (
     ('ms', 1),
 )
 
+storage_units = (
+    ('Gb', 1024 ** 3),
+    ('Mb', 1024 ** 2),
+    ('kb', 1024),
+    ('b', 1),
+)
+
 
 def display_time(ms, granularity=2):
     result = []
 
     for name, count in intervals:
+        value = ms // count
+        if value:
+            ms -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{:.0f}{}".format(value, name))
+    return ''.join(result[:granularity])
+
+
+def display_storage(ms, granularity=2):
+    result = []
+
+    for name, count in storage_units:
         value = ms // count
         if value:
             ms -= value * count
@@ -365,6 +385,52 @@ def plot_cache_results(rs: List[Benchmark]):
     fig.savefig("./results/cache_metrics.pdf")
 
 
+def plot_inmem_storage():
+    fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * 2),
+                             tight_layout=False)
+    fig.suptitle("In-Memory Database Storage Footprint")
+
+    tinker_storage = storage["TinkerGraph"]
+    overflowdb_storage = storage["OverflowDB"]
+    tinker_data = [
+        # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
+        [tinker_storage["jackson-databind"]["Program Size"], tinker_storage["gremlin-driver"]["Program Size"], tinker_storage["neo4j"]["Program Size"]],  # Program Size
+        [tinker_storage["jackson-databind"]["Uncompressed"], tinker_storage["gremlin-driver"]["Uncompressed"], tinker_storage["neo4j"]["Uncompressed"]],  # Uncompressed CPG
+        [tinker_storage["jackson-databind"]["Compressed (tar.lz)"], tinker_storage["gremlin-driver"]["Compressed (tar.lz)"], tinker_storage["neo4j"]["Compressed (tar.lz)"]] # Compressed CPG
+    ]
+    overflow_data = [
+        # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
+        [overflowdb_storage["jackson-databind"]["Program Size"], tinker_storage["gremlin-driver"]["Program Size"], tinker_storage["neo4j"]["Program Size"]],  # Program Size
+        [overflowdb_storage["jackson-databind"]["Uncompressed"], tinker_storage["gremlin-driver"]["Uncompressed"], tinker_storage["neo4j"]["Uncompressed"]],  # Uncompressed CPG
+        [overflowdb_storage["jackson-databind"]["Compressed (tar.lz)"], tinker_storage["gremlin-driver"]["Compressed (tar.lz)"], tinker_storage["neo4j"]["Compressed (tar.lz)"]] # Compressed CPG
+    ]
+    x = np.arange(3)
+
+    def plot_storage(ax, data, title):
+        ax.set_title(title)
+        ax.bar(x + 0.00, data[0], width=0.25, label="Program Size")
+        ax.bar(x + 0.25, data[1], width=0.25, label="Uncompressed CPG")
+        ax.bar(x + 0.50, data[2], width=0.25, label="Compressed CPG (tar.lz)")
+        for i, v in enumerate(data[0]):
+            ax.text(i - 0.15, v + 10000, display_storage(v))
+        for i, v in enumerate(data[1]):
+            ax.text(i + 0.10, v + 10000, display_storage(v))
+        for i, v in enumerate(data[2]):
+            ax.text(i + 0.35, v + 10000, display_storage(v))
+    
+
+    fig.text(0.04, 0.5, 'Bytes (logarithmic)', va='center', rotation='vertical')
+    fig.text(0.5, 0.1, 'GitHub Repository', ha='center')
+    fig.subplots_adjust(bottom=0.18)
+    plot_storage(axes[0, 0], tinker_data, "TinkerGraph")
+    plot_storage(axes[1, 0], overflow_data, "OverflowDB")
+    plt.yscale('log')
+    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -.5, 1, .01), mode="expand")
+    plt.xticks([0.25, 1.25, 2.25],
+               ['jackson-databind', 'gremlin-driver', 'neo4j'])
+    fig.savefig("./results/inmem_storage_footprint.pdf")
+
+
 with open('./results/result.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
     results = []
@@ -405,4 +471,5 @@ with open('./results/result.csv') as csv_file:
         plot_build_updates(f)
     plot_cache_results(results)
     avg_db_build_update(results)
+    plot_inmem_storage()
     plt.clf()
