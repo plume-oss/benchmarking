@@ -1,4 +1,5 @@
 import csv
+import re
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -435,6 +436,61 @@ def plot_inmem_storage():
     fig.savefig("./results/inmem_storage_footprint.pdf")
 
 
+tracer_files = {
+    "OverflowDB": {
+        "jackson-databind": "Tracer_OverflowDB_jackson.csv",
+        "gremlin-driver": "Tracer_OverflowDB_gremlin_driver.csv",
+        "neo4j": "Tracer_OverflowDB_neo4j.csv"
+    },
+    "TinkerGraph": {
+        "jackson-databind": "Tracer_TinkerGraph_jackson.csv",
+        "gremlin-driver": "Tracer_TinkerGraph_gremlin_driver.csv",
+        "neo4j": "Tracer_TinkerGraph_neo4j.csv"
+    }
+}
+
+def plot_tracer_files():
+    fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * 2),
+                             tight_layout=False)
+    fig.suptitle("Process Memory Footprint")
+    def plot_memory(ax, x, y):
+        ax.bar(x, y, width=0.25)
+        for i, v in enumerate(y):
+            ax.text(i - 0.15, v + 10e7, display_storage(v))
+    
+    def extract_mem_use(trace_file):
+        with open('./results/{}'.format(trace_file)) as csv_file:
+            csv_reader = csv.DictReader(csv_file, delimiter=',')
+            heap_entries = []
+            use_entries = []
+            for row in csv_reader:
+                heap_entries.append(int(''.join(re.findall('[0-9]+', str(row["Size [B]"])))))
+                use_entries.append(int(''.join(re.findall('[0-9]+', str(row["Used [B]"])))))
+        return (heap_entries, use_entries)
+
+    fig.text(0.05, 0.5, 'Bytes', va='center', rotation='vertical')
+    fig.text(0.51, 0.05, 'GitHub Repository', ha='center')
+    fig.subplots_adjust(bottom=0.18)
+
+    j = 0
+    for d, f in tracer_files.items():
+        current_ax = axes[j, 0]
+        current_ax.set_title(d)
+        _, use1 = extract_mem_use(f["jackson-databind"])
+        _, use2 = extract_mem_use(f["gremlin-driver"])
+        _, use3 = extract_mem_use(f["neo4j"])
+        data = [max(use1), max(use2), max(use3)]
+        plot_memory(current_ax, np.arange(3), data)
+        ymin, ymax = current_ax.get_ylim()
+        current_ax.set_ylim([ymin, ymax * 1.25])
+
+        j += 1
+
+    plt.xticks(np.arange(3),
+               ['jackson-databind', 'gremlin-driver', 'neo4j'])
+    fig.savefig("./results/process_memory_footprint.pdf")
+
+
 with open('./results/result.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
     results = []
@@ -476,4 +532,5 @@ with open('./results/result.csv') as csv_file:
     plot_cache_results(results)
     avg_db_build_update(results)
     plot_inmem_storage()
+    plot_tracer_files()
     plt.clf()
