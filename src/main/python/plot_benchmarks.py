@@ -26,6 +26,26 @@ storage = {
     }
 }
 
+remote_db = {
+    "TigerGraph": {
+        "jackson-databind": { "Storage": 0, "Memory": 1292 + (844 + 413 + 284) + 698 + 112 + 173 + 192 },
+        # TG GSQL | KAFKA | GSE | GPE | RESTPP | Zookeeper
+        "gremlin-driver": { "Storage": 249608, "Memory": 1292 + (844 + 413 + 284) + 698 + 112 + 173 + 192},
+        "neo4j": { "Storage": 227320, "Memory": 1292 + (844 + 413 + 284) + 698 + 112 + 173 + 192 }
+    },
+    # Neo4j base storage size = 513740
+    "Neo4j": {
+        "jackson-databind": { "Storage": 0, "Memory": 0},
+        "gremlin-driver": { "Storage": 564892, "Memory": 0},
+        "neo4j": { "Storage": 531524, "Memory": 0},
+    },
+    "Neptune": {
+        "jackson-databind": { "Storage": 0, "Memory": 0 - 0},
+        "gremlin-driver": { "Storage": 90030080, "Memory": 19693785088 - 14311255754},
+        "neo4j": { "Storage": 90013696, "Memory": 19680649216 - 14407446528}, # This is freeable memory
+    },
+}
+
 
 class Benchmark:
     def __init__(self, plume_version, file_name, phase, database, compiling_and_unpacking, soot, program_structure,
