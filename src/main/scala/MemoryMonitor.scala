@@ -23,28 +23,21 @@ class MemoryMonitor(db: String, project: String) extends Thread {
     join()
   }
 
-  def captureMemoryResult() {
+  def captureMemoryResult(): Unit = {
     val runtime = Runtime.getRuntime
     val freeMemory = runtime.freeMemory
     val usedMemory = runtime.totalMemory - runtime.freeMemory
     val csv = new JavaFile(s"./results/memory_results_${db}_$project.csv")
     if (!csv.exists()) {
       new JavaFile("./results/").mkdir()
+      logger.info(s"Creating memory capture file ${csv.getAbsolutePath}")
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append(
-          "\"Date\"," +
-            "\"Size [B]\"," +
-            "\"Used [B]\"\n"
-        )
+        _.append("Date,Size [B],Used [B]\n")
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(
-        s"\"${LocalDateTime.now()}\"," +
-          s"\"$freeMemory\"," +
-          s"\"$usedMemory\"\n"
-      )
+      _.append(s"${LocalDateTime.now},${freeMemory},${usedMemory}\n")
     }
   }
 }
