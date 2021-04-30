@@ -8,12 +8,17 @@ services:
     ports:
       - "7687:7687"
       - "7474:7474"
+      - "3637:3637"
     healthcheck:
       test: perl -MIO::Socket::INET -e 'exit(! defined( IO::Socket::INET->new("localhost:7687")))'
       interval: 5s
       timeout: 10s
       retries: 5
     volumes:
+      - 'neo4j-data:/bitnami'
       - '../conf/neo4j.conf:/bitnami/neo4j/conf/neo4j.conf'
     stdin_open: true
     tty: true
+
+volumes:
+  neo4j-data:
