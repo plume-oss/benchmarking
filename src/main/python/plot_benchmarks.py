@@ -36,11 +36,11 @@ remote_db = {
     # Neo4j base storage size = 513740
     "Neo4j": {
         "jackson-databind": { "Storage": 0, "Memory": 0},
-        "gremlin-driver": { "Storage": 564892, "Memory": 0},
-        "neo4j": { "Storage": 531524, "Memory": 0},
+        "gremlin-driver": { "Storage": 564892, "Memory": 3592587336},
+        "neo4j": { "Storage": 531524, "Memory": 2154218136},
     },
     "Neptune": {
-        "jackson-databind": { "Storage": 0, "Memory": 0 - 0},
+        "jackson-databind": { "Storage": 0, "Memory": 19925262336 - 0},
         "gremlin-driver": { "Storage": 90030080, "Memory": 19693785088 - 14311255754},
         "neo4j": { "Storage": 90013696, "Memory": 19680649216 - 14407446528}, # This is freeable memory
     },
