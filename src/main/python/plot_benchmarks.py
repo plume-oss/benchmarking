@@ -35,7 +35,7 @@ remote_db = {
     },
     # Neo4j base storage size = 513740
     "Neo4j": {
-        "jackson-databind": { "Storage": 0, "Memory": 0},
+        "jackson-databind": { "Storage": 1620788, "Memory": 2435250688},
         "gremlin-driver": { "Storage": 564892, "Memory": 3592587336},
         "neo4j": { "Storage": 531524, "Memory": 2154218136},
     },
