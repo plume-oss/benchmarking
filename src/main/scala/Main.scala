@@ -70,9 +70,13 @@ object Main extends App {
     // Run build and export
     if (experiment.runBuildAndStore) {
       Thread.sleep(2500) // Sleep to enable probes to start empty and properly
+      val driverName = d.getClass.toString.stripPrefix("io.github.plume.oss.drivers.")
+      val memoryMonitor = new MemoryMonitor(driverName, p.name)
+      memoryMonitor.start()
       d.clearGraph()
       runInitBuild(d, p, dbName)
       closeConnection(d)
+      memoryMonitor.close()
       openConnection(d)
     }
     // Run live updates
