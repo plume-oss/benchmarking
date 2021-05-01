@@ -27,11 +27,17 @@ storage = {
 }
 
 remote_db = {
+    # Initial
+    # Storage: 195628
+    # KAFKA | REST | GSQL | Zookeeper | GPE
+    # (409 + 404 + 162) + 125 + 102 + 81.368 + 70.648
     "TigerGraph": {
-        "jackson-databind": { "Storage": 0, "Memory": 1292 + (844 + 413 + 284) + 698 + 112 + 173 + 192 },
-        # TG GSQL | KAFKA | GSE | GPE | RESTPP | Zookeeper
-        "gremlin-driver": { "Storage": 249608, "Memory": 1292 + (844 + 413 + 284) + 698 + 112 + 173 + 192},
-        "neo4j": { "Storage": 227320, "Memory": 1292 + (844 + 413 + 284) + 698 + 112 + 173 + 192 }
+        # KAFKA | GSQL | GSE | Zookeeper | GPE | RESTPP
+        "jackson-databind": { "Storage": 391508, "Memory": ((1225 + 420 + 304) + 1145 + 772 + 335 + 190 + 168) * 1024},
+        # GSQL | KAFKA | GSE | GPE | RESTPP | Zookeeper
+        "gremlin-driver": { "Storage": 258768, "Memory": (1462 + (998 + 421 + 301) + 732 + 121 + 169 + 349) * 1024},
+        # GSQL | KAFKA | GSE | Zookeeper | RESTPP | GPE
+        "neo4j": { "Storage": 236112, "Memory": (1383 + (982 + 426 + 278) + 697 + 195 + 174 + 107) * 1024}
     },
     # Neo4j base storage size = 513740
     "Neo4j": {
@@ -40,7 +46,7 @@ remote_db = {
         "neo4j": { "Storage": 531524, "Memory": 2154218136},
     },
     "Neptune": {
-        "jackson-databind": { "Storage": 0, "Memory": 19925262336 - 0},
+        "jackson-databind": { "Storage": 0, "Memory": 19925262336 - 13653.88671875 * 1024},
         "gremlin-driver": { "Storage": 90030080, "Memory": 19693785088 - 14311255754},
         "neo4j": { "Storage": 90013696, "Memory": 19680649216 - 14407446528}, # This is freeable memory
     },
