@@ -73,6 +73,7 @@ object Main extends App {
       val driverName = d.getClass.toString.stripPrefix("class io.github.plume.oss.drivers.")
       val memoryMonitor = new MemoryMonitor(driverName, p.name.subSequence(p.name.lastIndexOf('/') + 1, p.name.length).toString)
       d.clearGraph()
+      LocalCache.INSTANCE.clear()
       memoryMonitor.start()
       runInitBuild(d, p, dbName)
       closeConnection(d)
