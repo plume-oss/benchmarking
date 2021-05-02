@@ -72,8 +72,8 @@ object Main extends App {
       Thread.sleep(2500) // Sleep to enable probes to start empty and properly
       val driverName = d.getClass.toString.stripPrefix("class io.github.plume.oss.drivers.")
       val memoryMonitor = new MemoryMonitor(driverName, p.name.subSequence(p.name.lastIndexOf('/') + 1, p.name.length).toString)
-      memoryMonitor.start()
       d.clearGraph()
+      memoryMonitor.start()
       runInitBuild(d, p, dbName)
       closeConnection(d)
       memoryMonitor.close()
