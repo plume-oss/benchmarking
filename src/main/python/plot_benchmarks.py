@@ -55,7 +55,7 @@ remote_db = {
     },
     # For neptune, the initial and storage are swapped since the only metric is free local storage
     "Neptune": {
-        "jackson-databind": {"Initial Storage": 8735408128, "Storage": 155460653056 - 155456159744,
+        "jackson-databind": {"Initial Storage": 8735408128, "Storage": 155460653056 - 155445334016,
                              "Memory": 19925262336 - 13653.88671875 * (1024 * 2)},
         "gremlin-driver": {"Initial Storage": 8735408128, "Storage": 155471020032 - 155461988352,
                            "Memory": 19693785088 - 14311255754},
@@ -542,12 +542,28 @@ tracer_files = {
         "jackson-databind": "Tracer_TinkerGraph_jackson.csv",
         "gremlin-driver": "Tracer_TinkerGraph_gremlin_driver.csv",
         "neo4j": "Tracer_TinkerGraph_neo4j.csv"
+    },
+    "Neo4j": {
+        "jackson-databind": "Tracer_Neo4j_jackson.csv",
+        "gremlin-driver": "Tracer_Neo4j_gremlin.csv",
+        "neo4j": "Tracer_Neo4j_neo4j.csv"
+    },
+    "Neptune": {
+        "jackson-databind": "Tracer_Neptune_jackson.csv",
+        "gremlin-driver": "Tracer_Neptune_gremlin.csv",
+        "neo4j": "Tracer_Neptune_neo4j.csv"
+    },
+    "TigerGraph": {
+        "jackson-databind": "Tracer_TigerGraph_jackson.csv",
+        "gremlin-driver": "Tracer_TigerGraph_gremlin.csv",
+        "neo4j": "Tracer_TigerGraph_neo4j.csv"
     }
 }
 
 
 def plot_tracer_files():
-    fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * 2),
+    fig, axes = plt.subplots(nrows=len(tracer_files.keys()), ncols=1, sharex=True, squeeze=False,
+                             figsize=(9, 2.5 * len(tracer_files.keys())),
                              tight_layout=False)
     fig.suptitle("Process Memory Footprint")
 
@@ -568,7 +584,7 @@ def plot_tracer_files():
 
     fig.text(0.05, 0.5, 'Bytes', va='center', rotation='vertical')
     fig.text(0.51, 0.05, 'GitHub Repository', ha='center')
-    fig.subplots_adjust(bottom=0.18)
+    fig.subplots_adjust(bottom=0.1)
 
     j = 0
     for d, f in tracer_files.items():
