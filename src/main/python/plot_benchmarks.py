@@ -14,17 +14,19 @@ lbl_font = {
 
 # Size in bytes
 storage = {
-    "TinkerGraph" :{
+    "TinkerGraph": {
         "jackson-databind": {"Program Size": 1510177, "Uncompressed": 230708501, "Compressed (tar.lz)": 35882737},
         "gremlin-driver": {"Program Size": 247808, "Uncompressed": 44098404, "Compressed (tar.lz)": 6692506},
         "neo4j": {"Program Size": 141312, "Uncompressed": 14532096, "Compressed (tar.lz)": 2230272}
     },
-    "OverflowDB" :{
+    "OverflowDB": {
         "jackson-databind": {"Program Size": 1510177, "Uncompressed": 47513600, "Compressed (tar.lz)": 24806855},
         "gremlin-driver": {"Program Size": 247808, "Uncompressed": 9121792, "Compressed (tar.lz)": 4615893},
         "neo4j": {"Program Size": 141312, "Uncompressed": 3035136, "Compressed (tar.lz)": 1661492}
     }
 }
+
+# Check memory with sudo pmap -d 568939|tail -n 1
 
 remote_db = {
     # Initial
@@ -33,22 +35,33 @@ remote_db = {
     # (409 + 404 + 162) + 125 + 102 + 81.368 + 70.648
     "TigerGraph": {
         # KAFKA | GSQL | GSE | Zookeeper | GPE | RESTPP
-        "jackson-databind": { "Storage": 391508, "Memory": ((1225 + 420 + 304) + 1145 + 772 + 335 + 190 + 168) * 1024},
+        "jackson-databind": {"Initial Storage": 195628, "Storage": 391508 * 1024,
+                             "Memory": ((1225 + 420 + 304) + 1145 + 772 + 335 + 190 + 168) * 1024},
         # GSQL | KAFKA | GSE | GPE | RESTPP | Zookeeper
-        "gremlin-driver": { "Storage": 258768, "Memory": (1462 + (998 + 421 + 301) + 732 + 121 + 169 + 349) * 1024},
+        "gremlin-driver": {"Initial Storage": 195628, "Storage": 258768 * 1024,
+                           "Memory": (1462 + (998 + 421 + 301) + 732 + 121 + 169 + 349) * 1024},
         # GSQL | KAFKA | GSE | Zookeeper | RESTPP | GPE
-        "neo4j": { "Storage": 236112, "Memory": (1383 + (982 + 426 + 278) + 697 + 195 + 174 + 107) * 1024}
+        "neo4j": {"Initial Storage": 195628, "Storage": 236112 * 1024,
+                  "Memory": (1383 + (982 + 426 + 278) + 697 + 195 + 174 + 107) * 1024}
     },
     # Neo4j base storage size = 513740
+    # PID: 578724
+    # Base memory: 2054820K
     "Neo4j": {
-        "jackson-databind": { "Storage": 1620788, "Memory": 2435250688},
-        "gremlin-driver": { "Storage": 564892, "Memory": 3592587336},
-        "neo4j": { "Storage": 531524, "Memory": 2154218136},
+        # TODO Measure neo4j storage again
+        "jackson-databind": {"Initial Storage": 513740, "Storage": 1620788 * 1024, "Memory": 2435250688},
+        "gremlin-driver": {"Initial Storage": 513740, "Storage": 4494488 * 1024, "Memory": 3592587336},
+        "neo4j": {"Initial Storage": 513740, "Storage": 3501136 * 1024, "Memory": 2154218136},
     },
+    # For neptune, the initial and storage are swapped since the only metric is free local storage
     "Neptune": {
-        "jackson-databind": { "Storage": 0, "Memory": 19925262336 - 13653.88671875 * 1024},
-        "gremlin-driver": { "Storage": 90030080, "Memory": 19693785088 - 14311255754},
-        "neo4j": { "Storage": 90013696, "Memory": 19680649216 - 14407446528}, # This is freeable memory
+        "jackson-databind": {"Initial Storage": 8735408128, "Storage": 155460653056 - 155456159744,
+                             "Memory": 19925262336 - 13653.88671875 * (1024 * 2)},
+        "gremlin-driver": {"Initial Storage": 8735408128, "Storage": 155471020032 - 155461988352,
+                           "Memory": 19693785088 - 14311255754},
+        "neo4j": {"Initial Storage": 8735408128, "Storage": 155481133056 - 155476795392,
+                  "Memory": 19680649216 - 14407446528},
+        # This is freeable memory
     },
 }
 
@@ -416,21 +429,20 @@ def plot_inmem_storage():
     fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * 2),
                              tight_layout=False)
     fig.suptitle("In-Memory Database Storage Footprint")
+    inmemdbs = ["TinkerGraph", "OverflowDB"]
+    progs = ["jackson-databind", "gremlin-driver", "neo4j"]
+    data = []
+    for inmem in inmemdbs:
+        inmem_storage = storage[inmem]
+        p_data = []
+        ucom_data = []
+        com_data = []
+        for p in progs:
+            p_data.append(inmem_storage[p]["Program Size"])
+            ucom_data.append(inmem_storage[p]["Uncompressed"])
+            com_data.append(inmem_storage[p]["Compressed (tar.lz)"])
+        data.append([p_data, ucom_data, com_data])
 
-    tinker_storage = storage["TinkerGraph"]
-    overflowdb_storage = storage["OverflowDB"]
-    tinker_data = [
-        # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
-        [tinker_storage["jackson-databind"]["Program Size"], tinker_storage["gremlin-driver"]["Program Size"], tinker_storage["neo4j"]["Program Size"]],  # Program Size
-        [tinker_storage["jackson-databind"]["Uncompressed"], tinker_storage["gremlin-driver"]["Uncompressed"], tinker_storage["neo4j"]["Uncompressed"]],  # Uncompressed CPG
-        [tinker_storage["jackson-databind"]["Compressed (tar.lz)"], tinker_storage["gremlin-driver"]["Compressed (tar.lz)"], tinker_storage["neo4j"]["Compressed (tar.lz)"]] # Compressed CPG
-    ]
-    overflow_data = [
-        # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
-        [overflowdb_storage["jackson-databind"]["Program Size"], overflowdb_storage["gremlin-driver"]["Program Size"], overflowdb_storage["neo4j"]["Program Size"]],  # Program Size
-        [overflowdb_storage["jackson-databind"]["Uncompressed"], overflowdb_storage["gremlin-driver"]["Uncompressed"], overflowdb_storage["neo4j"]["Uncompressed"]],  # Uncompressed CPG
-        [overflowdb_storage["jackson-databind"]["Compressed (tar.lz)"], overflowdb_storage["gremlin-driver"]["Compressed (tar.lz)"], overflowdb_storage["neo4j"]["Compressed (tar.lz)"]] # Compressed CPG
-    ]
     x = np.arange(3)
 
     def plot_storage(ax, data, title):
@@ -448,18 +460,76 @@ def plot_inmem_storage():
             ax.text(i + 0.10, v + 10000, display_storage(v))
         for i, v in enumerate(data[2]):
             ax.text(i + 0.35, v + 10000, display_storage(v))
-    
 
     fig.text(0.04, 0.5, 'Bytes (logarithmic)', va='center', rotation='vertical')
     fig.text(0.5, 0.1, 'GitHub Repository', ha='center')
     fig.subplots_adjust(bottom=0.18)
-    plot_storage(axes[0, 0], tinker_data, "TinkerGraph")
-    plot_storage(axes[1, 0], overflow_data, "OverflowDB")
+    for j, d in enumerate(inmemdbs):
+        plot_storage(axes[j, 0], data[j], d)
     plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -.5, 1, .01), mode="expand")
-    
-    plt.xticks([0.25, 1.25, 2.25],
-               ['jackson-databind', 'gremlin-driver', 'neo4j'])
+
+    plt.xticks([0.25, 1.25, 2.25], progs)
     fig.savefig("./results/inmem_storage_footprint.pdf")
+
+
+def plot_remote_storage():
+    fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * 2),
+                             tight_layout=False)
+    fig.suptitle("Remote Database Storage Footprint")
+    remote_dbs = ["TigerGraph", "Neo4j", "Neptune"]
+    progs = ["jackson-databind", "gremlin-driver", "neo4j"]
+    data = []
+    for remote in remote_dbs:
+        remote_storage = remote_db[remote]
+        initial = []
+        used = []
+        reserved = []
+        for p in progs:
+            if remote == "Neptune":
+                used.append(remote_storage[p]["Storage"])
+                reserved.append(remote_storage[p]["Initial Storage"] - remote_storage[p]["Storage"])
+            else:
+                initial.append(remote_storage[p]["Initial Storage"])
+                used.append(remote_storage[p]["Storage"] - remote_storage[p]["Initial Storage"])
+        data.append([initial, used, reserved])
+
+    x = np.arange(3)
+
+    def plot_storage(ax, data, title):
+        ax.set_title(title)
+        if title == "Neptune":
+            for i, v in enumerate(data[2]):
+                ax.text(i + 0.15, v + 10000, display_storage(v), color="tab:green")
+            for i, v in enumerate(data[1]):
+                ax.text(i + 0.15, v + 10000, display_storage(v), color="tab:orange")
+        else:
+            for i, v in enumerate(data[0]):
+                ax.text(i + 0.15, v + 10000, display_storage(v), color="tab:blue")
+            for i, v in enumerate(data[1]):
+                ax.text(i + 0.15, v + 10000, display_storage(v), color="tab:orange")
+        if title == "Neptune":
+            ax.bar(x, [0, 0, 0], width=0.25, label="Initial Size", color="tab:blue")
+            ax.bar(x, data[1], width=0.25, label="Used Size", color="tab:orange")
+            ax.bar(x, data[2], width=0.25, label="Reserved Size", color="tab:green")
+        else:
+            ax.bar(x, data[0], width=0.25, label="Initial size", color="tab:blue")
+            ax.bar(x, data[1], width=0.25, label="Used Size", color="tab:orange")
+            ax.bar(x, [0, 0, 0], width=0.25, label="Reserved Size", color="tab:green")
+        ax.set_yscale('log')
+        ax.set_yticks([])
+        ymin, ymax = ax.get_ylim()
+        ax.set_ylim([ymin, ymax * 1.5])
+
+    fig.text(0.05, 0.5, 'Bytes (logarithmic)', va='center', rotation='vertical')
+    fig.text(0.51, 0.095, 'GitHub Repository', ha='center')
+    fig.subplots_adjust(bottom=0.2)
+    for j, d in enumerate(remote_dbs):
+        plot_storage(axes[j, 0], data[j], d)
+    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -1, 1, .01), mode="expand")
+    # plt.legend()
+
+    plt.xticks(x, progs)
+    fig.savefig("./results/remote_storage_footprint.pdf")
 
 
 tracer_files = {
@@ -475,15 +545,17 @@ tracer_files = {
     }
 }
 
+
 def plot_tracer_files():
     fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * 2),
                              tight_layout=False)
     fig.suptitle("Process Memory Footprint")
+
     def plot_memory(ax, x, y):
         ax.bar(x, y, width=0.25)
         for i, v in enumerate(y):
             ax.text(i - 0.15, v + 10e7, display_storage(v))
-    
+
     def extract_mem_use(trace_file):
         with open('./results/{}'.format(trace_file)) as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter=',')
@@ -558,5 +630,6 @@ with open('./results/result.csv') as csv_file:
     plot_cache_results(results)
     avg_db_build_update(results)
     plot_inmem_storage()
+    plot_remote_storage()
     plot_tracer_files()
     plt.clf()
