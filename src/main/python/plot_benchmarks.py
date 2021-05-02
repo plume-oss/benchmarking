@@ -49,7 +49,7 @@ remote_db = {
     # Base memory: 2054820K
     "Neo4j": {
         # TODO Measure neo4j storage again
-        "jackson-databind": {"Initial Storage": 513740, "Storage": 1620788 * 1024, "Memory": 2435250688},
+        "jackson-databind": {"Initial Storage": 0, "Storage": 1620788 * 1024, "Memory": 2435250688},
         "gremlin-driver": {"Initial Storage": 513740, "Storage": 4494488 * 1024, "Memory": 3592587336},
         "neo4j": {"Initial Storage": 513740, "Storage": 3501136 * 1024, "Memory": 2154218136},
     },
