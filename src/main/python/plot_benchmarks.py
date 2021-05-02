@@ -55,7 +55,7 @@ remote_db = {
     },
     # For neptune, the initial and storage are swapped since the only metric is free local storage
     "Neptune": {
-        "jackson-databind": {"Initial Storage": 8735408128, "Storage": 155460653056 - 155445334016,
+        "jackson-databind": {"Initial Storage": 8735408128, "Storage": 155460653056 - 155428294656,
                              "Memory": 19925262336 - 13653.88671875 * (1024 * 2)},
         "gremlin-driver": {"Initial Storage": 8735408128, "Storage": 155471020032 - 155461988352,
                            "Memory": 19693785088 - 14311255754},
@@ -534,14 +534,14 @@ def plot_remote_storage():
 
 tracer_files = {
     "OverflowDB": {
-        "jackson-databind": "Tracer_OverflowDB_jackson.csv",
-        "gremlin-driver": "Tracer_OverflowDB_gremlin_driver.csv",
-        "neo4j": "Tracer_OverflowDB_neo4j.csv"
+        "jackson-databind": "Memory_Maxes_OverflowDbDriver_jackson-databind.csv",
+        "gremlin-driver": "Memory_Maxes_OverflowDbDriver_gremlin-driver.csv",
+        "neo4j": "Memory_Maxes_OverflowDbDriver_neo4j.csv"
     },
     "TinkerGraph": {
-        "jackson-databind": "Tracer_TinkerGraph_jackson.csv",
-        "gremlin-driver": "Tracer_TinkerGraph_gremlin_driver.csv",
-        "neo4j": "Tracer_TinkerGraph_neo4j.csv"
+        "jackson-databind": "Memory_Maxes_TinkerGraphDriver_jackson-databind.csv",
+        "gremlin-driver": "Memory_Maxes_TinkerGraphDriver_gremlin-driver.csv",
+        "neo4j": "Memory_Maxes_TinkerGraphDriver_neo4j.csv"
     },
     "Neo4j": {
         "jackson-databind": "Tracer_Neo4j_jackson.csv",
@@ -567,10 +567,10 @@ def plot_tracer_files():
                              tight_layout=False)
     fig.suptitle("Process Memory Footprint")
 
-    def plot_memory(ax, x, y):
-        ax.bar(x, y, width=0.25)
+    def plot_memory(ax, x, y, e):
+        ax.errorbar(x, y, e, linestyle="None", fmt='o')
         for i, v in enumerate(y):
-            ax.text(i - 0.15, v + 10e7, display_storage(v))
+            ax.text(i + 0.025, v + 10e7, display_storage(v))
 
     def extract_mem_use(trace_file):
         with open('./results/{}'.format(trace_file)) as csv_file:
@@ -578,7 +578,7 @@ def plot_tracer_files():
             heap_entries = []
             use_entries = []
             for row in csv_reader:
-                heap_entries.append(int(''.join(re.findall('[0-9]+', str(row["Size [B]"])))))
+                # heap_entries.append(int(''.join(re.findall('[0-9]+', str(row["Size [B]"])))))
                 use_entries.append(int(''.join(re.findall('[0-9]+', str(row["Used [B]"])))))
         return (heap_entries, use_entries)
 
@@ -593,8 +593,9 @@ def plot_tracer_files():
         _, use1 = extract_mem_use(f["jackson-databind"])
         _, use2 = extract_mem_use(f["gremlin-driver"])
         _, use3 = extract_mem_use(f["neo4j"])
-        data = [max(use1), max(use2), max(use3)]
-        plot_memory(current_ax, np.arange(3), data)
+        data = [np.average(use1), np.average(use2), np.average(use3)]
+        dev = [np.std(use1), np.std(use2), np.std(use3)]
+        plot_memory(current_ax, np.arange(3), data, dev)
         ymin, ymax = current_ax.get_ylim()
         current_ax.set_ylim([ymin, ymax * 1.25])
 
