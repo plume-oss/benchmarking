@@ -607,14 +607,14 @@ tracer_files = {
         "neo4j": "Memory_Maxes_Neo4jDriver_neo4j.csv"
     },
     "Neptune": {
-        "jackson-databind": "Tracer_Neptune_jackson.csv",
+        "jackson-databind": "Memory_Maxes_NeptuneDriver_jackson-databind.csv",
         "gremlin-driver": "Memory_Maxes_NeptuneDriver_gremlin-driver.csv",
         "neo4j": "Memory_Maxes_NeptuneDriver_neo4j.csv"
     },
     "TigerGraph": {
-        "jackson-databind": "Tracer_TigerGraph_jackson.csv",
-        "gremlin-driver": "Tracer_TigerGraph_gremlin.csv",
-        "neo4j": "Tracer_TigerGraph_neo4j.csv"
+        "jackson-databind": "Memory_Maxes_TigerGraphDriver_jackson-databind.csv",
+        "gremlin-driver": "Memory_Maxes_TigerGraphDriver_gremlin-driver.csv",
+        "neo4j": "Memory_Maxes_TigerGraphDriver_neo4j.csv"
     }
 }
 
