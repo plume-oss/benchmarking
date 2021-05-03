@@ -51,8 +51,7 @@ remote_db = {
     # PID: 578724
     # Base memory: 2054820K
     "Neo4j": {
-        # TODO Measure neo4j storage again
-        # TODO Measure jackson storage against
+        # TODO Measure jackson storage again
         "jackson-databind": {
             "Initial Storage": 513740 * 1024,
             "Storage": 1619824 * 1024,
@@ -67,7 +66,7 @@ remote_db = {
             },
         "neo4j": {
             "Initial Storage": 513740 * 1024,
-            "Storage": 3501136 * 1024,
+            "Storage": 530456 * 1024,
             "Initial Memory": 2054820 * 1024,
             "Memory": 2154218136
             },
@@ -540,11 +539,11 @@ def plot_remote_storage():
         ax.set_ylim([ymin, ymax * 1.25])
 
     fig.text(0.05, 0.5, 'Bytes', va='center', rotation='vertical')
-    fig.text(0.51, 0.095, 'GitHub Repository', ha='center')
+    fig.text(0.51, 0.1, 'GitHub Repository', ha='center')
     fig.subplots_adjust(bottom=0.2)
     for j, d in enumerate(remote_dbs):
         plot_storage(axes[j, 0], data[j], d)
-    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -1, 1, .01), mode="expand")
+    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -0.9, 1, .01), mode="expand")
     # plt.legend()
 
     plt.xticks(x, progs)
@@ -610,7 +609,7 @@ tracer_files = {
     "Neptune": {
         "jackson-databind": "Tracer_Neptune_jackson.csv",
         "gremlin-driver": "Memory_Maxes_NeptuneDriver_gremlin-driver.csv",
-        "neo4j": "Tracer_Neptune_neo4j.csv"
+        "neo4j": "Memory_Maxes_NeptuneDriver_neo4j.csv"
     },
     "TigerGraph": {
         "jackson-databind": "Tracer_TigerGraph_jackson.csv",
