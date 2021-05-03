@@ -664,7 +664,7 @@ def plot_tracer_files():
     fig.savefig("./results/process_memory_footprint.pdf")
 
 
-with open('./results/result.csv') as csv_file:
+with open('./results/aws_results.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
     results = []
     for row in csv_reader:
