@@ -53,14 +53,24 @@ remote_db = {
     "Neo4j": {
         # TODO Measure neo4j storage again
         # TODO Measure jackson storage against
-        "jackson-databind": {"Initial Storage": 513740 * 1024, "Storage": 1619824 * 1024,
-                             "Initial Memory": 2054820 * 1024,
-                             "Memory": 5851804 * 1024},
-        "gremlin-driver": {"Initial Storage": 513740 * 1024, "Storage": 4494488 * 1024,
-                           "Initial Memory": 2054820 * 1024,
-                           "Memory": 3592587336},
-        "neo4j": {"Initial Storage": 513740 * 1024, "Storage": 3501136 * 1024, "Initial Memory": 2054820 * 1024,
-                  "Memory": 2154218136},
+        "jackson-databind": {
+            "Initial Storage": 513740 * 1024,
+            "Storage": 1619824 * 1024,
+            "Initial Memory": 2054820 * 1024,
+            "Memory": 5851804 * 1024
+            },
+        "gremlin-driver": {
+            "Initial Storage": 513740 * 1024,
+            "Storage": 564796 * 1024,
+            "Initial Memory": 2054820 * 1024,
+            "Memory": 3592587336
+            },
+        "neo4j": {
+            "Initial Storage": 513740 * 1024,
+            "Storage": 3501136 * 1024,
+            "Initial Memory": 2054820 * 1024,
+            "Memory": 2154218136
+            },
     },
     # For neptune, the initial and storage are swapped since the only metric is free local storage
     "Neptune": {
@@ -514,7 +524,7 @@ def plot_remote_storage():
             for i, v in enumerate(data[0]):
                 ax.text(i + 0.15, v, display_storage(v), color="tab:blue")
             for i, v in enumerate(data[1]):
-                ax.text(i + 0.15, v + data[0][i] + 10000, display_storage(v), color="tab:orange")
+                ax.text(i - 0.15, v + data[0][i] + 10000, display_storage(v), color="tab:orange")
         # ax.set_yscale('log')
         ax.set_yticks([])
         if title == "Neptune":
@@ -593,13 +603,13 @@ tracer_files = {
         "neo4j": "Memory_Maxes_TinkerGraphDriver_neo4j.csv"
     },
     "Neo4j": {
-        "jackson-databind": "Tracer_Neo4j_jackson.csv",
-        "gremlin-driver": "Tracer_Neo4j_gremlin.csv",
-        "neo4j": "Tracer_Neo4j_neo4j.csv"
+        "jackson-databind": "Memory_Maxes_Neo4jDriver_jackson-databind.csv",
+        "gremlin-driver": "Memory_Maxes_Neo4jDriver_gremlin-driver.csv",
+        "neo4j": "Memory_Maxes_Neo4jDriver_neo4j.csv"
     },
     "Neptune": {
         "jackson-databind": "Tracer_Neptune_jackson.csv",
-        "gremlin-driver": "Tracer_Neptune_gremlin.csv",
+        "gremlin-driver": "Memory_Maxes_NeptuneDriver_gremlin-driver.csv",
         "neo4j": "Tracer_Neptune_neo4j.csv"
     },
     "TigerGraph": {
