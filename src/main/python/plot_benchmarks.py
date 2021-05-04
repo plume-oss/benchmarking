@@ -51,7 +51,6 @@ remote_db = {
     # PID: 578724
     # Base memory: 2054820K
     "Neo4j": {
-        # TODO Measure jackson storage again
         "jackson-databind": {
             "Initial Storage": 513740 * 1024,
             "Storage": 1619824 * 1024,
