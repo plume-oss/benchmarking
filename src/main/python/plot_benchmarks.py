@@ -295,9 +295,8 @@ def avg_db_build_update(rs: List[Benchmark]):
     plt.xticks([0.345, 1.345, 2.345],
                ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
 
-    def plot_as_bars(xs: dict, bottom: dict, hatch):
+    def plot_as_bars(xs: dict, hatch, offset_text=0):
         data = {}
-        bottom_data = {}
         for ((f, db), avg) in xs.items():
             if db not in data.keys():
                 data[db] = [0, 0, 0]
@@ -307,43 +306,23 @@ def avg_db_build_update(rs: List[Benchmark]):
                 data[db][1] = avg
             elif "neo4j" in f:
                 data[db][2] = avg
-        if bottom is not None:
-            for ((f, db), avg) in bottom.items():
-                if db not in bottom_data.keys():
-                    bottom_data[db] = [0, 0, 0]
-                if "jackson" in f:
-                    bottom_data[db][0] = avg
-                elif "gremlin" in f:
-                    bottom_data[db][1] = avg
-                elif "neo4j" in f:
-                    bottom_data[db][2] = avg
 
         x = np.arange(3)
-        i = 0.00
-        max_avg = 0
-        for (db, avg) in data.items():
-            inc = 1.0 / len(data.items()) - 0.025
-            if bottom is None:
-                ax.bar(x + i, avg, width=inc, label=db, edgecolor='w',
+        for i, (db, avg) in enumerate(data.items()):
+            inc = 1.0 / len(data.items()) - 0.02
+            ax.bar(x + i * inc, avg, width=inc - 0.03, label=db, edgecolor='w',
                        hatch=hatch, color=cols[db])
-            else:
-                ax.bar(x + i, avg, width=inc, label=db, hatch=hatch, edgecolor='w',
-                       color=cols[db], bottom=bottom_data[db])
             for j, v in enumerate(avg):
-                y = v
-                if bottom is not None:
-                    y += bottom_data[db][j]
-                ax.text(j + i - 0.125, y, display_time(v * 1000), font=lbl_font)
-            if max(avg) > max_avg:
-                max_avg = max(avg)
-            i += inc
+                ax.text(j + i * inc - 0.15 + offset_text, v + 1 *
+                    gauss(0, 1), display_time(v * 1000), font=lbl_font)
 
     total = {}
     for k, v in avg_update.items():
         total[k] = v + avg_disupdt[k]
-    plot_as_bars(avg_update, None, '//')
-    plot_as_bars(avg_disupdt, avg_update, ".")
-    plot_as_bars(avg_build, total, "\\")
+    
+    plot_as_bars(avg_build, "\\")
+    plot_as_bars(avg_disupdt, ".", 0.15)
+    plot_as_bars(avg_update, '//')
 
     legend_elements = [
         Patch(facecolor='white', edgecolor='k', hatch='//',
@@ -357,8 +336,8 @@ def avg_db_build_update(rs: List[Benchmark]):
         legend_elements.append(Line2D([0], [0], color=c, label=db, lw=4))
     ymin, ymax = ax.get_ylim()
     plt.ylim([ymin, ymax + ymax * 0.10])
-    fig.set_size_inches(9, 6)
-    plt.legend(handles=legend_elements, loc=[0.08, -0.25], ncol=4)
+    fig.set_size_inches(10, 6)
+    plt.legend(handles=legend_elements, loc=[0.125, -0.25], ncol=4)
     plt.tight_layout()
 
     fig.savefig("./results/db_avg_operation_stats.pdf")
