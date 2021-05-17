@@ -1,6 +1,7 @@
 import csv
 import re
 from typing import List
+from matplotlib.patches import Patch
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,19 +57,19 @@ remote_db = {
             "Storage": 1619824 * 1024,
             "Initial Memory": 2054820 * 1024,
             "Memory": 5851804 * 1024
-            },
+        },
         "gremlin-driver": {
             "Initial Storage": 513740 * 1024,
             "Storage": 564796 * 1024,
             "Initial Memory": 2054820 * 1024,
             "Memory": 3592587336
-            },
+        },
         "neo4j": {
             "Initial Storage": 513740 * 1024,
             "Storage": 530456 * 1024,
             "Initial Memory": 2054820 * 1024,
             "Memory": 2154218136
-            },
+        },
     },
     # For neptune, the initial and storage are swapped since the only metric is free local storage
     "Neptune": {
@@ -243,13 +244,16 @@ def repo_commit_deltas():
         i += 1
 
     custom_lines = [Line2D([0], [0], color=projects['Jackson Databind'], lw=4, label='Jackson Databind'),
-                    Line2D([0], [0], color=projects['Gremlin Driver'], lw=4, label='Gremlin Driver'),
+                    Line2D([0], [0], color=projects['Gremlin Driver'],
+                           lw=4, label='Gremlin Driver'),
                     Line2D([0], [0], color=projects['Neo4j'], lw=4, label='Neo4j')]
     # plt.legend(handles=custom_lines)
     fig.set_size_inches(9, 6)
     fig.text(0.5, 0.1, 'Commit', ha='center')
-    fig.text(0.04, 0.5, 'Number of Changes Since Last Commit', va='center', rotation='vertical')
-    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(-.05, -.8, 1.1, .01), mode="expand", handles=custom_lines)
+    fig.text(0.04, 0.5, 'Number of Changes Since Last Commit',
+             va='center', rotation='vertical')
+    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(-.05, -.8,
+               1.1, .01), mode="expand", handles=custom_lines)
     fig.subplots_adjust(bottom=0.18)
     fig.savefig("./results/project_deltas.pdf")
 
@@ -257,6 +261,14 @@ def repo_commit_deltas():
 def avg_db_build_update(rs: List[Benchmark]):
     dbs = set([r.database for r in rs])
     fs = set([r.file_name for r in rs])
+
+    cols = {
+        'TinkerGraph': 'tab:blue',
+        'OverflowDB': 'tab:green',
+        'TigerGraph': 'tab:orange',
+        'Neo4j': 'tab:purple',
+        'Neptune': 'tab:olive'
+    }
 
     # Map (File, Database) -> AVG
     avg_build = {}
@@ -273,9 +285,18 @@ def avg_db_build_update(rs: List[Benchmark]):
             avg_disupdt[(f, db)] = np.mean(
                 [str_to_ns(r.total_time()) for r in rs if
                  r.file_name == f and r.database == db and "DISCUPT" in r.phase])
+    fig, ax = plt.subplots()
+    ax.set_title("Average Operation Time Per Database")
+    ax.set_xlabel("Project")
+    ax.set_ylabel("Time Elapsed (Logarithmic)")
+    plt.yscale('log')
+    plt.yticks([])
+    plt.xticks([0.345, 1.345, 2.345],
+               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
 
-    def plot_as_bars(xs: dict, type: str):
+    def plot_as_bars(xs: dict, bottom: dict, hatch):
         data = {}
+        bottom_data = {}
         for ((f, db), avg) in xs.items():
             if db not in data.keys():
                 data[db] = [0, 0, 0]
@@ -285,35 +306,61 @@ def avg_db_build_update(rs: List[Benchmark]):
                 data[db][1] = avg
             elif "neo4j" in f:
                 data[db][2] = avg
-
-        fig, ax = plt.subplots()
-        ax.set_title("Average {} Time Per Database".format(type))
-        ax.set_xlabel("Project")
-        ax.set_ylabel("Time Elapsed (Logarithmic)")
+        if bottom is not None:
+            for ((f, db), avg) in bottom.items():
+                if db not in bottom_data.keys():
+                    bottom_data[db] = [0, 0, 0]
+                if "jackson" in f:
+                    bottom_data[db][0] = avg
+                elif "gremlin" in f:
+                    bottom_data[db][1] = avg
+                elif "neo4j" in f:
+                    bottom_data[db][2] = avg
 
         x = np.arange(3)
         i = 0.00
         max_avg = 0
         for (db, avg) in data.items():
             inc = 1.0 / len(data.items()) - 0.025
-            ax.bar(x + i, avg, width=inc, label=db)
+            if bottom is None:
+                ax.bar(x + i, avg, width=inc, label=db, edgecolor='w',
+                       hatch=hatch, color=cols[db])
+            else:
+                ax.bar(x + i, avg, width=inc, label=db, hatch=hatch, edgecolor='w',
+                       color=cols[db], bottom=bottom_data[db])
             for j, v in enumerate(avg):
-                ax.text(j + i - 0.125, v, display_time(v * 1000), font=lbl_font)
+                y = v
+                if bottom is not None:
+                    y += bottom_data[db][j]
+                ax.text(j + i - 0.125, y, display_time(v * 1000), font=lbl_font)
             if max(avg) > max_avg:
                 max_avg = max(avg)
             i += inc
-        plt.yscale('log')
-        plt.yticks([])
-        plt.xticks([0.345, 1.345, 2.345],
-                   ['jackson-databind', 'gremlin-driver', 'neo4j'])
-        ymin, ymax = ax.get_ylim()
-        plt.ylim([ymin, ymax + ymax * 0.10])
-        plt.legend()
-        fig.savefig("./results/db_{}_stats.pdf".format(type.replace(' ', '_').lower()))
 
-    plot_as_bars(avg_update, "Online Update")
-    plot_as_bars(avg_disupdt, "Disconnected Update")
-    plot_as_bars(avg_build, "Build")
+    total = {}
+    for k, v in avg_update.items():
+        total[k] = v + avg_disupdt[k]
+    plot_as_bars(avg_update, None, '//')
+    plot_as_bars(avg_disupdt, avg_update, ".")
+    plot_as_bars(avg_build, total, "\\")
+
+    legend_elements = [
+        Patch(facecolor='white', edgecolor='k', hatch='//',
+              label='Online Update'),
+        Patch(facecolor='white', edgecolor='k', hatch='.',
+              label='Disconnected Update'),
+        Patch(facecolor='white', edgecolor='k', hatch='\\',
+              label='Full Build')]
+
+    for db, c in cols.items():
+        legend_elements.append(Line2D([0], [0], color=c, label=db, lw=4))
+    ymin, ymax = ax.get_ylim()
+    plt.ylim([ymin, ymax + ymax * 0.10])
+    fig.set_size_inches(9, 6)
+    plt.legend(handles=legend_elements, loc=[0.08, -0.25], ncol=4)
+    plt.tight_layout()
+
+    fig.savefig("./results/db_avg_operation_stats.pdf")
 
 
 def program_sizes():
@@ -336,7 +383,8 @@ def program_sizes():
             ax.text(i + 0.40, v + 100, str(v))
         plt.legend()
         plt.ylim([0, max(data[1]) + 600])
-        fig.savefig("./results/jar_{}_code_stats.pdf".format(lbl.lower().replace(" ", "_")))
+        fig.savefig(
+            "./results/jar_{}_code_stats.pdf".format(lbl.lower().replace(" ", "_")))
 
     app_data = [
         # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
@@ -388,10 +436,12 @@ def plot_build_updates(f):
         if f == fname:
             update_build_perf(db, ax[i, 0], r)
             i += 1
-    plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
+    plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1",
+               "Commit 2", "Commit 3", "Commit 4"])
     fig.suptitle(f, y=.95)
     fig.text(0.04, 0.5, 'Time Elapsed (s)', va='center', rotation='vertical')
-    plt.legend(loc="lower center", ncol=4, bbox_to_anchor=(-.05, -0.45, 1.1, .102), mode="expand")
+    plt.legend(loc="lower center", ncol=4,
+               bbox_to_anchor=(-.05, -0.45, 1.1, .102), mode="expand")
     fig.savefig("./results/build_updates_{}.pdf".format(f.split("/")[-1]))
 
 
@@ -409,16 +459,20 @@ def plot_cache_results(rs: List[Benchmark]):
         avg_cache_hits = []
         avg_cache_misses = []
         for f in fs:
-            avg_cache_hits.append(np.average([r.cache_hits for r in rs if r.file_name == f and p in r.phase]))
-            avg_cache_misses.append(np.average([r.cache_misses for r in rs if r.file_name == f and p in r.phase]))
+            avg_cache_hits.append(np.average(
+                [r.cache_hits for r in rs if r.file_name == f and p in r.phase]))
+            avg_cache_misses.append(np.average(
+                [r.cache_misses for r in rs if r.file_name == f and p in r.phase]))
         ax = axes[i, 0]
         ax.set_title(readable_phases[j])
 
         perc_hits = np.array([])
         perc_misses = np.array([])
         for a in range(len(fs)):
-            perc_hits = np.append(perc_hits, avg_cache_hits[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
-            perc_misses = np.append(perc_misses, avg_cache_misses[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
+            perc_hits = np.append(
+                perc_hits, avg_cache_hits[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
+            perc_misses = np.append(
+                perc_misses, avg_cache_misses[a] / (avg_cache_hits[a] + avg_cache_misses[a]))
 
         perc_hits = np.multiply(perc_hits, 100)
         perc_misses = np.multiply(perc_misses, 100)
@@ -435,9 +489,11 @@ def plot_cache_results(rs: List[Benchmark]):
     custom_lines = [Line2D([0], [0], color='tab:blue', lw=4, label='Cache Hits'),
                     Line2D([0], [0], color='tab:orange', lw=4, label='Cache Misses')]
     fig.suptitle("Cache Metrics Per Project", y=.95)
-    fig.text(0.04, 0.5, 'Cache Operation Count (%)', va='center', rotation='vertical')
+    fig.text(0.04, 0.5, 'Cache Operation Count (%)',
+             va='center', rotation='vertical')
     fig.text(0.5, 0.06, 'GitHub Repository', ha='center')
-    plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.235, -0.4, .5, .102), mode="expand", handles=custom_lines)
+    plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(
+        0.235, -0.4, .5, .102), mode="expand", handles=custom_lines)
     fig.savefig("./results/cache_metrics.pdf")
 
 
@@ -477,12 +533,14 @@ def plot_inmem_storage():
         for i, v in enumerate(data[2]):
             ax.text(i + 0.35, v + 10000, display_storage(v))
 
-    fig.text(0.04, 0.5, 'Bytes (logarithmic)', va='center', rotation='vertical')
+    fig.text(0.04, 0.5, 'Bytes (logarithmic)',
+             va='center', rotation='vertical')
     fig.text(0.5, 0.1, 'GitHub Repository', ha='center')
     fig.subplots_adjust(bottom=0.18)
     for j, d in enumerate(inmemdbs):
         plot_storage(axes[j, 0], data[j], d)
-    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -.5, 1, .01), mode="expand")
+    plt.legend(loc="lower center", ncol=3,
+               bbox_to_anchor=(0, -.5, 1, .01), mode="expand")
 
     plt.xticks([0.25, 1.25, 2.25], progs)
     fig.savefig("./results/inmem_storage_footprint.pdf")
@@ -503,10 +561,12 @@ def plot_remote_storage():
         for p in progs:
             if remote == "Neptune":
                 used.append(remote_storage[p]["Storage"])
-                reserved.append(remote_storage[p]["Initial Storage"] - remote_storage[p]["Storage"])
+                reserved.append(
+                    remote_storage[p]["Initial Storage"] - remote_storage[p]["Storage"])
             else:
                 initial.append(remote_storage[p]["Initial Storage"])
-                used.append(remote_storage[p]["Storage"] - remote_storage[p]["Initial Storage"])
+                used.append(remote_storage[p]["Storage"] -
+                            remote_storage[p]["Initial Storage"])
         data.append([initial, used, reserved])
 
     x = np.arange(3)
@@ -522,17 +582,24 @@ def plot_remote_storage():
             for i, v in enumerate(data[0]):
                 ax.text(i + 0.15, v, display_storage(v), color="tab:blue")
             for i, v in enumerate(data[1]):
-                ax.text(i - 0.15, v + data[0][i] + 10000, display_storage(v), color="tab:orange")
+                ax.text(i - 0.15, v + data[0][i] + 10000,
+                        display_storage(v), color="tab:orange")
         # ax.set_yscale('log')
         ax.set_yticks([])
         if title == "Neptune":
-            ax.bar(x, [0, 0, 0], width=0.25, label="Initial Size", color="tab:blue")
-            ax.bar(x, data[1], width=0.25, label="Used Size", color="tab:orange")
-            ax.bar(x, data[2], width=0.25, label="Reserved Size", color="tab:green", bottom=data[1])
+            ax.bar(x, [0, 0, 0], width=0.25,
+                   label="Initial Size", color="tab:blue")
+            ax.bar(x, data[1], width=0.25,
+                   label="Used Size", color="tab:orange")
+            ax.bar(x, data[2], width=0.25, label="Reserved Size",
+                   color="tab:green", bottom=data[1])
         else:
-            ax.bar(x, data[0], width=0.25, label="Initial size", color="tab:blue")
-            ax.bar(x, data[1], width=0.25, label="Used Size", color="tab:orange", bottom=data[0])
-            ax.bar(x, [0, 0, 0], width=0.25, label="Reserved Size", color="tab:green")
+            ax.bar(x, data[0], width=0.25,
+                   label="Initial size", color="tab:blue")
+            ax.bar(x, data[1], width=0.25, label="Used Size",
+                   color="tab:orange", bottom=data[0])
+            ax.bar(x, [0, 0, 0], width=0.25,
+                   label="Reserved Size", color="tab:green")
 
         ymin, ymax = ax.get_ylim()
         ax.set_ylim([ymin, ymax * 1.25])
@@ -542,7 +609,8 @@ def plot_remote_storage():
     fig.subplots_adjust(bottom=0.2)
     for j, d in enumerate(remote_dbs):
         plot_storage(axes[j, 0], data[j], d)
-    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(0, -0.9, 1, .01), mode="expand")
+    plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(
+        0, -0.9, 1, .01), mode="expand")
     # plt.legend()
 
     plt.xticks(x, progs)
@@ -636,7 +704,8 @@ def plot_tracer_files():
             use_entries = []
             for row in csv_reader:
                 # heap_entries.append(int(''.join(re.findall('[0-9]+', str(row["Size [B]"])))))
-                use_entries.append(int(''.join(re.findall('[0-9]+', str(row["Used [B]"])))))
+                use_entries.append(
+                    int(''.join(re.findall('[0-9]+', str(row["Used [B]"])))))
         return (heap_entries, use_entries)
 
     fig.text(0.05, 0.5, 'Bytes', va='center', rotation='vertical')
