@@ -1,5 +1,6 @@
 import csv
 import re
+from random import gauss
 from typing import List
 from matplotlib.patches import Patch
 
@@ -287,7 +288,7 @@ def avg_db_build_update(rs: List[Benchmark]):
                  r.file_name == f and r.database == db and "DISCUPT" in r.phase])
     fig, ax = plt.subplots()
     ax.set_title("Average Operation Time Per Database")
-    ax.set_xlabel("Project")
+    ax.set_xlabel("GitHub Repository")
     ax.set_ylabel("Time Elapsed (Logarithmic)")
     plt.yscale('log')
     plt.yticks([])
@@ -364,27 +365,35 @@ def avg_db_build_update(rs: List[Benchmark]):
 
 
 def program_sizes():
-    def plot_program_sizes(data, lbl):
-        fig, ax = plt.subplots()
-        ax.set_title("Initial Commit {} Code Statistics".format(lbl))
-        ax.set_xlabel("GitHub Repository")
-        ax.set_ylabel("Count")
+    fig, ax = plt.subplots()
+    ax.set_title("Initial Commit Code Statistics")
+    ax.set_xlabel("GitHub Repository")
+    ax.set_ylabel("Count")
+    cols = {
+        'Classes': 'tab:orange',
+        'Methods': 'tab:purple',
+        'Fields': 'tab:blue'
+    }
+
+    def plot_program_sizes(data, bottom):
         x = np.arange(3)
-        ax.bar(x + 0.00, data[0], width=0.25, label="Classes")
-        ax.bar(x + 0.25, data[1], width=0.25, label="Methods")
-        ax.bar(x + 0.50, data[2], width=0.25, label="Fields")
-        plt.xticks([0.25, 1.25, 2.25],
-                   ['jackson-databind', 'gremlin-driver', 'neo4j'])
-        for i, v in enumerate(data[0]):
-            ax.text(i - 0.1, v + 100, str(v))
-        for i, v in enumerate(data[1]):
-            ax.text(i + 0.12, v + 100, str(v))
-        for i, v in enumerate(data[2]):
-            ax.text(i + 0.40, v + 100, str(v))
-        plt.legend()
-        plt.ylim([0, max(data[1]) + 600])
-        fig.savefig(
-            "./results/jar_{}_code_stats.pdf".format(lbl.lower().replace(" ", "_")))
+        inc = 1.0 / len(data)
+        if bottom is None:
+            for i, (l, c) in enumerate(cols.items()):
+                ax.bar(x + i * inc, data[i], width=0.25,
+                       label=l,  color=c, edgecolor='k')
+        else:
+            for i, (l, c) in enumerate(cols.items()):
+                ax.bar(x + i * inc, data[i], width=0.25,
+                       label=l, bottom=bottom[i], color=c, hatch='//')
+
+        # for k in range(len(data)):
+        #     if bottom is None:
+        #         for i, v in enumerate(data[k]):
+        #             ax.text(i + i * inc, v + 100, str(v))
+        #     else:
+        #         for i, v in enumerate(data[k]):
+        #             ax.text(i + i * inc, v + 100 + bottom[k][i], str(v))
 
     app_data = [
         # FasterXML/jackson-databind | apache/tinkerpop/gremlin-driver | neo4j/neo4j
@@ -398,8 +407,23 @@ def program_sizes():
         [2813, 2150, 363]  # Library Fields
     ]
 
-    plot_program_sizes(app_data, "Project")
-    plot_program_sizes(lib_data, "External Library")
+    plot_program_sizes(app_data, None)
+    plot_program_sizes(lib_data, app_data)
+    plt.xticks([0.25, 1.25, 2.25],
+               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
+
+    legend_elements = []
+    for lb, c in cols.items():
+        legend_elements.append(Line2D([0], [0], color=c, label=lb, lw=4))
+    legend_elements.extend([Patch(facecolor='white', edgecolor='k', hatch='//',
+                                 label='External'),
+                           Patch(facecolor='white', edgecolor='k', hatch='',
+                                 label='Application')])
+
+    plt.legend(handles=legend_elements)
+    plt.tight_layout()
+
+    fig.savefig("./results/jar_code_stats.pdf")
 
 
 def graph_sizes():
@@ -611,7 +635,6 @@ def plot_remote_storage():
         plot_storage(axes[j, 0], data[j], d)
     plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(
         0, -0.9, 1, .01), mode="expand")
-    # plt.legend()
 
     plt.xticks(x, progs)
     fig.savefig("./results/remote_storage_footprint.pdf")
@@ -687,15 +710,27 @@ tracer_files = {
 
 
 def plot_tracer_files():
-    fig, axes = plt.subplots(nrows=len(tracer_files.keys()), ncols=1, sharex=True, squeeze=False,
-                             figsize=(9, 2.5 * len(tracer_files.keys())),
-                             tight_layout=False)
-    fig.suptitle("Process Memory Footprint")
+    fig, ax = plt.subplots()
+    ax.set_title("Process Memory Max Footprint")
+    ax.set_xlabel("GitHub Repository")
+    ax.set_ylabel("Bytes")
+    plt.xticks([0.345, 1.345, 2.345],
+               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
 
-    def plot_memory(ax, x, y, e):
-        ax.errorbar(x, y, e, linestyle="None", fmt='o')
+    cols = {
+        'TinkerGraph': 'tab:blue',
+        'OverflowDB': 'tab:green',
+        'TigerGraph': 'tab:orange',
+        'Neo4j': 'tab:purple',
+        'Neptune': 'tab:olive'
+    }
+
+    def plot_memory(db, x, y, e, offset=0):
+        ax.bar(x + offset, y, yerr=e, width=inc,
+               ecolor='tab:pink', color=cols[db])
         for i, v in enumerate(y):
-            ax.text(i + 0.025, v + 10e7, display_storage(v))
+            ax.text(i + offset - 0.1, v + 1e8 *
+                    gauss(0, 1) + 1e8, display_storage(v))
 
     def extract_mem_use(trace_file):
         with open('./results/{}'.format(trace_file)) as csv_file:
@@ -708,27 +743,26 @@ def plot_tracer_files():
                     int(''.join(re.findall('[0-9]+', str(row["Used [B]"])))))
         return (heap_entries, use_entries)
 
-    fig.text(0.05, 0.5, 'Bytes', va='center', rotation='vertical')
-    fig.text(0.51, 0.05, 'GitHub Repository', ha='center')
-    fig.subplots_adjust(bottom=0.1)
-
     j = 0
+    inc = 1.0 / len(tracer_files.items()) - 0.025
+    offset = 0
     for d, f in tracer_files.items():
-        current_ax = axes[j, 0]
-        current_ax.set_title(d)
         _, use1 = extract_mem_use(f["jackson-databind"])
         _, use2 = extract_mem_use(f["gremlin-driver"])
         _, use3 = extract_mem_use(f["neo4j"])
         data = [np.average(use1), np.average(use2), np.average(use3)]
         dev = [np.std(use1), np.std(use2), np.std(use3)]
-        plot_memory(current_ax, np.arange(3), data, dev)
-        ymin, ymax = current_ax.get_ylim()
-        current_ax.set_ylim([ymin, ymax * 1.25])
+        plot_memory(d, np.arange(3), data, dev, offset)
+        offset += inc
 
         j += 1
+    legend_elements = []
 
-    plt.xticks(np.arange(3),
-               ['jackson-databind', 'gremlin-driver', 'neo4j'])
+    for db, c in cols.items():
+        legend_elements.append(Line2D([0], [0], color=c, label=db, lw=4))
+    fig.set_size_inches(9, 6)
+    plt.legend(handles=legend_elements, loc=[0.08, -0.2], ncol=5)
+    plt.tight_layout()
     fig.savefig("./results/process_memory_footprint.pdf")
 
 
