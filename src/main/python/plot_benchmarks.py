@@ -641,42 +641,34 @@ def plot_remote_storage():
 
 
 def plot_remote_memory():
-    fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * 3),
-                             tight_layout=False)
-    fig.suptitle("Remote Database Memory Footprint")
-    remote_dbs = ["TigerGraph", "Neo4j", "Neptune"]
+    fig, ax = plt.subplots()
+    ax.set_title("Remote Database Maximum Memory Footprint")
+    ax.set_xlabel("GitHub Repository")
+    ax.set_ylabel("Bytes")
+    cols = {
+        'TigerGraph': 'tab:orange',
+        'Neo4j': 'tab:purple',
+        'Neptune': 'tab:olive'
+    }
     progs = ["jackson-databind", "gremlin-driver", "neo4j"]
+    
     data = []
-    for remote in remote_dbs:
+    for remote in cols.keys():
         remote_storage = remote_db[remote]
         initial = []
-        # used = []
         for p in progs:
             initial.append(remote_storage[p]["Memory"])
-            # used.append(remote_storage[p]["Storage"] - remote_storage[p]["Initial Storage"])
         data.append([initial])
 
     x = np.arange(3)
+    for i, (db, col) in enumerate(cols.items()):
+        for j, v in enumerate(data[i][0]):
+            ax.text(j + i * 0.25 - 0.2, v, display_storage(v))
+        ax.bar(x + i * 0.25, data[i][0], width=0.25, label=db, color=col)
 
-    def plot_memory(ax, data, title):
-        ax.set_title(title)
-        for i, v in enumerate(data[0]):
-            ax.text(i + 0.15, v, display_storage(v), color="tab:blue")
-        # for i, v in enumerate(data[1]):
-        #     ax.text(i + 0.15, v, display_storage(v), color="tab:orange")
-        ax.bar(x, data[0], width=0.25, label="Used size", color="tab:blue")
-        # ax.bar(x, data[1], width=0.25, label="Used Size", color="tab:orange")
-        ymin, ymax = ax.get_ylim()
-        ax.set_ylim([ymin, ymax * 1.8])
-
-    fig.text(0.05, 0.5, 'Bytes', va='center', rotation='vertical')
-    fig.text(0.51, 0.03, 'GitHub Repository', ha='center')
-    fig.subplots_adjust(bottom=0.1)
-    for j, d in enumerate(remote_dbs):
-        plot_memory(axes[j, 0], data[j], d)
-    # plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(0, -1, 1, .01), mode="expand")
-
-    plt.xticks(x, progs)
+    plt.xticks([0.25, 1.25, 2.25], progs)
+    plt.legend(loc=[0.15, -0.225], ncol=3)
+    plt.tight_layout()
     fig.savefig("./results/remote_memory_footprint.pdf")
 
 
