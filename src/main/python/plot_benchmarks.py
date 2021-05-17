@@ -311,15 +311,15 @@ def avg_db_build_update(rs: List[Benchmark]):
         for i, (db, avg) in enumerate(data.items()):
             inc = 1.0 / len(data.items()) - 0.02
             ax.bar(x + i * inc, avg, width=inc - 0.03, label=db, edgecolor='w',
-                       hatch=hatch, color=cols[db])
+                   hatch=hatch, color=cols[db])
             for j, v in enumerate(avg):
                 ax.text(j + i * inc - 0.15 + offset_text, v + 1 *
-                    gauss(0, 1), display_time(v * 1000), font=lbl_font)
+                        gauss(0, 1), display_time(v * 1000), font=lbl_font)
 
     total = {}
     for k, v in avg_update.items():
         total[k] = v + avg_disupdt[k]
-    
+
     plot_as_bars(avg_build, "\\")
     plot_as_bars(avg_disupdt, ".", 0.15)
     plot_as_bars(avg_update, '//')
@@ -395,7 +395,7 @@ def program_sizes():
     for lb, c in cols.items():
         legend_elements.append(Line2D([0], [0], color=c, label=lb, lw=4))
     legend_elements.extend([Patch(facecolor='white', edgecolor='k', hatch='//',
-                                 label='External'),
+                                  label='External'),
                            Patch(facecolor='white', edgecolor='k', hatch='',
                                  label='Application')])
 
@@ -449,16 +449,22 @@ def plot_build_updates(f):
 
 
 def plot_cache_results(rs: List[Benchmark]):
-    phases = ["BUILD", "UPDATE", "DISCUPT"]
+    phases = {
+        "BUILD": '//', 
+        "UPDATE": '*', 
+        "DISCUPT": '.'
+    }
     readable_phases = ["Full Build", "Online Update", "Disconnected Update"]
 
     fs = set([x.file_name for x in rs])
     # Plot per phase
-    fig, axes = plt.subplots(nrows=len(phases), ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * len(dbs)),
-                             tight_layout=False)
+    fig, ax = plt.subplots()
+    ax.set_title("Cache Metrics Per Project")
+    ax.set_xlabel("GitHub Repository")
+    ax.set_ylabel("Cache Operation Count (%)")
     i = 0
-    x = np.arange(3)
-    for j, p in enumerate(phases):
+    xs = np.arange(3)
+    for j, (p, hatch) in enumerate(phases.items()):
         avg_cache_hits = []
         avg_cache_misses = []
         for f in fs:
@@ -466,8 +472,6 @@ def plot_cache_results(rs: List[Benchmark]):
                 [r.cache_hits for r in rs if r.file_name == f and p in r.phase]))
             avg_cache_misses.append(np.average(
                 [r.cache_misses for r in rs if r.file_name == f and p in r.phase]))
-        ax = axes[i, 0]
-        ax.set_title(readable_phases[j])
 
         perc_hits = np.array([])
         perc_misses = np.array([])
@@ -479,24 +483,29 @@ def plot_cache_results(rs: List[Benchmark]):
 
         perc_hits = np.multiply(perc_hits, 100)
         perc_misses = np.multiply(perc_misses, 100)
-
-        ax.bar(x + 0.00, perc_hits, width=0.25, color='tab:blue')
-        ax.bar(x + 0.25, perc_misses, width=0.25, color='tab:orange')
-        for k, v in enumerate(perc_hits):
-            ax.text(k - 0.1, v, str("{:.2f}%".format(v)))
-        for k, v in enumerate(perc_misses):
-            ax.text(k + 0.15, v, str("{:.2f}%".format(v)))
+        for x in xs:
+            ax.bar(x + 0.00 + j * 0.3, perc_hits[x], width=0.45/len(xs), color='tab:blue', hatch=hatch, edgecolor='w')
+            ax.bar(x + 0.15 + j * 0.3, perc_misses[x], width=0.45/len(xs), color='tab:orange', hatch=hatch, edgecolor='w')
+        for x, v in enumerate(perc_hits):
+            ax.text(x + 0.00 + j * 0.3 - 0.08, v, str("{:.2f}%".format(v)))
+        for x, v in enumerate(perc_misses):
+            ax.text(x + 0.15 + j * 0.3 - 0.08, v, str("{:.2f}%".format(v)))
         i += 1
 
-    plt.xticks([0.125, 1.125, 2.125], fs)
-    custom_lines = [Line2D([0], [0], color='tab:blue', lw=4, label='Cache Hits'),
-                    Line2D([0], [0], color='tab:orange', lw=4, label='Cache Misses')]
-    fig.suptitle("Cache Metrics Per Project", y=.95)
-    fig.text(0.04, 0.5, 'Cache Operation Count (%)',
-             va='center', rotation='vertical')
-    fig.text(0.5, 0.06, 'GitHub Repository', ha='center')
-    plt.legend(loc="lower center", ncol=2, bbox_to_anchor=(
-        0.235, -0.4, .5, .102), mode="expand", handles=custom_lines)
+    plt.xticks([0.25, 1.25, 2.25], fs)
+    custom_lines = [
+        Line2D([0], [0], color='tab:blue', lw=4, label='Cache Hits'),
+        Line2D([0], [0], color='tab:orange', lw=4, label='Cache Misses'),
+        Patch(facecolor='white', edgecolor='k', hatch='*',
+              label='Online Update'),
+        Patch(facecolor='white', edgecolor='k', hatch='.',
+              label='Disconnected Update'),
+        Patch(facecolor='white', edgecolor='k', hatch='//',
+              label='Full Build')
+    ]
+    fig.set_size_inches(9, 6)
+    plt.legend(handles=custom_lines, loc=[-0.035, -0.2], ncol=5)
+    plt.tight_layout()
     fig.savefig("./results/cache_metrics.pdf")
 
 
@@ -630,7 +639,7 @@ def plot_remote_memory():
         'Neptune': 'tab:olive'
     }
     progs = ["jackson-databind", "gremlin-driver", "neo4j"]
-    
+
     data = []
     for remote in cols.keys():
         remote_storage = remote_db[remote]
