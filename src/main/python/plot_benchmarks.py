@@ -235,7 +235,7 @@ def repo_commit_deltas():
     ]
     plt.xticks(x, ["Commit 1", "Commit 2", "Commit 3", "Commit 4"])
     markers = ['o', 'o', 'o']
-    projects = {'Jackson Databind': 'b', 'Gremlin Driver': 'g', 'Neo4j': 'r'}
+    projects = {'Jackson Databind': 'b', 'Gremlin Driver': 'g', 'Neo4j Community': 'r'}
 
     i = 0
     for p, col in projects.items():
@@ -247,7 +247,7 @@ def repo_commit_deltas():
     custom_lines = [Line2D([0], [0], color=projects['Jackson Databind'], lw=4, label='Jackson Databind'),
                     Line2D([0], [0], color=projects['Gremlin Driver'],
                            lw=4, label='Gremlin Driver'),
-                    Line2D([0], [0], color=projects['Neo4j'], lw=4, label='Neo4j')]
+                    Line2D([0], [0], color=projects['Neo4j Community'], lw=4, label='Neo4j Community')]
     # plt.legend(handles=custom_lines)
     fig.set_size_inches(9, 6)
     fig.text(0.5, 0.1, 'Commit', ha='center')
@@ -356,14 +356,14 @@ def program_sizes():
 
     def plot_program_sizes(data, bottom):
         x = np.arange(3)
-        inc = 1.0 / len(data)
+        inc = 1.0 / len(data) - 0.03
         if bottom is None:
             for i, (l, c) in enumerate(cols.items()):
-                ax.bar(x + i * inc, data[i], width=0.25,
+                ax.bar(x + i * inc, data[i], width=0.3,
                        label=l,  color=c, edgecolor='k')
         else:
             for i, (l, c) in enumerate(cols.items()):
-                ax.bar(x + i * inc, data[i], width=0.25,
+                ax.bar(x + i * inc, data[i], width=0.3,
                        label=l, bottom=bottom[i], color=c, hatch='//')
 
         # for k in range(len(data)):
@@ -388,7 +388,7 @@ def program_sizes():
 
     plot_program_sizes(app_data, None)
     plot_program_sizes(lib_data, app_data)
-    plt.xticks([0.25, 1.25, 2.25],
+    plt.xticks([0.3, 1.3, 2.3],
                ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
 
     legend_elements = []
@@ -425,7 +425,7 @@ def graph_sizes():
     for i, v in enumerate(es):
         ax.text(i + 0.10, v + 100000, str(v))
     plt.xticks([0.125, 1.125, 2.125],
-               ['jackson-databind', 'gremlin-driver', 'neo4j'])
+               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
     plt.legend()
     plt.ylim([0, max(es) + 300000])
     fig.savefig("./results/jar_graph_stats.pdf")
@@ -454,7 +454,6 @@ def plot_cache_results(rs: List[Benchmark]):
         "UPDATE": '*', 
         "DISCUPT": '.'
     }
-    readable_phases = ["Full Build", "Online Update", "Disconnected Update"]
 
     fs = set([x.file_name for x in rs])
     # Plot per phase
@@ -492,7 +491,15 @@ def plot_cache_results(rs: List[Benchmark]):
             ax.text(x + 0.15 + j * 0.3 - 0.08, v, str("{:.2f}%".format(v)))
         i += 1
 
-    plt.xticks([0.25, 1.25, 2.25], fs)
+    fmap = {
+        'apache/tinkerpop/gremlin-driver':'gremlin-driver', 
+        'neo4j/neo4j': 'neo4j-community',
+        'FasterXML/jackson-databind': 'jackson-databind'
+    }
+    xlabs = []
+    for f in fs:
+        xlabs.append(fmap[f])
+    plt.xticks([0.45, 1.45, 2.45], xlabs)
     custom_lines = [
         Line2D([0], [0], color='tab:blue', lw=4, label='Cache Hits'),
         Line2D([0], [0], color='tab:orange', lw=4, label='Cache Misses'),
@@ -553,8 +560,15 @@ def plot_inmem_storage():
         plot_storage(axes[j, 0], data[j], d)
     plt.legend(loc="lower center", ncol=3,
                bbox_to_anchor=(0, -.5, 1, .01), mode="expand")
-
-    plt.xticks([0.25, 1.25, 2.25], progs)
+    fmap = {
+        'gremlin-driver':'gremlin-driver', 
+        'neo4j': 'neo4j-community',
+        'jackson-databind': 'jackson-databind'
+    }
+    xlabs = []
+    for f in progs:
+        xlabs.append(fmap[f])
+    plt.xticks([0.25, 1.25, 2.25], xlabs)
     fig.savefig("./results/inmem_storage_footprint.pdf")
 
 
@@ -623,8 +637,15 @@ def plot_remote_storage():
         plot_storage(axes[j, 0], data[j], d)
     plt.legend(loc="lower center", ncol=3, bbox_to_anchor=(
         0, -0.9, 1, .01), mode="expand")
-
-    plt.xticks(x, progs)
+    fmap = {
+        'gremlin-driver':'gremlin-driver', 
+        'neo4j': 'neo4j-community',
+        'jackson-databind': 'jackson-databind'
+    }
+    xlabs = []
+    for f in progs:
+        xlabs.append(fmap[f])
+    plt.xticks(x, xlabs)
     fig.savefig("./results/remote_storage_footprint.pdf")
 
 
@@ -654,7 +675,16 @@ def plot_remote_memory():
             ax.text(j + i * 0.25 - 0.2, v, display_storage(v))
         ax.bar(x + i * 0.25, data[i][0], width=0.25, label=db, color=col)
 
-    plt.xticks([0.25, 1.25, 2.25], progs)
+    fmap = {
+        'gremlin-driver':'gremlin-driver', 
+        'neo4j': 'neo4j-community',
+        'jackson-databind': 'jackson-databind'
+    }
+    xlabs = []
+    for f in progs:
+        xlabs.append(fmap[f])
+    plt.xticks([0.25, 1.25, 2.25], xlabs)
+
     plt.legend(loc=[0.15, -0.225], ncol=3)
     plt.tight_layout()
     fig.savefig("./results/remote_memory_footprint.pdf")
