@@ -53,25 +53,32 @@
  * Return all identifiers which do not get re-assigned and can thus be a
  * candidate for constant propagation.
  *
- * @return (IDENTIFIER.name, METHOD.name, METHOD.lineNumber)
+ * @return List[Identifier] of identifiers of primitive types where all
+ * occurrences can be replaced by the value in their initial declaration.
  */
-({
-    def assignSinks = cpg.call.filter(_.name.contains("<operator>.assignment")).l
-    def otherSinks = cpg.call.filterNot(_.name.contains("<operator>.assignment")).l
-    def sources = cpg.identifier
+({ 
+    import io.shiftleft.semanticcpg.language.operatorextension.opnodes.Assignment
 
-    def flowsWithAssignment = assignSinks.map(sink =>
-        sink.reachableByFlows(sources)
-    ).toSet
+    cpg.assignment
+    .groupBy(_.argument.order(1).code.l)
+    .map { case (_, as: Traversal[Assignment]) => as.l }
+    .filter(_.size == 1)
+    .flatMap { 
+        case as: List[Assignment] => Option(as.head.argument.head, as.head.argument.l(0).typ.l)
+        case _ => Option.empty
+    }
+    .filter { case (_: Identifier, ts: List[Type]) => 
+       ts.nonEmpty && ts.head.namespace.l.exists { x => x.name.contains("<global>") } && !ts.head.fullName.contains("[]")
+    }
+    .map { case (i: Identifier, _: List[Type]) => i }
+}).l
 
-    def flowsWithoutAssignment = otherSinks.map(sink =>
-        sink.reachableByFlows(sources)
-    ).toSet
-
-    flowsWithoutAssignment
-        .diff(flowsWithAssignment)
-        .flatten
-        .map(flow => (flow.elements.head, flow.elements.head.method))
-        .dedupBy(_._1)
-        .map({case (n: Identifier, m: Method) => (n.name, m.name, m.lineNumber)})
-}).takeRight(5).l
+importCode.c.fromString("""
+       void main()
+       {
+         int a = 1;
+         int b = 1 + 3;
+         int c = 3;
+         c = 5;
+         a = 2;
+       }""") 
