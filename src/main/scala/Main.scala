@@ -6,8 +6,12 @@ import options.CacheOptions
 import store.LocalCache
 import util.{ExtractorConst, ResourceCompilationUtil}
 
+import io.shiftleft.codepropertygraph.Cpg
+import io.shiftleft.codepropertygraph.generated.nodes.Call
+import io.shiftleft.semanticcpg.language.{toMethod, toNodeTypeStarters}
 import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
+import overflowdb.traversal.iterableToTraversal
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.time.LocalDateTime
