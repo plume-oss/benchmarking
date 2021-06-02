@@ -1,6 +1,20 @@
 @main def exec(cpgFile: String, outFile: String) = {
-    loadCpg(cpgFile)
-    cpg.method.name.l |> outFile
+    importCpg(cpgFile)
+    
+    runQueries() |>> outFile
+}
+
+def runQueries(): String = {
+    var t1 = System.nanoTime
+    topDataFlows()
+    t1 = System.nanoTime - t1
+    var t2 = System.nanoTime
+    longMethodDataFlows()
+    t2 = System.nanoTime - t2
+    var t3 = System.nanoTime
+    simpleConstants()
+    t3 = System.nanoTime - t3
+    s"$t1,$t2,$t3"
 }
 
 
@@ -11,7 +25,7 @@
  * 
  * @return (ID(METHOD_PARAMETER_IN), ID(CALL), LENGTH(PATH), LENGTH(UNIQUE(METHODS))
  */ 
-({
+def topDataFlows(): List[(Long, Long, Int, Int)] = {
     def sinks = cpg.call.filterNot(_.name.contains("<operator>")).l
     def sources = cpg.method.parameter
 
@@ -28,14 +42,14 @@
 
         (p.id, c.id, flow.elements.size, flow.elements.map(_.method).dedup.l.size)
     })
-}).takeRight(5).l
+}.takeRight(5).l
 
 /**
  * Find the top 5 data flows with the largest number of unique methods visited.
  * 
  * @return (LENGTH(UNIQUE(METHODS), List(METHOD_FULL_NAMES))
  */ 
-({
+def longMethodDataFlows(): List[Any] = {
     def sinks = cpg.call.filterNot(_.name.contains("<operator>")).l
     def sources = cpg.method.parameter
 
@@ -47,7 +61,7 @@
     .map(_.distinct).distinct
     .sortBy(flow => flow.size)
     .map(f => (f.l.size, f.l))
-}).takeRight(5).l
+}.takeRight(5).l
 
 /**
  * Return all identifiers which do not get re-assigned and can thus be a
@@ -56,29 +70,32 @@
  * @return List[Identifier] of identifiers of primitive types where all
  * occurrences can be replaced by the value in their initial declaration.
  */
-({ 
-    import io.shiftleft.semanticcpg.language.operatorextension.opnodes.Assignment
+def simpleConstants(): List[Identifier] = {
+  import io.shiftleft.semanticcpg.language.operatorextension.opnodes.Assignment
 
-    cpg.assignment
+  cpg.assignment
+    // Determine which identifiers are assigned to exactly once
     .groupBy(_.argument.order(1).code.l)
-    .map { case (_, as: Traversal[Assignment]) => as.l }
+    .flatMap {
+      case (_: List[String], as: Traversal[Assignment]) => Option(as.l)
+      case _ => Option.empty
+    }
     .filter(_.size == 1)
-    .flatMap { 
-        case as: List[Assignment] => Option(as.head.argument.head, as.head.argument.l(0).typ.l)
-        case _ => Option.empty
+    .flatMap {
+      case as: List[Assignment] =>
+        Option(as.head.argument.head, as.head.argument.l.head.typ.l)
+      case _ => Option.empty
     }
-    .filter { case (_: Identifier, ts: List[Type]) => 
-       ts.nonEmpty && ts.head.namespace.l.exists { x => x.name.contains("<global>") } && !ts.head.fullName.contains("[]")
+    // Filter only primitives
+    .filter {
+      case (_: Identifier, ts: List[Type]) =>
+        ts.nonEmpty &&
+          ts.head.namespace.l.exists { x => x.name.contains("<global>")} &&
+          !ts.head.fullName.contains("[]")
+      case _ => false
     }
-    .map { case (i: Identifier, _: List[Type]) => i }
-}).l
-
-importCode.c.fromString("""
-       void main()
-       {
-         int a = 1;
-         int b = 1 + 3;
-         int c = 3;
-         c = 5;
-         a = 2;
-       }""") 
+    .flatMap {
+      case (i: Identifier, _: List[Type]) => Option(i)
+      case _ => Option.empty
+    }
+}.l
