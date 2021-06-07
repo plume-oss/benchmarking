@@ -5,15 +5,21 @@
 }
 
 def runQueries(): String = {
+    print("Starting top 5 longest data-flows by nodes visited...")
     var t1 = System.nanoTime
     topDataFlows()
     t1 = System.nanoTime - t1
+    println(s"Finished in: $t1 ns")
+    print("Starting top 5 longest data-flows by methods visited...")
     var t2 = System.nanoTime
     longMethodDataFlows()
     t2 = System.nanoTime - t2
+    println(s"Finished in: $t2 ns")
+    print("Starting simple constants detection...")
     var t3 = System.nanoTime
     simpleConstants()
     t3 = System.nanoTime - t3
+    println(s"Finished in: $t3 ns")
     s"$t1,$t2,$t3"
 }
 
@@ -26,15 +32,21 @@ def runQueries(): String = {
  * @return (ID(METHOD_PARAMETER_IN), ID(CALL), LENGTH(PATH), LENGTH(UNIQUE(METHODS))
  */ 
 def topDataFlows(): List[(Long, Long, Int, Int)] = {
-    def sinks = cpg.call.filterNot(_.name.contains("<operator>")).l
-    def sources = cpg.method.parameter
+    def sinks = cpg.call
+      .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
+      .l
+    def sources = cpg.method
+      .filterNot(_.method.isExternal)
+      .parameter
+      .filter(_.typ.l.exists { x => x.fullName == "java.lang.String"})
 
     sinks.flatMap(sink =>
         sink.reachableByFlows(sources)
             .groupBy(flow => flow.elements.last)
             .sortBy({case (_, ps) => ps.map(p => p.elements.size).l.reduceOption(_ max _)})
             .lastOption
-    ).flatMap(_._2)
+    )
+    .flatMap(_._2)
     .sortBy(flow => flow.elements.size)
     .map(flow => {
         val p = flow.elements.head
@@ -50,8 +62,13 @@ def topDataFlows(): List[(Long, Long, Int, Int)] = {
  * @return (LENGTH(UNIQUE(METHODS), List(METHOD_FULL_NAMES))
  */ 
 def longMethodDataFlows(): List[Any] = {
-    def sinks = cpg.call.filterNot(_.name.contains("<operator>")).l
-    def sources = cpg.method.parameter
+    def sinks = cpg.call
+      .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
+      .l
+    def sources = cpg.method
+      .filterNot(_.method.isExternal)
+      .parameter
+      .filter(_.typ.l.exists { x => x.fullName == "java.lang.String"})
 
     sinks.flatMap(sink =>
         sink.reachableByFlows(sources)
