@@ -26,7 +26,7 @@
       }
     }
 
-    runQueries(fileName, whiteList) |>> outFile
+    s"$whiteListKey,${runQueries(fileName, whiteList)}" |>> outFile
 }
 
 def runQueries(fileName: String, whiteList: scala.collection.mutable.Set[String]): String = {
@@ -89,9 +89,11 @@ def topDataFlows(whiteList: scala.collection.mutable.Set[String]): List[(Long, L
  */ 
 def longMethodDataFlows(whiteList: scala.collection.mutable.Set[String]): List[Any] = {
     def sinks = cpg.call
+      .filter(x => { whiteList.contains(x.method.fullName) })
       .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
       .l
     def sources = cpg.method
+      .filter(x => { whiteList.contains(x.fullName) })
       .filterNot(_.method.isExternal)
       .parameter
       .filter(_.typ.l.exists { x => x.fullName == "java.lang.String"})
@@ -123,6 +125,7 @@ def simpleConstants(whiteList: scala.collection.mutable.Set[String]): List[Ident
       case (_: List[String], as: Traversal[Assignment]) => Option(as.l)
       case _ => Option.empty
     }
+    .filter(_.exists(x => { whiteList.contains(x.method.fullName) }))
     .filter(_.size == 1)
     .flatMap {
       case as: List[Assignment] =>
