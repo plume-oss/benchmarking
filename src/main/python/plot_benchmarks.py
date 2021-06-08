@@ -271,7 +271,7 @@ def avg_db_build_update(rs: List[Benchmark]):
     plt.yscale('log')
     plt.yticks([])
     plt.xticks([0.345, 1.345, 2.345],
-               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
+               ['jackson-databind', 'gremlin-driver', 'community/neo4j'])
 
     def plot_as_bars(xs: dict, hatch, offset_text=0):
         data = {}
@@ -367,7 +367,7 @@ def program_sizes():
     plot_program_sizes(app_data, None)
     plot_program_sizes(lib_data, app_data)
     plt.xticks([0.3, 1.3, 2.3],
-               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
+               ['jackson-databind', 'gremlin-driver', 'community/neo4j'])
 
     legend_elements = []
     for lb, c in cols.items():
@@ -403,7 +403,7 @@ def graph_sizes():
     for i, v in enumerate(es):
         ax.text(i + 0.10, v + 100000, str(v))
     plt.xticks([0.125, 1.125, 2.125],
-               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
+               ['jackson-databind', 'gremlin-driver', 'community/neo4j'])
     plt.legend()
     plt.ylim([0, max(es) + 300000])
     fig.savefig("./results/jar_graph_stats.pdf")
@@ -456,7 +456,7 @@ def plot_build_updates(f):
             i += 1
     plt.xticks([0, 1, 2, 3, 4], ["Commit 0", "Commit 1",
                "Commit 2", "Commit 3", "Commit 4"])
-    fig.suptitle(f, y=.95)
+    fig.suptitle(f, y=.925)
     fig.text(0.04, 0.5, 'Time Elapsed (s)', va='center', rotation='vertical')
     plt.legend(loc="lower center", ncol=4,
                bbox_to_anchor=(-.05, -0.45, 1.1, .102), mode="expand")
@@ -469,7 +469,7 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
     fig, axes = plt.subplots(3, 1, sharex=True, sharey=True)
     fig.suptitle("Data-Flow Query Response Statistics")
 
-    fs = ['jackson-databind', 'gremlin-driver', 'neo4j-community']
+    fs = ['jackson-databind', 'gremlin-driver', 'community/neo4j']
 
     cols = {
         'Sort Data-Flow by Node Hop Length': 'tab:orange',
@@ -498,9 +498,9 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
             split_data[i]["gremlin-driver"][flag]['q2'].append(r.q2_time)
             split_data[i]["gremlin-driver"][flag]['q3'].append(r.q3_time)
         elif "n" in r.file_name:
-            split_data[i]["neo4j-community"][flag]['q1'].append(r.q1_time)
-            split_data[i]["neo4j-community"][flag]['q2'].append(r.q2_time)
-            split_data[i]["neo4j-community"][flag]['q3'].append(r.q3_time)
+            split_data[i]["community/neo4j"][flag]['q1'].append(r.q1_time)
+            split_data[i]["community/neo4j"][flag]['q2'].append(r.q2_time)
+            split_data[i]["community/neo4j"][flag]['q3'].append(r.q3_time)
         elif "j" in r.file_name:
             split_data[i]["jackson-databind"][flag]['q1'].append(r.q1_time)
             split_data[i]["jackson-databind"][flag]['q2'].append(r.q2_time)
@@ -628,7 +628,7 @@ def plot_cache_results(rs: List[Benchmark]):
 
     fmap = {
         'apache/tinkerpop/gremlin-driver':'gremlin-driver', 
-        'neo4j/neo4j': 'neo4j-community',
+        'neo4j/neo4j': 'community/neo4j',
         'FasterXML/jackson-databind': 'jackson-databind'
     }
     xlabs = []
@@ -697,7 +697,7 @@ def plot_inmem_storage():
                bbox_to_anchor=(0, -.5, 1, .01), mode="expand")
     fmap = {
         'gremlin-driver':'gremlin-driver', 
-        'neo4j': 'neo4j-community',
+        'neo4j': 'community/neo4j',
         'jackson-databind': 'jackson-databind'
     }
     xlabs = []
@@ -774,7 +774,7 @@ def plot_remote_storage():
         0, -0.9, 1, .01), mode="expand")
     fmap = {
         'gremlin-driver':'gremlin-driver', 
-        'neo4j': 'neo4j-community',
+        'neo4j': 'community/neo4j',
         'jackson-databind': 'jackson-databind'
     }
     xlabs = []
@@ -812,7 +812,7 @@ def plot_remote_memory():
 
     fmap = {
         'gremlin-driver':'gremlin-driver', 
-        'neo4j': 'neo4j-community',
+        'neo4j': 'community/neo4j',
         'jackson-databind': 'jackson-databind'
     }
     xlabs = []
@@ -854,13 +854,13 @@ tracer_files = {
 }
 
 
-def plot_tracer_files():
+def plot_process_memory():
     fig, ax = plt.subplots()
     ax.set_title("Process Memory Max Footprint")
     ax.set_xlabel("GitHub Repository")
     ax.set_ylabel("Bytes")
     plt.xticks([0.345, 1.345, 2.345],
-               ['jackson-databind', 'gremlin-driver', 'neo4j-community'])
+               ['jackson-databind', 'gremlin-driver', 'community/neo4j'])
 
     cols = {
         'TinkerGraph': 'tab:blue',
@@ -870,12 +870,14 @@ def plot_tracer_files():
         'Neptune': 'tab:olive'
     }
 
-    def plot_memory(db, x, y, e, offset=0):
+    def plot_memory(db, x, y, e, offset=0, f_num=0):
         ax.bar(x + offset, y, yerr=e, width=inc,
                ecolor='tab:pink', color=cols[db])
         for i, v in enumerate(y):
-            ax.text(i + offset - 0.1, v + 1e8 *
-                    gauss(0, 1) + 1e8, display_storage(v))
+            y_offset = 2.5e8
+            if f_num % 2 == 0:
+                y_offset *= -1
+            ax.text(i + offset - 0.1, v + y_offset, display_storage(v))
 
     def extract_mem_use(trace_file):
         with open('./results/{}'.format(trace_file)) as csv_file:
@@ -891,13 +893,13 @@ def plot_tracer_files():
     j = 0
     inc = 1.0 / len(tracer_files.items()) - 0.025
     offset = 0
-    for d, f in tracer_files.items():
+    for k, (d, f) in enumerate(tracer_files.items()):
         _, use1 = extract_mem_use(f["jackson-databind"])
         _, use2 = extract_mem_use(f["gremlin-driver"])
         _, use3 = extract_mem_use(f["neo4j"])
         data = [np.average(use1), np.average(use2), np.average(use3)]
         dev = [np.std(use1), np.std(use2), np.std(use3)]
-        plot_memory(d, np.arange(3), data, dev, offset)
+        plot_memory(d, np.arange(3), data, dev, offset, k)
         offset += inc
 
         j += 1
@@ -967,5 +969,5 @@ avg_dataflow_query(df_results)
 plot_inmem_storage()
 plot_remote_storage()
 plot_remote_memory()
-plot_tracer_files()
+plot_process_memory()
 plt.clf()
