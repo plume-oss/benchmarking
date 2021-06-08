@@ -114,6 +114,21 @@ class Benchmark:
         return str(self)
 
 
+class DataFlowResult:
+    def __init__(self, commit, file_name, q1_time, q2_time, q3_time):
+        self.commit = commit
+        self.file_name = file_name
+        self.q1_time = q1_time
+        self.q2_time = q2_time
+        self.q3_time = q3_time
+    
+    def __str__(self):
+        return "DataFlowResult({}, {}, {})".format(self.commit, self.file_name, [self.q1_time, self.q2_time, self.q3_time])
+
+    def __repr__(self):
+        return str(self)
+
+
 def avg(rs: List[Benchmark], phase: str):
     return np.mean([r.total_time() for r in rs if r.phase == phase])
 
@@ -171,43 +186,6 @@ def display_storage(ms, granularity=2):
 
 def ns_to_s(ns):
     return ns * 1e-9
-
-
-def update_build_perf(db: str, ax, rs: List[Benchmark]):
-    ax.set_title(db)
-    init, init_std = avg(rs, "INITIAL"), stdd(rs, "INITIAL")
-    b0, db0 = avg(rs, "BUILD0"), stdd(rs, "BUILD0")
-    b1, db1 = avg(rs, "BUILD1"), stdd(rs, "BUILD1")
-    b2, db2 = avg(rs, "BUILD2"), stdd(rs, "BUILD2")
-    b3, db3 = avg(rs, "BUILD3"), stdd(rs, "BUILD3")
-    u0, du0 = avg(rs, "UPDATE0"), stdd(rs, "UPDATE0")
-    u1, du1 = avg(rs, "UPDATE1"), stdd(rs, "UPDATE1")
-    u2, du2 = avg(rs, "UPDATE2"), stdd(rs, "UPDATE2")
-    u3, du3 = avg(rs, "UPDATE3"), stdd(rs, "UPDATE3")
-    d0, dd0 = avg(rs, "DISCUPT0"), stdd(rs, "DISCUPT0")
-    d1, dd1 = avg(rs, "DISCUPT1"), stdd(rs, "DISCUPT1")
-    d2, dd2 = avg(rs, "DISCUPT2"), stdd(rs, "DISCUPT2")
-    d3, dd3 = avg(rs, "DISCUPT3"), stdd(rs, "DISCUPT3")
-
-    bs = [ns_to_s(t) for t in [b0, b1, b2, b3]]
-    us = [ns_to_s(t) for t in [u0, u1, u2, u3]]
-    ds = [ns_to_s(t) for t in [d0, d1, d2, d3]]
-    ax.errorbar([0], [ns_to_s(t) for t in [init]], [ns_to_s(t) for t in [init_std]], color='g', marker='o',
-                linestyle='None', label="Initial Build")
-    ax.errorbar([1, 2, 3, 4], bs, [ns_to_s(t) for t in [db0, db1, db2, db3]],
-                color='r', marker='x', linestyle='None', label="Full Build")
-    ax.errorbar([1, 2, 3, 4], us, [ns_to_s(t) for t in [du0, du1, du2, du3]],
-                color='b', marker='x', linestyle='None', label="Online Update")
-    ax.errorbar([1, 2, 3, 4], ds, [ns_to_s(t) for t in [dd0, dd1, dd2, dd3]],
-                color='m', marker='x', linestyle='None', label="Disconnected Update")
-    # Add text
-    ax.text(0.05, ns_to_s(init), display_time(ns_to_s(init) * 1000), color="g")
-    for i, v in enumerate([ns_to_s(t) for t in [b0, b1, b2, b3]]):
-        ax.text(i + 1.05, v, display_time(v * 1000), color="r")
-    for i, v in enumerate([ns_to_s(t) for t in [u0, u1, u2, u3]]):
-        ax.text(i + 1.05, v, display_time(v * 1000), color="b")
-    for i, v in enumerate([ns_to_s(t) for t in [d0, d1, d2, d3]]):
-        ax.text(i + .55, v, display_time(v * 1000), color="m")
 
 
 def repo_commit_deltas():
@@ -431,6 +409,43 @@ def graph_sizes():
     fig.savefig("./results/jar_graph_stats.pdf")
 
 
+def update_build_perf(db: str, ax, rs: List[Benchmark]):
+    ax.set_title(db)
+    init, init_std = avg(rs, "INITIAL"), stdd(rs, "INITIAL")
+    b0, db0 = avg(rs, "BUILD0"), stdd(rs, "BUILD0")
+    b1, db1 = avg(rs, "BUILD1"), stdd(rs, "BUILD1")
+    b2, db2 = avg(rs, "BUILD2"), stdd(rs, "BUILD2")
+    b3, db3 = avg(rs, "BUILD3"), stdd(rs, "BUILD3")
+    u0, du0 = avg(rs, "UPDATE0"), stdd(rs, "UPDATE0")
+    u1, du1 = avg(rs, "UPDATE1"), stdd(rs, "UPDATE1")
+    u2, du2 = avg(rs, "UPDATE2"), stdd(rs, "UPDATE2")
+    u3, du3 = avg(rs, "UPDATE3"), stdd(rs, "UPDATE3")
+    d0, dd0 = avg(rs, "DISCUPT0"), stdd(rs, "DISCUPT0")
+    d1, dd1 = avg(rs, "DISCUPT1"), stdd(rs, "DISCUPT1")
+    d2, dd2 = avg(rs, "DISCUPT2"), stdd(rs, "DISCUPT2")
+    d3, dd3 = avg(rs, "DISCUPT3"), stdd(rs, "DISCUPT3")
+
+    bs = [ns_to_s(t) for t in [b0, b1, b2, b3]]
+    us = [ns_to_s(t) for t in [u0, u1, u2, u3]]
+    ds = [ns_to_s(t) for t in [d0, d1, d2, d3]]
+    ax.errorbar([0], [ns_to_s(t) for t in [init]], [ns_to_s(t) for t in [init_std]], color='g', marker='o',
+                linestyle='None', label="Initial Build")
+    ax.errorbar([1, 2, 3, 4], bs, [ns_to_s(t) for t in [db0, db1, db2, db3]],
+                color='r', marker='x', linestyle='None', label="Full Build")
+    ax.errorbar([1, 2, 3, 4], us, [ns_to_s(t) for t in [du0, du1, du2, du3]],
+                color='b', marker='x', linestyle='None', label="Online Update")
+    ax.errorbar([1, 2, 3, 4], ds, [ns_to_s(t) for t in [dd0, dd1, dd2, dd3]],
+                color='m', marker='x', linestyle='None', label="Disconnected Update")
+    # Add text
+    ax.text(0.05, ns_to_s(init), display_time(ns_to_s(init) * 1000), color="g")
+    for i, v in enumerate([ns_to_s(t) for t in [b0, b1, b2, b3]]):
+        ax.text(i + 1.05, v, display_time(v * 1000), color="r")
+    for i, v in enumerate([ns_to_s(t) for t in [u0, u1, u2, u3]]):
+        ax.text(i + 1.05, v, display_time(v * 1000), color="b")
+    for i, v in enumerate([ns_to_s(t) for t in [d0, d1, d2, d3]]):
+        ax.text(i + .55, v, display_time(v * 1000), color="m")
+
+
 def plot_build_updates(f):
     fig, ax = plt.subplots(nrows=len(dbs), ncols=1, sharex=True, squeeze=False, figsize=(9, 2.5 * len(dbs)),
                            tight_layout=False)
@@ -446,6 +461,126 @@ def plot_build_updates(f):
     plt.legend(loc="lower center", ncol=4,
                bbox_to_anchor=(-.05, -0.45, 1.1, .102), mode="expand")
     fig.savefig("./results/build_updates_{}.pdf".format(f.split("/")[-1]))
+
+
+def avg_dataflow_query(rs: List[DataFlowResult]):
+    import re
+
+    fig, axes = plt.subplots(3, 1, sharex=True, sharey=True)
+    fig.suptitle("Data-Flow Query Response Statistics")
+
+    fs = ['jackson-databind', 'gremlin-driver', 'neo4j-community']
+
+    cols = {
+        'Sort Data-Flow by Node Hop Length': 'tab:orange',
+        'Sort Data-Flow by Method Hop Length': 'tab:purple',
+        'Simple Constant Detection': 'tab:blue'
+    }
+
+    iss = [1, 2, 3, 4, 5]
+    split_data = {}
+    for i in iss:
+        split_data[i] = {}
+    for i in iss:
+        for f in fs:
+            # True = update | False = build
+            split_data[i][f] = {
+                True: { 'q1': [], 'q2': [], 'q3': [] },
+                False: { 'q1': [], 'q2': [], 'q3': [] }
+            }
+
+    for r in rs:
+        i = int(re.search(r'\d+', r.file_name).group())
+        flag = "B" in r.commit
+        if "g" in r.file_name:
+            r.commit
+            split_data[i]["gremlin-driver"][flag]['q1'].append(r.q1_time)
+            split_data[i]["gremlin-driver"][flag]['q2'].append(r.q2_time)
+            split_data[i]["gremlin-driver"][flag]['q3'].append(r.q3_time)
+        elif "n" in r.file_name:
+            split_data[i]["neo4j-community"][flag]['q1'].append(r.q1_time)
+            split_data[i]["neo4j-community"][flag]['q2'].append(r.q2_time)
+            split_data[i]["neo4j-community"][flag]['q3'].append(r.q3_time)
+        elif "j" in r.file_name:
+            split_data[i]["jackson-databind"][flag]['q1'].append(r.q1_time)
+            split_data[i]["jackson-databind"][flag]['q2'].append(r.q2_time)
+            split_data[i]["jackson-databind"][flag]['q3'].append(r.q3_time)
+
+    for i, fs in split_data.items():
+        for f, flags in fs.items():
+            for flag, qs in flags.items():
+                for q_name, q_list in qs.items():
+                    flags[flag][q_name] = (np.mean(q_list), np.std(q_list))
+
+    xs = [1, 2, 3, 4, 5]
+
+    for f_num, f in enumerate(fs):
+        ax = axes[f_num]
+        ax.set_title(f)
+
+        init_x = []
+        q1_init_b_y, q2_init_b_y, q3_init_b_y = [], [], []
+        other_x = []
+        q1_update_y, q2_update_y, q3_update_y = [], [], []
+        q1_build_y, q2_build_y, q3_build_y = [], [], []
+        for x in xs:
+            if x == 1:
+                init_x.append(x)
+                q1_init_b_y.append(split_data[x][f][False]['q1'])
+                q2_init_b_y.append(split_data[x][f][False]['q2'])
+                q3_init_b_y.append(split_data[x][f][False]['q3'])
+            else:
+                other_x.append(x)
+                q1_update_y.append(split_data[x][f][True]['q1'])
+                q2_update_y.append(split_data[x][f][True]['q2'])
+                q3_update_y.append(split_data[x][f][True]['q3'])
+
+                q1_build_y.append(split_data[x][f][False]['q1'])
+                q2_build_y.append(split_data[x][f][False]['q2'])
+                q3_build_y.append(split_data[x][f][False]['q3'])
+
+        ax.errorbar(list(map(lambda x: x + -0.10, init_x)), list(map(lambda x: x[0], q1_init_b_y)), list(map(lambda x: x[1], q1_init_b_y)), color=list(cols.values())[0], marker='o',
+                    linestyle='None', label="Build")
+        ax.errorbar(list(map(lambda x: x + 0.00, init_x)), list(map(lambda x: x[0], q2_init_b_y)), list(map(lambda x: x[1], q2_init_b_y)), color=list(cols.values())[1], marker='o',
+                    linestyle='None', label="Build")
+        ax.errorbar(list(map(lambda x: x + 0.10, init_x)), list(map(lambda x: x[0], q3_init_b_y)), list(map(lambda x: x[1], q3_init_b_y)), color=list(cols.values())[2], marker='o',
+                    linestyle='None', label="Build")
+        
+        ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_update_y)), list(map(lambda x: x[1], q1_update_y)),
+                    color=list(cols.values())[0], marker='x', linestyle='None', label="Update")
+        ax.errorbar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_update_y)), list(map(lambda x: x[1], q2_update_y)),
+                    color=list(cols.values())[1], marker='x', linestyle='None', label="Update")
+        ax.errorbar(list(map(lambda x: x + 0.10, other_x)), list(map(lambda x: x[0], q3_update_y)), list(map(lambda x: x[1], q3_update_y)),
+                    color=list(cols.values())[2], marker='x', linestyle='None', label="Update")
+
+        ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_build_y)), list(map(lambda x: x[1], q1_build_y)),
+                    color=list(cols.values())[0], marker='o', linestyle='None', label="Build")
+        ax.errorbar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_build_y)), list(map(lambda x: x[1], q2_build_y)),
+                    color=list(cols.values())[1], marker='o', linestyle='None', label="Build")
+        ax.errorbar(list(map(lambda x: x + 0.10, other_x)), list(map(lambda x: x[0], q3_build_y)), list(map(lambda x: x[1], q3_build_y)),
+                    color=list(cols.values())[2], marker='o', linestyle='None', label= "Build")
+
+        for i, v in enumerate(list(map(lambda x: x[0], q1_build_y))):
+            ax.text(i + 0.55 + 1, v - 10000000000, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0])     
+        for i, v in enumerate(list(map(lambda x: x[0], q3_build_y))):
+            ax.text(i + 1.15 + 1, v + 1000000, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
+        
+            
+        # ax.set_xlabel("Commit")
+        ax.set_ylabel("Time (ns)")
+
+    # fig.text(0.5, 0.05, 'Commit', ha='center')
+    # fig.text(0.1, 0.5, 'Time (ns)', va='center', rotation='vertical')
+
+    plt.xticks(xs, ["Initial", "Commit 1", "Commit 2", "Commit 3", "Commit 4"])
+    legend_elements = []
+    for db, c in cols.items():
+        legend_elements.append(Line2D([0], [0], color=c, label=db, lw=4))
+    fig.set_size_inches(10, 6)
+    plt.legend(handles=legend_elements, loc=[-0.025, -0.55], ncol=3)
+    plt.tight_layout()
+    
+    fig.savefig("./results/db_avg_dataflow_stats.pdf")
 
 
 def plot_cache_results(rs: List[Benchmark]):
@@ -798,26 +933,39 @@ with open('./results/aws_results.csv') as csv_file:
             disconnect_serialize=int(row["DISCONNECT_SERIALIZE"])
         ))
 
-    results_per_db_jar = {}
-    fs = set([x.file_name for x in results])
-    dbs = set([x.database for x in results])
-    for r in results:
-        # Get (File, Database) -> [Results]
-        if (r.file_name, r.database) not in results_per_db_jar.keys():
-            results_per_db_jar[(r.file_name, r.database)] = [r]
-        else:
-            results_per_db_jar[(r.file_name, r.database)].append(r)
-    # Plot stats of programs
-    program_sizes()
-    graph_sizes()
-    repo_commit_deltas()
-    # Plot results
-    for f in fs:
-        plot_build_updates(f)
-    plot_cache_results(results)
-    avg_db_build_update(results)
-    plot_inmem_storage()
-    plot_remote_storage()
-    plot_remote_memory()
-    plot_tracer_files()
-    plt.clf()
+with open('./results/dataflow_queries.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    df_results = []
+    for row in csv_reader:
+        df_results.append(DataFlowResult(
+            commit=str(row[0]),
+            file_name=str(row[1]),
+            q1_time=int(row[2]),
+            q2_time=int(row[3]),
+            q3_time=int(row[4])
+        ))
+
+results_per_db_jar = {}
+fs = set([x.file_name for x in results])
+dbs = set([x.database for x in results])
+for r in results:
+    # Get (File, Database) -> [Results]
+    if (r.file_name, r.database) not in results_per_db_jar.keys():
+        results_per_db_jar[(r.file_name, r.database)] = [r]
+    else:
+        results_per_db_jar[(r.file_name, r.database)].append(r)
+# Plot stats of programs
+program_sizes()
+graph_sizes()
+repo_commit_deltas()
+# Plot results
+for f in fs:
+    plot_build_updates(f)
+plot_cache_results(results)
+avg_db_build_update(results)
+avg_dataflow_query(df_results)
+plot_inmem_storage()
+plot_remote_storage()
+plot_remote_memory()
+plot_tracer_files()
+plt.clf()
