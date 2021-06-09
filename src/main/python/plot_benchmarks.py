@@ -517,6 +517,7 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
     for f_num, f in enumerate(fs):
         ax = axes[f_num]
         ax.set_title(f)
+        ax.set_yscale('log')
 
         init_x = []
         q1_init_b_y, q2_init_b_y, q3_init_b_y = [], [], []
@@ -538,7 +539,7 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
                 q1_build_y.append(split_data[x][f][False]['q1'])
                 q2_build_y.append(split_data[x][f][False]['q2'])
                 q3_build_y.append(split_data[x][f][False]['q3'])
-
+        
         ax.errorbar(list(map(lambda x: x + -0.10, init_x)), list(map(lambda x: x[0], q1_init_b_y)), list(map(lambda x: x[1], q1_init_b_y)), color=list(cols.values())[0], marker='o',
                     linestyle='None', label="Build")
         ax.errorbar(list(map(lambda x: x + 0.00, init_x)), list(map(lambda x: x[0], q2_init_b_y)), list(map(lambda x: x[1], q2_init_b_y)), color=list(cols.values())[1], marker='o',
@@ -546,12 +547,12 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
         ax.errorbar(list(map(lambda x: x + 0.10, init_x)), list(map(lambda x: x[0], q3_init_b_y)), list(map(lambda x: x[1], q3_init_b_y)), color=list(cols.values())[2], marker='o',
                     linestyle='None', label="Build")
         
-        ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_update_y)), list(map(lambda x: x[1], q1_update_y)),
-                    color=list(cols.values())[0], marker='x', linestyle='None', label="Update")
-        ax.errorbar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_update_y)), list(map(lambda x: x[1], q2_update_y)),
-                    color=list(cols.values())[1], marker='x', linestyle='None', label="Update")
-        ax.errorbar(list(map(lambda x: x + 0.10, other_x)), list(map(lambda x: x[0], q3_update_y)), list(map(lambda x: x[1], q3_update_y)),
-                    color=list(cols.values())[2], marker='x', linestyle='None', label="Update")
+        # ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_update_y)), list(map(lambda x: x[1], q1_update_y)),
+        #             color=list(cols.values())[0], marker='x', linestyle='None', label="Update")
+        # ax.errorbar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_update_y)), list(map(lambda x: x[1], q2_update_y)),
+        #             color=list(cols.values())[1], marker='x', linestyle='None', label="Update")
+        # ax.errorbar(list(map(lambda x: x + 0.10, other_x)), list(map(lambda x: x[0], q3_update_y)), list(map(lambda x: x[1], q3_update_y)),
+        #             color=list(cols.values())[2], marker='x', linestyle='None', label="Update")
 
         ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_build_y)), list(map(lambda x: x[1], q1_build_y)),
                     color=list(cols.values())[0], marker='o', linestyle='None', label="Build")
@@ -560,14 +561,32 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
         ax.errorbar(list(map(lambda x: x + 0.10, other_x)), list(map(lambda x: x[0], q3_build_y)), list(map(lambda x: x[1], q3_build_y)),
                     color=list(cols.values())[2], marker='o', linestyle='None', label= "Build")
 
+        if f_num < 1:
+            y_adjust = 1e11
+            init_mul = 1.5
+        elif f_num < 2:
+            y_adjust = 1e9
+            init_mul = 3.25
+        else:
+            y_adjust = 1e9
+            init_mul = 1.75
+
+        for i, v in enumerate(list(map(lambda x: x[0], q1_init_b_y))):
+            ax.text(i + 0.825, v - y_adjust * init_mul, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0])     
+        for i, v in enumerate(list(map(lambda x: x[0], q3_init_b_y))):
+            ax.text(i + 1.15, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
         for i, v in enumerate(list(map(lambda x: x[0], q1_build_y))):
-            ax.text(i + 0.55 + 1, v - 10000000000, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0])     
+            ax.text(i + 0.525 + 1, v - y_adjust, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0])     
         for i, v in enumerate(list(map(lambda x: x[0], q3_build_y))):
-            ax.text(i + 1.15 + 1, v + 1000000, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
+            ax.text(i + 1.15 + 1, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
         
-            
+        # ymin, ymax = ax.get_ylim()
+        # ax.set_ylim([ymin * 1.1, ymax * 1.1])
+        # ax.set_yticks([])
         # ax.set_xlabel("Commit")
-        ax.set_ylabel("Time (ns)")
+        if f_num == 1:
+            ax.set_ylabel("Time (Logarithmic)")
+        
 
     # fig.text(0.5, 0.05, 'Commit', ha='center')
     # fig.text(0.1, 0.5, 'Time (ns)', va='center', rotation='vertical')
