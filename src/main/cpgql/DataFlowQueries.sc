@@ -26,7 +26,7 @@
       }
     }
 
-    s"U$whiteListKey,${runQueries(fileName, whiteList, true)}" |>> outFile
+    // s"U$whiteListKey,${runQueries(fileName, whiteList, true)}" |>> outFile
     s"B$whiteListKey,${runQueries(fileName, whiteList, false)}" |>> outFile
 }
 
