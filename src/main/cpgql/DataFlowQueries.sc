@@ -7,7 +7,7 @@
         case "j" => "jackson-databind"
         case _ => "poop"
     }
-    val whiteListKey = fileName(1) match {
+    val commitKey = fileName(1) match {
         case '1' => "I"
         case '2' => "0"
         case '3' => "1"
@@ -15,17 +15,7 @@
         case '5' => "3"
         case _ => "poop"
     }
-    scala.util.Using.resource(new java.io.BufferedReader(new java.io.FileReader(s"./results/changed_methods_$program.csv"))) { f =>
-      var line = f.readLine
-      while (line != null) {
-        val tup = line.split(",")
-        if (tup(0) == whiteListKey)
-          whiteList.add(tup(1))
-        line = f.readLine
-      }
-    }
-
-    s"B$whiteListKey,${runQueries(fileName)}" |>> outFile
+    s"B$commitKey,${runQueries(fileName)}" |>> outFile
 }
 
 def runQueries(fileName: String): String = {
