@@ -31,22 +31,35 @@
 }
 
 def runQueries(fileName: String, whiteList: scala.collection.mutable.Set[String], useWhiteList: Boolean): String = {
-    print("Starting top 5 longest data-flows by nodes visited...")
+    println("=====================================================")
+    println(s"Running $fileName")
+    println("Starting top 5 longest data-flows by nodes visited...")
     var t1 = System.nanoTime
-    topDataFlows(whiteList, useWhiteList)
+    var r1 = topDataFlows(whiteList, useWhiteList)
     t1 = System.nanoTime - t1
+    println(s"Data-flows considered: ${r1.size}")
+    println(s"Max: ${r1.map(_._3).max}")
+    println(s"Min: ${r1.map(_._3).min}")
+    println(s"Mean: ${r1.map(_._3).sum / r1.size.asInstanceOf[Double]}")
     println(s"Finished in: $t1 ns")
-    print("Starting top 5 longest data-flows by methods visited...")
+    println("Starting top 5 longest data-flows by methods visited...")
     var t2 = System.nanoTime
-    longMethodDataFlows(whiteList, useWhiteList)
+    var r2 = longMethodDataFlows(whiteList, useWhiteList)
     t2 = System.nanoTime - t2
+    println(s"Data-flows considered: ${r2.size}")
+    println(s"Max: ${r2.map(_._1).max}")
+    println(s"Min: ${r2.map(_._1).min}")
+    println(s"Mean: ${r2.map(_._1).sum / r2.size.asInstanceOf[Double]}")
     println(s"Finished in: $t2 ns")
-    print("Starting simple constants detection...")
+    println("Starting simple constants detection...")
     var t3 = System.nanoTime
-    simpleConstants(whiteList, useWhiteList)
+    var r3 = simpleConstants(whiteList, useWhiteList)
     t3 = System.nanoTime - t3
+    println(s"Result: ${r3.size}")
     println(s"Finished in: $t3 ns")
+    println("=====================================================")
     s"$fileName,$t1,$t2,$t3"
+    
 }
 
 // TODO: dataflow queries need to check if a whitelisted method is in the middle
@@ -87,14 +100,14 @@ def topDataFlows(whiteList: scala.collection.mutable.Set[String], useWhiteList: 
 
         (p.id, c.id, flow.elements.size, flow.elements.map(_.method).dedup.l.size)
     })
-}.takeRight(5).l
+}.l
 
 /**
  * Find the top 5 data flows with the largest number of unique methods visited.
  * 
- * @return (LENGTH(UNIQUE(METHODS), List(METHOD_FULL_NAMES))
+ * @return (LENGTH(UNIQUE(METHODS)), List(METHOD_FULL_NAMES))
  */ 
-def longMethodDataFlows(whiteList: scala.collection.mutable.Set[String], useWhiteList: Boolean): List[Any] = {
+def longMethodDataFlows(whiteList: scala.collection.mutable.Set[String], useWhiteList: Boolean): List[(Int, List[String])] = {
     def sinks = cpg.call
       .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
       .l
@@ -116,7 +129,7 @@ def longMethodDataFlows(whiteList: scala.collection.mutable.Set[String], useWhit
     .map(_.distinct).distinct
     .sortBy(flow => flow.size)
     .map(f => (f.l.size, f.l))
-}.takeRight(5).l
+}.l
 
 /**
  * Return all identifiers which do not get re-assigned and can thus be a
