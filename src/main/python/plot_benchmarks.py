@@ -483,34 +483,28 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
         split_data[i] = {}
     for i in iss:
         for f in fs:
-            # True = update | False = build
-            split_data[i][f] = {
-                True: { 'q1': [], 'q2': [], 'q3': [] },
-                False: { 'q1': [], 'q2': [], 'q3': [] }
-            }
+            split_data[i][f] = { 'q1': [], 'q2': [], 'q3': [] }
 
     for r in rs:
         i = int(re.search(r'\d+', r.file_name).group())
-        flag = "B" in r.commit
         if "g" in r.file_name:
             r.commit
-            split_data[i]["gremlin-driver"][flag]['q1'].append(r.q1_time)
-            split_data[i]["gremlin-driver"][flag]['q2'].append(r.q2_time)
-            split_data[i]["gremlin-driver"][flag]['q3'].append(r.q3_time)
+            split_data[i]["gremlin-driver"]['q1'].append(r.q1_time)
+            split_data[i]["gremlin-driver"]['q2'].append(r.q2_time)
+            split_data[i]["gremlin-driver"]['q3'].append(r.q3_time)
         elif "n" in r.file_name:
-            split_data[i]["community/neo4j"][flag]['q1'].append(r.q1_time)
-            split_data[i]["community/neo4j"][flag]['q2'].append(r.q2_time)
-            split_data[i]["community/neo4j"][flag]['q3'].append(r.q3_time)
+            split_data[i]["community/neo4j"]['q1'].append(r.q1_time)
+            split_data[i]["community/neo4j"]['q2'].append(r.q2_time)
+            split_data[i]["community/neo4j"]['q3'].append(r.q3_time)
         elif "j" in r.file_name:
-            split_data[i]["jackson-databind"][flag]['q1'].append(r.q1_time)
-            split_data[i]["jackson-databind"][flag]['q2'].append(r.q2_time)
-            split_data[i]["jackson-databind"][flag]['q3'].append(r.q3_time)
+            split_data[i]["jackson-databind"]['q1'].append(r.q1_time)
+            split_data[i]["jackson-databind"]['q2'].append(r.q2_time)
+            split_data[i]["jackson-databind"]['q3'].append(r.q3_time)
 
     for i, fs in split_data.items():
-        for f, flags in fs.items():
-            for flag, qs in flags.items():
-                for q_name, q_list in qs.items():
-                    flags[flag][q_name] = (np.mean(q_list), np.std(q_list))
+        for f, qs in fs.items():
+            for q_name, q_list in qs.items():
+                qs[q_name] = (np.mean(q_list), np.std(q_list))
 
     xs = [1, 2, 3, 4, 5]
 
@@ -522,23 +516,18 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
         init_x = []
         q1_init_b_y, q2_init_b_y, q3_init_b_y = [], [], []
         other_x = []
-        q1_update_y, q2_update_y, q3_update_y = [], [], []
         q1_build_y, q2_build_y, q3_build_y = [], [], []
         for x in xs:
             if x == 1:
                 init_x.append(x)
-                q1_init_b_y.append(split_data[x][f][False]['q1'])
-                q2_init_b_y.append(split_data[x][f][False]['q2'])
-                q3_init_b_y.append(split_data[x][f][False]['q3'])
+                q1_init_b_y.append(split_data[x][f]['q1'])
+                q2_init_b_y.append(split_data[x][f]['q2'])
+                q3_init_b_y.append(split_data[x][f]['q3'])
             else:
                 other_x.append(x)
-                q1_update_y.append(split_data[x][f][True]['q1'])
-                q2_update_y.append(split_data[x][f][True]['q2'])
-                q3_update_y.append(split_data[x][f][True]['q3'])
-
-                q1_build_y.append(split_data[x][f][False]['q1'])
-                q2_build_y.append(split_data[x][f][False]['q2'])
-                q3_build_y.append(split_data[x][f][False]['q3'])
+                q1_build_y.append(split_data[x][f]['q1'])
+                q2_build_y.append(split_data[x][f]['q2'])
+                q3_build_y.append(split_data[x][f]['q3'])
         
         ax.errorbar(list(map(lambda x: x + -0.10, init_x)), list(map(lambda x: x[0], q1_init_b_y)), list(map(lambda x: x[1], q1_init_b_y)), color=list(cols.values())[0], marker='o',
                     linestyle='None', label="Build")
@@ -547,13 +536,6 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
         ax.errorbar(list(map(lambda x: x + 0.10, init_x)), list(map(lambda x: x[0], q3_init_b_y)), list(map(lambda x: x[1], q3_init_b_y)), color=list(cols.values())[2], marker='o',
                     linestyle='None', label="Build")
         
-        # ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_update_y)), list(map(lambda x: x[1], q1_update_y)),
-        #             color=list(cols.values())[0], marker='x', linestyle='None', label="Update")
-        # ax.errorbar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_update_y)), list(map(lambda x: x[1], q2_update_y)),
-        #             color=list(cols.values())[1], marker='x', linestyle='None', label="Update")
-        # ax.errorbar(list(map(lambda x: x + 0.10, other_x)), list(map(lambda x: x[0], q3_update_y)), list(map(lambda x: x[1], q3_update_y)),
-        #             color=list(cols.values())[2], marker='x', linestyle='None', label="Update")
-
         ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_build_y)), list(map(lambda x: x[1], q1_build_y)),
                     color=list(cols.values())[0], marker='o', linestyle='None', label="Build")
         ax.errorbar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_build_y)), list(map(lambda x: x[1], q2_build_y)),
@@ -562,13 +544,13 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
                     color=list(cols.values())[2], marker='o', linestyle='None', label= "Build")
 
         if f_num < 1:
-            y_adjust = 1e11
+            y_adjust = 2e11
             init_mul = 1.5
         elif f_num < 2:
-            y_adjust = 1e9
+            y_adjust = 2.5e9
             init_mul = 3.25
         else:
-            y_adjust = 1e9
+            y_adjust = 2e9
             init_mul = 1.75
 
         for i, v in enumerate(list(map(lambda x: x[0], q1_init_b_y))):
@@ -582,7 +564,7 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
         
         # ymin, ymax = ax.get_ylim()
         # ax.set_ylim([ymin * 1.1, ymax * 1.1])
-        # ax.set_yticks([])
+        ax.set_yticks([])
         # ax.set_xlabel("Commit")
         if f_num == 1:
             ax.set_ylabel("Time (Logarithmic)")
@@ -596,7 +578,7 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
     for db, c in cols.items():
         legend_elements.append(Line2D([0], [0], color=c, label=db, lw=4))
     fig.set_size_inches(10, 6)
-    plt.legend(handles=legend_elements, loc=[-0.025, -0.55], ncol=3)
+    plt.legend(handles=legend_elements, loc=[-0.018, -0.55], ncol=3)
     plt.tight_layout()
     
     fig.savefig("./results/db_avg_dataflow_stats.pdf")
