@@ -26,8 +26,8 @@ def runQueries(fileName: String): String = {
     var r1 = topDataFlows()
     t1 = System.nanoTime - t1
     println(s"Data-flows considered: ${r1.size}")
-    println(s"Max: ${r1.map(_._3).max}")
-    println(s"Min: ${r1.map(_._3).min}")
+    println(s"Max: ${r1.map(_._3).maxOption}")
+    println(s"Min: ${r1.map(_._3).minOption}")
     println(s"Mean: ${r1.map(_._3).sum / r1.size.asInstanceOf[Double]}")
     println(s"Finished in: $t1 ns")
     println("Starting top 5 longest data-flows by methods visited...")
@@ -35,8 +35,8 @@ def runQueries(fileName: String): String = {
     var r2 = longMethodDataFlows()
     t2 = System.nanoTime - t2
     println(s"Data-flows considered: ${r2.size}")
-    println(s"Max: ${r2.map(_._1).max}")
-    println(s"Min: ${r2.map(_._1).min}")
+    println(s"Max: ${r2.map(_._1).maxOption}")
+    println(s"Min: ${r2.map(_._1).minOption}")
     println(s"Mean: ${r2.map(_._1).sum / r2.size.asInstanceOf[Double]}")
     println(s"Finished in: $t2 ns")
     println("Starting simple constants detection...")
@@ -47,7 +47,6 @@ def runQueries(fileName: String): String = {
     println(s"Finished in: $t3 ns")
     println("=====================================================")
     s"$fileName,$t1,$t2,$t3"
-    
 }
 
 /**
