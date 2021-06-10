@@ -21,23 +21,23 @@
 def runQueries(fileName: String): String = {
     println("=====================================================")
     println(s"Running $fileName")
-    println("Starting top 5 longest data-flows by nodes visited...")
+    println("Starting string to external call...")
     var t1 = System.nanoTime
-    var r1 = topDataFlows()
+    var r1 = stringToExternalCall()
     t1 = System.nanoTime - t1
     println(s"Data-flows considered: ${r1.size}")
-    println(s"Max: ${r1.map(_._3).maxOption}")
-    println(s"Min: ${r1.map(_._3).minOption}")
-    println(s"Mean: ${r1.map(_._3).sum / r1.size.asInstanceOf[Double]}")
+    println(s"Max: ${r1.map(_.size).maxOption}")
+    println(s"Min: ${r1.map(_.size).minOption}")
+    println(s"Mean: ${r1.map(_.size).sum / r1.size.asInstanceOf[Double]}")
     println(s"Finished in: $t1 ns")
-    println("Starting top 5 longest data-flows by methods visited...")
+    println("Starting string to any log or print...")
     var t2 = System.nanoTime
-    var r2 = longMethodDataFlows()
+    var r2 = stringToPrintLog()
     t2 = System.nanoTime - t2
     println(s"Data-flows considered: ${r2.size}")
-    println(s"Max: ${r2.map(_._1).maxOption}")
-    println(s"Min: ${r2.map(_._1).minOption}")
-    println(s"Mean: ${r2.map(_._1).sum / r2.size.asInstanceOf[Double]}")
+    println(s"Max: ${r2.map(_.size).maxOption}")
+    println(s"Min: ${r2.map(_.size).minOption}")
+    println(s"Mean: ${r2.map(_.size).sum / r2.size.asInstanceOf[Double]}")
     println(s"Finished in: $t2 ns")
     println("Starting simple constants detection...")
     var t3 = System.nanoTime
@@ -50,13 +50,12 @@ def runQueries(fileName: String): String = {
 }
 
 /**
- * Find top 5 longest data flows starting from a parameter and ending at a
- * method call. This returns a 4-tuple of the start method ID, end method ID,
- * length of the path and number of methods visited.
+ * Find all string sources from parameters that start at application methods and
+ * reach external method sinks.
  * 
- * @return (ID(METHOD_PARAMETER_IN), ID(CALL), LENGTH(PATH), LENGTH(UNIQUE(METHODS))
+ * @return list of data flows.
  */ 
-def topDataFlows(): List[(Long, Long, Int, Int)] = {
+def stringToExternalCall(): List[List[Node]] = {
     def sinks = cpg.call
       .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
       .l
@@ -65,44 +64,29 @@ def topDataFlows(): List[(Long, Long, Int, Int)] = {
       .parameter
       .filter(_.typ.l.exists { x => x.fullName == "java.lang.String"})
 
-    sinks.flatMap(sink =>
-          sink.reachableByFlows(sources)
-            .groupBy(flow => flow.elements.last)
-            .sortBy({case (_, ps) => ps.map(p => p.elements.size).l.reduceOption(_ max _)})
-            .lastOption
-    )
-    .flatMap(_._2)
-    .sortBy(flow => flow.elements.size)
-    .map(flow => {
-        val p = flow.elements.head
-        val c = flow.elements.last
-
-        (p.id, c.id, flow.elements.size, flow.elements.map(_.method).dedup.l.size)
-    })
+    sinks.flatMap(sink => sink.reachableByFlows(sources))
+    .map(_.elements)
 }.l
 
 /**
- * Find the top 5 data flows with the largest number of unique methods visited.
+ * Find all string sources from parameters that start at application methods and
+ * hit any log or print sinks.
  * 
- * @return (LENGTH(UNIQUE(METHODS)), List(METHOD_FULL_NAMES))
+ * @return list of data flows.
  */ 
-def longMethodDataFlows(): List[(Int, List[String])] = {
+def stringToPrintLog(): List[List[Node]] = {
+    val logR = """(?i)(log|print)""".r
     def sinks = cpg.call
-      .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
+      .filterNot(x => { x.name.contains("<operator>") } )
+      .filter(x => { !logR.findAllIn(x.methodFullName).matchData.isEmpty} )
       .l
     def sources = cpg.method
       .filterNot(_.method.isExternal)
       .parameter
       .filter(_.typ.l.exists { x => x.fullName == "java.lang.String"})
 
-    sinks.flatMap(sink =>
-          sink.reachableByFlows(sources)
-            .map(_.elements.map(_.method.fullName))
-            .l
-    )
-    .map(_.distinct).distinct
-    .sortBy(flow => flow.size)
-    .map(f => (f.l.size, f.l))
+    sinks.flatMap(sink => sink.reachableByFlows(sources))
+    .map(_.elements)
 }.l
 
 /**
