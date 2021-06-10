@@ -15,7 +15,6 @@
         case '5' => "3"
         case _ => "poop"
     }
-    val whiteList = scala.collection.mutable.Set[String]()
     scala.util.Using.resource(new java.io.BufferedReader(new java.io.FileReader(s"./results/changed_methods_$program.csv"))) { f =>
       var line = f.readLine
       while (line != null) {
@@ -26,16 +25,15 @@
       }
     }
 
-    // s"U$whiteListKey,${runQueries(fileName, whiteList, true)}" |>> outFile
-    s"B$whiteListKey,${runQueries(fileName, whiteList, false)}" |>> outFile
+    s"B$whiteListKey,${runQueries(fileName)}" |>> outFile
 }
 
-def runQueries(fileName: String, whiteList: scala.collection.mutable.Set[String], useWhiteList: Boolean): String = {
+def runQueries(fileName: String): String = {
     println("=====================================================")
     println(s"Running $fileName")
     println("Starting top 5 longest data-flows by nodes visited...")
     var t1 = System.nanoTime
-    var r1 = topDataFlows(whiteList, useWhiteList)
+    var r1 = topDataFlows()
     t1 = System.nanoTime - t1
     println(s"Data-flows considered: ${r1.size}")
     println(s"Max: ${r1.map(_._3).max}")
@@ -44,7 +42,7 @@ def runQueries(fileName: String, whiteList: scala.collection.mutable.Set[String]
     println(s"Finished in: $t1 ns")
     println("Starting top 5 longest data-flows by methods visited...")
     var t2 = System.nanoTime
-    var r2 = longMethodDataFlows(whiteList, useWhiteList)
+    var r2 = longMethodDataFlows()
     t2 = System.nanoTime - t2
     println(s"Data-flows considered: ${r2.size}")
     println(s"Max: ${r2.map(_._1).max}")
@@ -53,7 +51,7 @@ def runQueries(fileName: String, whiteList: scala.collection.mutable.Set[String]
     println(s"Finished in: $t2 ns")
     println("Starting simple constants detection...")
     var t3 = System.nanoTime
-    var r3 = simpleConstants(whiteList, useWhiteList)
+    var r3 = simpleConstants()
     t3 = System.nanoTime - t3
     println(s"Result: ${r3.size}")
     println(s"Finished in: $t3 ns")
@@ -62,9 +60,6 @@ def runQueries(fileName: String, whiteList: scala.collection.mutable.Set[String]
     
 }
 
-// TODO: dataflow queries need to check if a whitelisted method is in the middle
-// of the flow
-
 /**
  * Find top 5 longest data flows starting from a parameter and ending at a
  * method call. This returns a 4-tuple of the start method ID, end method ID,
@@ -72,7 +67,7 @@ def runQueries(fileName: String, whiteList: scala.collection.mutable.Set[String]
  * 
  * @return (ID(METHOD_PARAMETER_IN), ID(CALL), LENGTH(PATH), LENGTH(UNIQUE(METHODS))
  */ 
-def topDataFlows(whiteList: scala.collection.mutable.Set[String], useWhiteList: Boolean): List[(Long, Long, Int, Int)] = {
+def topDataFlows(): List[(Long, Long, Int, Int)] = {
     def sinks = cpg.call
       .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
       .l
@@ -82,12 +77,7 @@ def topDataFlows(whiteList: scala.collection.mutable.Set[String], useWhiteList: 
       .filter(_.typ.l.exists { x => x.fullName == "java.lang.String"})
 
     sinks.flatMap(sink =>
-        (if (useWhiteList)
           sink.reachableByFlows(sources)
-            .filter(flow => { flow.elements.exists(y => { whiteList.contains(y.method.fullName) }) })
-        else
-          sink.reachableByFlows(sources)
-        )
             .groupBy(flow => flow.elements.last)
             .sortBy({case (_, ps) => ps.map(p => p.elements.size).l.reduceOption(_ max _)})
             .lastOption
@@ -107,7 +97,7 @@ def topDataFlows(whiteList: scala.collection.mutable.Set[String], useWhiteList: 
  * 
  * @return (LENGTH(UNIQUE(METHODS)), List(METHOD_FULL_NAMES))
  */ 
-def longMethodDataFlows(whiteList: scala.collection.mutable.Set[String], useWhiteList: Boolean): List[(Int, List[String])] = {
+def longMethodDataFlows(): List[(Int, List[String])] = {
     def sinks = cpg.call
       .filterNot(x => { x.name.contains("<operator>") || !x.callee.l.exists(_.isExternal) } )
       .l
@@ -117,12 +107,7 @@ def longMethodDataFlows(whiteList: scala.collection.mutable.Set[String], useWhit
       .filter(_.typ.l.exists { x => x.fullName == "java.lang.String"})
 
     sinks.flatMap(sink =>
-        (if (useWhiteList)
           sink.reachableByFlows(sources)
-            .filter(flow => { flow.elements.exists(y => { whiteList.contains(y.method.fullName) }) })
-        else
-          sink.reachableByFlows(sources)
-        )
             .map(_.elements.map(_.method.fullName))
             .l
     )
@@ -138,25 +123,15 @@ def longMethodDataFlows(whiteList: scala.collection.mutable.Set[String], useWhit
  * @return List[Identifier] of identifiers of primitive types where all
  * occurrences can be replaced by the value in their initial declaration.
  */
-def simpleConstants(whiteList: scala.collection.mutable.Set[String], useWhiteList: Boolean): List[Identifier] = {
+def simpleConstants(): List[Identifier] = {
   import io.shiftleft.semanticcpg.language.operatorextension.opnodes.Assignment
 
-  (if (useWhiteList)
-    cpg.assignment
-      .groupBy(_.argument.order(1).code.l)
-      .flatMap {
-        case (_: List[String], as: Traversal[Assignment]) => Option(as.l)
-        case _ => Option.empty
-      }
-      .filter(_.exists(x => { whiteList.contains(x.method.fullName) }))
-  else
    cpg.assignment
     .groupBy(_.argument.order(1).code.l)
     .flatMap {
       case (_: List[String], as: Traversal[Assignment]) => Option(as.l)
       case _ => Option.empty
-    }
-  ).filter(_.size == 1)
+    }.filter(_.size == 1)
     .flatMap {
       case as: List[Assignment] =>
         Option(as.head.argument.head, as.head.argument.l.head.typ.l)
