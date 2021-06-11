@@ -472,8 +472,8 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
     fs = ['jackson-databind', 'gremlin-driver', 'community/neo4j']
 
     cols = {
-        'Sort Data-Flow by Node Hop Length': 'tab:orange',
-        'Sort Data-Flow by Method Hop Length': 'tab:purple',
+        'String Parameter to External Call': 'tab:orange',
+        'String Parameter to Log or Print Call': 'tab:purple',
         'Simple Constant Detection': 'tab:blue'
     }
 
@@ -583,7 +583,7 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
     for db, c in cols.items():
         legend_elements.append(Line2D([0], [0], color=c, label=db, lw=4))
     fig.set_size_inches(10, 6)
-    plt.legend(handles=legend_elements, loc=[-0.018, -0.55], ncol=3)
+    plt.legend(handles=legend_elements, loc=[0.01, -0.55], ncol=3)
     plt.tight_layout()
     
     fig.savefig("./results/db_avg_dataflow_stats.pdf")
