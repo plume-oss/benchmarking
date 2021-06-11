@@ -545,22 +545,27 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
 
         if f_num < 1:
             y_adjust = 2e11
-            init_mul = 1.5
+            init_mul = 1.25
         elif f_num < 2:
             y_adjust = 2.5e9
             init_mul = 3.25
         else:
             y_adjust = 2e9
-            init_mul = 1.75
+            init_mul = -1.5
 
         for i, v in enumerate(list(map(lambda x: x[0], q1_init_b_y))):
-            ax.text(i + 0.825, v - y_adjust * init_mul, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0])     
+            ax.text(i + 0.825, v - y_adjust * init_mul, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0]) 
+        for i, v in enumerate(list(map(lambda x: x[0], q2_init_b_y))):
+            ax.text(i + 1.05, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[1])  
         for i, v in enumerate(list(map(lambda x: x[0], q3_init_b_y))):
             ax.text(i + 1.15, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
         for i, v in enumerate(list(map(lambda x: x[0], q1_build_y))):
-            ax.text(i + 0.525 + 1, v - y_adjust, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0])     
+            ax.text(i + 0.525 + 1, v - y_adjust, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0]) 
+        for i, v in enumerate(list(map(lambda x: x[0], q2_build_y))):
+            ax.text(i + 0.65 + 1, v - 3e8, display_time(ns_to_s(v) * 1000), color=list(cols.values())[1])
         for i, v in enumerate(list(map(lambda x: x[0], q3_build_y))):
             ax.text(i + 1.15 + 1, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
+     
         
         # ymin, ymax = ax.get_ylim()
         # ax.set_ylim([ymin * 1.1, ymax * 1.1])
