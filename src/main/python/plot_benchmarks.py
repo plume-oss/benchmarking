@@ -529,42 +529,36 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
                 q2_build_y.append(split_data[x][f]['q2'])
                 q3_build_y.append(split_data[x][f]['q3'])
         
-        ax.errorbar(list(map(lambda x: x + -0.10, init_x)), list(map(lambda x: x[0], q1_init_b_y)), list(map(lambda x: x[1], q1_init_b_y)), color=list(cols.values())[0], marker='o',
-                    linestyle='None', label="Build")
-        ax.errorbar(list(map(lambda x: x + 0.00, init_x)), list(map(lambda x: x[0], q2_init_b_y)), list(map(lambda x: x[1], q2_init_b_y)), color=list(cols.values())[1], marker='o',
-                    linestyle='None', label="Build")
-        ax.errorbar(list(map(lambda x: x + 0.10, init_x)), list(map(lambda x: x[0], q3_init_b_y)), list(map(lambda x: x[1], q3_init_b_y)), color=list(cols.values())[2], marker='o',
-                    linestyle='None', label="Build")
+        ax.bar(list(map(lambda x: x + -0.25, init_x)), list(map(lambda x: x[0], q1_init_b_y)), capsize=2, width = 0.25, yerr=list(map(lambda x: x[1], q1_init_b_y)), color=list(cols.values())[0])
+        ax.bar(list(map(lambda x: x + 0.00, init_x)), list(map(lambda x: x[0], q2_init_b_y)), capsize=2, width = 0.25, yerr=list(map(lambda x: x[1], q2_init_b_y)), color=list(cols.values())[1])
+        ax.bar(list(map(lambda x: x + 0.25, init_x)), list(map(lambda x: x[0], q3_init_b_y)), capsize=2, width = 0.25, yerr=list(map(lambda x: x[1], q3_init_b_y)), color=list(cols.values())[2])
         
-        ax.errorbar(list(map(lambda x: x + -0.10, other_x)), list(map(lambda x: x[0], q1_build_y)), list(map(lambda x: x[1], q1_build_y)),
-                    color=list(cols.values())[0], marker='o', linestyle='None', label="Build")
-        ax.errorbar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_build_y)), list(map(lambda x: x[1], q2_build_y)),
-                    color=list(cols.values())[1], marker='o', linestyle='None', label="Build")
-        ax.errorbar(list(map(lambda x: x + 0.10, other_x)), list(map(lambda x: x[0], q3_build_y)), list(map(lambda x: x[1], q3_build_y)),
-                    color=list(cols.values())[2], marker='o', linestyle='None', label= "Build")
+        ax.bar(list(map(lambda x: x + -0.25, other_x)), list(map(lambda x: x[0], q1_build_y)), capsize=2, width = 0.25, yerr=list(map(lambda x: x[1], q1_build_y)), color=list(cols.values())[0])
+        ax.bar(list(map(lambda x: x + 0.00, other_x)), list(map(lambda x: x[0], q2_build_y)), capsize=2, width = 0.25, yerr=list(map(lambda x: x[1], q2_build_y)), color=list(cols.values())[1])
+        ax.bar(list(map(lambda x: x + 0.25, other_x)), list(map(lambda x: x[0], q3_build_y)), capsize=2, width = 0.25, yerr=list(map(lambda x: x[1], q3_build_y)), color=list(cols.values())[2])
 
         if f_num < 1:
             y_adjust = 2e11
             init_mul = 1.25
         elif f_num < 2:
-            y_adjust = 2.5e9
+            y_adjust = -0.15e9
             init_mul = 3.25
         else:
             y_adjust = 2e9
             init_mul = -1.5
 
         for i, v in enumerate(list(map(lambda x: x[0], q1_init_b_y))):
-            ax.text(i + 0.825, v - y_adjust * init_mul, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0]) 
+            ax.text(i + 0.7, v - y_adjust * init_mul, display_time(ns_to_s(v) * 1000)) 
         for i, v in enumerate(list(map(lambda x: x[0], q2_init_b_y))):
-            ax.text(i + 1.05, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[1])  
+            ax.text(i + 1.05, v, display_time(ns_to_s(v) * 1000))  
         for i, v in enumerate(list(map(lambda x: x[0], q3_init_b_y))):
-            ax.text(i + 1.15, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
+            ax.text(i + 1.15, v, display_time(ns_to_s(v) * 1000))
         for i, v in enumerate(list(map(lambda x: x[0], q1_build_y))):
-            ax.text(i + 0.525 + 1, v - y_adjust, display_time(ns_to_s(v) * 1000), color=list(cols.values())[0]) 
+            ax.text(i + 0.525 + 1, v - y_adjust, display_time(ns_to_s(v) * 1000)) 
         for i, v in enumerate(list(map(lambda x: x[0], q2_build_y))):
-            ax.text(i + 0.65 + 1, v - 3e8, display_time(ns_to_s(v) * 1000), color=list(cols.values())[1])
+            ax.text(i + 0.85 + 1, v - 2.5e8, display_time(ns_to_s(v) * 1000))
         for i, v in enumerate(list(map(lambda x: x[0], q3_build_y))):
-            ax.text(i + 1.15 + 1, v, display_time(ns_to_s(v) * 1000), color=list(cols.values())[2])
+            ax.text(i + 1.15 + 1, v, display_time(ns_to_s(v) * 1000))
      
         
         # ymin, ymax = ax.get_ylim()
