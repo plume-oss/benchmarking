@@ -538,27 +538,32 @@ def avg_dataflow_query(rs: List[DataFlowResult]):
         ax.bar(list(map(lambda x: x + 0.25, other_x)), list(map(lambda x: x[0], q3_build_y)), capsize=2, width = 0.25, yerr=list(map(lambda x: x[1], q3_build_y)), color=list(cols.values())[2])
 
         if f_num < 1:
-            y_adjust = 2e11
-            init_mul = 1.25
+            y_adjust = 2.5e11
+            init_mul = 1.15
         elif f_num < 2:
             y_adjust = -0.15e9
             init_mul = 3.25
         else:
-            y_adjust = 2e9
-            init_mul = -1.5
+            y_adjust = 1e9
+            init_mul = -1
+
+        if f_num < 2:
+            mid_adjust = 0
+        else:
+            mid_adjust = 1.5e10
 
         for i, v in enumerate(list(map(lambda x: x[0], q1_init_b_y))):
             ax.text(i + 0.7, v - y_adjust * init_mul, display_time(ns_to_s(v) * 1000)) 
         for i, v in enumerate(list(map(lambda x: x[0], q2_init_b_y))):
             ax.text(i + 1.05, v, display_time(ns_to_s(v) * 1000))  
         for i, v in enumerate(list(map(lambda x: x[0], q3_init_b_y))):
-            ax.text(i + 1.15, v, display_time(ns_to_s(v) * 1000))
+            ax.text(i + 1.15, v + 0.5e8, display_time(ns_to_s(v) * 1000))
         for i, v in enumerate(list(map(lambda x: x[0], q1_build_y))):
-            ax.text(i + 0.525 + 1, v - y_adjust, display_time(ns_to_s(v) * 1000)) 
+            ax.text(i + 0.525 + 1, v - y_adjust + mid_adjust, display_time(ns_to_s(v) * 1000)) 
         for i, v in enumerate(list(map(lambda x: x[0], q2_build_y))):
-            ax.text(i + 0.85 + 1, v - 2.5e8, display_time(ns_to_s(v) * 1000))
+            ax.text(i + 0.85 + 1, v + 2.7e8, display_time(ns_to_s(v) * 1000))
         for i, v in enumerate(list(map(lambda x: x[0], q3_build_y))):
-            ax.text(i + 1.15 + 1, v, display_time(ns_to_s(v) * 1000))
+            ax.text(i + 1.15 + 1, v + 0.5e8, display_time(ns_to_s(v) * 1000))
      
         
         # ymin, ymax = ax.get_ylim()
