@@ -1,0 +1,256 @@
+sources:
+  javax.servlet.ServletRequest:
+    - getAttribute
+    - getAttributeNames
+    - getCharacterEncoding
+    - getContentType
+    - getParameter
+    - getParameterNames
+    - getParameterValues
+    - getParameterMap
+    - getProtocol
+    - getScheme
+    - getServerName
+    - getRemoteAddr
+    - getRemoteHost
+    - getLocalName
+    - getLocalAddr
+    - getReader
+  javax.servlet.http.HttpServletRequest:
+    - getAuthType
+    - getHeader
+    - getHeaders
+    - getMethod
+    - getPathInfo
+    - getPathTranslated
+    - getContextPath
+    - getQueryString
+    - getRemoteUser
+    - getRequestedSessionId
+    - getRequestURI
+    - getRequestURL
+    - getServletPath
+  javax.servlet.http.Cookie:
+    - getComment
+    - getDomain
+    - getPath
+    - getName
+    - getValue
+  javax.servlet.ServletConfig:
+    - getInitParameter
+    - getInitParameterNames
+  javax.servlet.GenericServlet:
+    - getInitParameter
+    - getInitParameterNames
+  java.sql.ResultSet:
+    - getString
+    - getObject
+  java.awt.TextComponent:
+    - getSelectedText
+    - getText
+  java.io.Console:
+    - readLine
+    - readPassword
+  java.io.DataInputStream:
+    - readLine
+    - readUTF
+  java.io.LineNumberReader:
+    - readLine
+  javax.servlet.http.HttpSession:
+    - getAttribute
+    - getAttributeNames
+    - getValue
+    - getValueNames
+  java.lang.System:
+    - getProperty
+    - getProperties
+    - getenv
+  javax.servlet.ServletContext:
+    - getResourceAsStream
+    - getRealPath
+    - getHeaderNames
+  java.util.Properties:
+    - getProperty
+  java.lang.Class:
+    - getResource
+    - getResourceAsStream
+  org.apache.xmlrpc.XmlRpcClient:
+    - execute
+    - search
+  javax.xml.xpath.XPath:
+    - evaluate
+  javax.xml.xpath.XPathExpression:
+    - evaluate
+sanitization:
+  org.owasp.encoder.Encode:
+    - forHtml
+    - forHtmlContent
+    - forHtmlAttribute
+    - forHtmlUnquotedAttribute
+    - forCssString
+    - forCssUrl
+    - forUri
+    - forUriComponent
+    - forXml
+    - forXmlContent
+    - forXmlAttribute
+    - forXmlComment
+    - forCDATA
+    - forJava
+    - forJavaScript
+    - forJavaScriptAttribute
+    - forJavaScriptBlock
+    - forJavaScriptSource
+  java.net.URLEncoder:
+    - encode
+  java.net.URLDecoder:
+    - decode
+  org.apache.commons.lang.StringEscapeUtils:
+    - escapeJava
+    - escapeJavaScript
+    - unescapeJava
+    - unescapeJavaScript
+    - escapeHtml
+    - unescapeHtml
+    - escapeXml
+    - unescapeXml
+    - escapeSql
+    - escapeCsv
+    - unescapeCsv
+sinks:
+  java.lang.Runtime:
+    - exec
+  javax.xml.xpath.XPath:
+    - compile
+  java.lang.Thread:
+    - sleep
+  java.lang.System:
+    - load
+    - loadLibrary
+  org.apache.xmlrpc.XmlRpcClient:
+    - XmlRpcClient
+    - execute
+    - executeAsync
+  javax.servlet.http.Cookie:
+    - Cookie
+    - setComment
+    - setDomain
+    - setPath
+    - setValue
+  java.io.PrintWriter:
+    - print
+    - println
+    - write
+  javax.servlet.ServletOutputStream:
+    - print
+    - println
+  javax.servlet.jsp.JspWriter:
+    - print
+    - println
+  javax.servlet.ServletRequest:
+    - setAttribute
+    - setCharacterEncoding
+  javax.servlet.http.HttpServletResponse:
+    - sendError
+    - setDateHeader
+    - addDateHeader
+    - setHeader
+    - addHeader
+    - setIntHeader
+    - addIntHeader
+  javax.servlet.ServletResponse:
+    - setCharacterEncoding
+    - setContentType
+  javax.servlet.http.HttpSession:
+    - setAttribute
+    - putValue
+  javax.servlet.http.HttpServletResponse:
+    - sendRedirect
+    - getRequestDispatcher
+  javax.naming.directory.InitialDirContext:
+    - InitialDirContext
+    - search
+  javax.naming.directory.SearchControls:
+    - setReturningAttributes
+    - connect
+    - search
+  java.io.PrintStream:
+    - print
+    - println
+  java.util.logging.Logger:
+    - config
+    - fine
+    - finer
+    - finest
+    - info
+    - warning
+    - severe
+    - entering
+    - log
+  org.apache.commons.logging.Log:
+    - debug
+    - error
+    - fatal
+    - info
+    - trace
+    - warn
+  java.io.BufferedWriter:
+    - write
+  javax.servlet.ServletContext:
+    - log
+  javax.servlet.GenericServlet:
+    - log
+  java.io:
+    - File
+    - RandomAccessFile
+    - FileReader
+    - FileInputStream
+    - FileWriter
+    - FileOutputStream
+  java.lang.Class:
+    - getResource
+    - getResourceAsStream
+  javax.mail.internet.InternetAddress:
+    - InternetAddress
+    - parse
+  java.lang.Class:
+    - forName
+    - getField
+    - getMethod
+    - getDeclaredField
+    - getDeclaredMethod
+  java.sql.DriverManager:
+    - getConnection
+  java.sql.(Prepared|Callable)?Statement:
+    - addBatch
+    - execute
+    - executeQuery
+    - executeUpdate
+  java.sql.Connection:
+    - prepareStatement
+    - prepareCall
+  javax.persistence.EntityManager:
+    - createNativeQuery
+    - createQuery
+  (org|net.sf).hibernate.Session:
+    - createSQLQuery
+    - createQuery
+    - find
+    - delete
+    - save
+    - saveOrUpdate
+    - update
+    - load
+  javax.xml.xpath.XPath:
+    - compile
+    - evaluate
+  javax.xml.xpath.XPathExpression:
+    - evaluate
+  org.apache.xpath.XPath:
+    - XPath
+  org.apache.commons.jxpath.JXPath:
+    - getValue
+  org.xmldb.api.modules.XPathQueryService:
+    - query
+  org.xmldb.api.modules.XMLResource:
+    - setContent

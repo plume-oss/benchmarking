@@ -13,4 +13,5 @@ named after their commit hash.
 
 ## Running the suite
 
-Use `sbt run` to start the benchmarks. The results will then be found in an 
+Use `sbt run` to start the benchmarks. Taint analysis is performed from sources
+and sinks defined in `src/main/resources/taint_definitions.yaml`.
