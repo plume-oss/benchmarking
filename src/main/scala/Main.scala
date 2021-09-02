@@ -33,6 +33,12 @@ object Main extends App {
   PrettyPrinter.setLogger(logger)
   PrettyPrinter.announcePlumeVersion()
 
+  // Initialize tmp folder
+  val tmpFolder = new JavaFile("/tmp/plume")
+  if (!tmpFolder.exists()) {
+    tmpFolder.mkdirs()
+  }
+
   logger.info(s"Running $iterations iterations of each benchmark")
   val experiment: Experiment = getExperiment(config)
   val programs: List[Program] = getPrograms(config)
