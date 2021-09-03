@@ -1,5 +1,6 @@
 iterations: 1
 cache-size: 100000
+timeout: 1
 experiment:
   # Mainly used for memory/storage testing
   run-build-and-store: false

@@ -1,22 +1,19 @@
 package io.github.plume.oss
 
 import drivers._
-import metrics.{CacheMetrics, DriverTimeKey, ExtractorTimeKey, PlumeTimer}
+import metrics.{ CacheMetrics, DriverTimeKey, ExtractorTimeKey, PlumeTimer }
 import options.CacheOptions
 import store.LocalCache
-import util.{ExtractorConst, ResourceCompilationUtil}
+import util.{ ExtractorConst, ResourceCompilationUtil }
 
-import io.shiftleft.codepropertygraph.Cpg
-import io.shiftleft.codepropertygraph.generated.nodes.Call
-import io.shiftleft.semanticcpg.language.{toMethod, toNodeTypeStarters}
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import org.yaml.snakeyaml.Yaml
-import overflowdb.traversal.iterableToTraversal
 
-import java.io.{BufferedWriter, FileWriter, File => JavaFile}
+import java.io.{ BufferedWriter, FileWriter, File => JavaFile }
 import java.time.LocalDateTime
 import java.util
 import scala.jdk.CollectionConverters
+import scala.language.postfixOps
 import scala.tools.nsc
 import scala.util.Using
 
@@ -30,14 +27,9 @@ object Main extends App {
   io.github.plume.oss.util.PlumeKeyProvider.INSTANCE.setKeyPoolSize(4000000)
   val config: util.LinkedHashMap[String, Any] = parseConfig(CONFIG_PATH)
   val iterations: Int = config.getOrDefault("iterations", 5).asInstanceOf[Int]
+  RunBenchmark.timeout = config.getOrDefault("timeout", 5 * 60).asInstanceOf[Int].toLong // Default 5 hours
   PrettyPrinter.setLogger(logger)
   PrettyPrinter.announcePlumeVersion()
-
-  // Initialize tmp folder
-  val tmpFolder = new JavaFile("/tmp/plume")
-  if (!tmpFolder.exists()) {
-    tmpFolder.mkdirs()
-  }
 
   logger.info(s"Running $iterations iterations of each benchmark")
   val experiment: Experiment = getExperiment(config)
@@ -59,9 +51,9 @@ object Main extends App {
         for (i <- 1 to iterations) {
           val driverName = driver.getClass.toString.stripPrefix("class io.github.plume.oss.drivers.")
           PrettyPrinter.announceIteration(i, driverName)
-          programs.foreach { p =>
+          programs.map(Job(d, _, dbName)).foreach { job =>
             try {
-              runExperiment(d, p, dbName)
+              runExperiment(job)
             } catch {
               case e: Exception => logger.error("Encountered exception while performing benchmark. Skipping...", e)
             } finally {
@@ -76,62 +68,30 @@ object Main extends App {
       }
   }
 
-  def runExperiment(d: IDriver, p: Program, dbName: String): Unit = {
+  /**
+    * Runs through all the configured experiments.
+   *
+    * @return true if one of the jobs timed out, false if otherwise
+    */
+  def runExperiment(job: Job): Boolean = {
     // Run build and export
     if (experiment.runBuildAndStore) {
       Thread.sleep(2500) // Sleep to enable probes to start empty and properly
-      val driverName = d.getClass.toString.stripPrefix("class io.github.plume.oss.drivers.")
-      val memoryMonitor = new MemoryMonitor(driverName, p.name.subSequence(p.name.lastIndexOf('/') + 1, p.name.length).toString)
-      d.clearGraph()
-      LocalCache.INSTANCE.clear()
-      memoryMonitor.start()
-      runInitBuild(d, p, dbName)
-      closeConnection(d)
-      memoryMonitor.close()
-      openConnection(d)
+      if (RunBenchmark.runBuildAndStore(job)) return true
     }
     // Run live updates
     if (experiment.runLiveUpdates) {
-      d.clearGraph()
-      runInitBuild(d, p, dbName)
-      p.jars.drop(1).zipWithIndex.foreach {
-        case (jar, i) =>
-          captureBenchmarkResult(runBenchmark(jar, p.name, s"UPDATE$i", dbName, d))
-      }
+      if (RunBenchmark.runLiveUpdates(job)) return true
     }
     // Run disconnected updates
     if (experiment.runDisconnectedUpdates) {
-      LocalCache.INSTANCE.clear()
-      d.clearGraph()
-      clearSerializedFiles()
-      runInitBuild(d, p, dbName)
-      closeConnection(d)
-      p.jars.drop(1).zipWithIndex.foreach {
-        case (jar, i) =>
-          LocalCache.INSTANCE.clear()
-          openConnection(d)
-          captureBenchmarkResult(runBenchmark(jar, p.name, s"DISCUPT$i", dbName, d))
-          closeConnection(d)
-      }
-      handleConnection(d)
-      clearSerializedFiles()
+      if (RunBenchmark.runDisconnectedUpdates(job)) return true
     }
     // Run full builds
     if (experiment.runFullBuilds) {
-      LocalCache.INSTANCE.clear()
-      d.clearGraph()
-      p.jars.drop(1).zipWithIndex.foreach {
-        case (jar, i) =>
-          LocalCache.INSTANCE.clear()
-          d.clearGraph()
-          captureBenchmarkResult(runBenchmark(jar, p.name, s"BUILD$i", dbName, d))
-      }
+      if (RunBenchmark.runFullBuilds(job)) return true
     }
-  }
-
-  def runInitBuild(d: IDriver, p: Program, dbName: String): Unit = {
-    // Run first build
-    captureBenchmarkResult(runBenchmark(p.jars.head, p.name, "INITIAL", dbName, d))
+    false
   }
 
   def handleSchema(driver: IDriver): Unit =
@@ -231,7 +191,7 @@ object Main extends App {
     b
   }
 
-  def captureBenchmarkResult(b: BenchmarkResult) {
+  def captureBenchmarkResult(b: BenchmarkResult): BenchmarkResult = {
     val csv = new JavaFile("./results/result.csv")
     if (!csv.exists()) {
       new JavaFile("./results/").mkdir()
@@ -278,6 +238,7 @@ object Main extends App {
           s"${b.disconnectSerialize}\n"
       )
     }
+    b
   }
 
   def parseConfig(configPath: String): java.util.LinkedHashMap[String, Any] = {
@@ -391,7 +352,8 @@ object Main extends App {
 
   def getExperiment(config: util.LinkedHashMap[String, Any]): Experiment =
     Experiment(
-      runBuildAndStore = config.get("experiment")
+      runBuildAndStore = config
+        .get("experiment")
         .asInstanceOf[util.LinkedHashMap[String, Any]]
         .getOrDefault("run-build-and-store", false)
         .asInstanceOf[Boolean],

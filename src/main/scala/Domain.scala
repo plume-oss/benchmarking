@@ -1,5 +1,7 @@
 package io.github.plume.oss
 
+import io.github.plume.oss.drivers.IDriver
+
 import java.io.{File => JavaFile}
 
 case class Experiment(
@@ -11,22 +13,29 @@ case class Experiment(
 
 case class Program(name: String, jars: List[JavaFile])
 
+case class Job(driver: IDriver, program: Program, dbName: String) {
+  val driverName: String = driver.getClass.toString.stripPrefix("class io.github.plume.oss.drivers.")
+}
+
 case class BenchmarkResult(
     fileName: String,
     phase: String,
     database: String,
-    compilingAndUnpacking: Long,
-    soot: Long,
-    programStructureBuilding: Long,
-    baseCpgBuilding: Long,
-    databaseWrite: Long,
-    databaseRead: Long,
-    dataFlowPasses: Long,
-    cacheHits: Long,
-    cacheMisses: Long,
-    connectDeserialize: Long,
-    disconnectSerialize: Long
+    compilingAndUnpacking: Long = -1L,
+    soot: Long = -1L,
+    programStructureBuilding: Long = -1L,
+    baseCpgBuilding: Long = -1L,
+    databaseWrite: Long = -1L,
+    databaseRead: Long = -1L,
+    dataFlowPasses: Long = -1L,
+    cacheHits: Long = -1L,
+    cacheMisses: Long = -1L,
+    connectDeserialize: Long = -1L,
+    disconnectSerialize: Long = -1L
 ) {
+
+  val timedOut: Boolean = compilingAndUnpacking == -1L
+
   override def toString: String =
     s"BenchmarkResult { " +
       s"fileName=$fileName, " +
