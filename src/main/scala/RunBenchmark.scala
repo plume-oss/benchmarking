@@ -1,20 +1,13 @@
 package io.github.plume.oss
 
-import Main.{
-  captureBenchmarkResult,
-  clearSerializedFiles,
-  closeConnection,
-  handleConnection,
-  openConnection,
-  runBenchmark
-}
+import Main.{captureBenchmarkResult, clearSerializedFiles, closeConnection, closeConnectionWithExport, openConnection, openConnectionAndConfigure, runBenchmark}
 import store.LocalCache
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 object RunBenchmark {
 
@@ -43,18 +36,14 @@ object RunBenchmark {
       timeout,
       BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = job.dbName)
     )({
-      val memoryMonitor =
-        new MemoryMonitor(
-          job.driverName,
-          job.program.name.subSequence(job.program.name.lastIndexOf('/') + 1, job.program.name.length).toString
-        )
+      val memoryMonitor = new MemoryMonitor(job)
       job.driver.clearGraph()
       LocalCache.INSTANCE.clear()
       memoryMonitor.start()
       val ret = runInitBuild(job)
-      closeConnection(job.driver)
+      closeConnectionWithExport(job.driver)
       memoryMonitor.close()
-      openConnection(job.driver)
+      openConnectionAndConfigure(job.driver)
       ret
     }) match {
       case x: BenchmarkResult => captureBenchmarkResult(x).timedOut
@@ -104,7 +93,7 @@ object RunBenchmark {
     job.driver.clearGraph()
     clearSerializedFiles()
     runInitBuild(job)
-    closeConnection(job.driver)
+    closeConnectionWithExport(job.driver)
     job.program.jars.drop(1).zipWithIndex.foreach {
       case (jar, i) =>
         runWithTimeout(
@@ -112,9 +101,9 @@ object RunBenchmark {
           BenchmarkResult(fileName = job.program.name, phase = s"DISCUPT$i", database = job.dbName)
         )({
           LocalCache.INSTANCE.clear()
-          openConnection(job.driver)
+          openConnectionAndConfigure(job.driver)
           val ret = runBenchmark(jar, job.program.name, s"DISCUPT$i", job.dbName, job.driver)
-          closeConnection(job.driver)
+          closeConnectionWithExport(job.driver)
           ret
         }) match {
           case x: BenchmarkResult =>
@@ -123,14 +112,14 @@ object RunBenchmark {
           case _ =>
         }
     }
-    handleConnection(job.driver)
+    openConnection(job.driver)
     clearSerializedFiles()
     false
   }
 
   /**
     * Runs the jobs where database and cache is cleared between runs.
-   *
+    *
     * @return true if one of the jobs timed out, false if otherwise
     */
   def runFullBuilds(job: Job): Boolean = {

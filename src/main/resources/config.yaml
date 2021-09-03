@@ -3,7 +3,7 @@ cache-size: 100000
 timeout: 1
 experiment:
   # Mainly used for memory/storage testing
-  run-build-and-store: false
+  run-build-and-store: true
   # Will do an initial build and keep cache and not clear graph
   run-updates: false
   # Will do an initial build and remove cache/export graph/reconnect etc.
@@ -23,7 +23,7 @@ programs:
       - "2c85bd6499205256056eb8be03f0d52a27b12981"
 
   conf2:
-    enabled: true
+    enabled: false
     name: "apache/tinkerpop/gremlin-driver"
     jars:
       - "ee61241999eeb12b9d3fc8d64a3f9a06f6ba47f0"
@@ -33,7 +33,7 @@ programs:
       - "4624355bfeba3c27da9e8141fa93604cf840e9cd"
 
   conf3:
-    enabled: true
+    enabled: false
     name: "neo4j/neo4j"
     jars:
       - "50a71a00b5fbaf1f1e71b0fe05147f78f996e7fb"
@@ -48,8 +48,7 @@ databases:
     enabled: false
   conf2:
     db: "OverflowDB"
-    enabled: false
-    storage: "/tmp/plume/cpg-benchmark.bin"
+    enabled: true
     set_overflow: true
     set_heap_percentage_threshold: 80
     set_serialization_stats_enabled: false

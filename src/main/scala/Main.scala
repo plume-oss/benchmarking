@@ -45,13 +45,13 @@ object Main extends App {
           DockerManager.hasDockerDependency(dbName)) {
         DockerManager.startDockerFile(dbName, containers)
       }
-      Using.resource(driver) { d =>
-        handleConnection(d)
-        handleSchema(d)
+      try {
+        openConnection(driver)
+        handleSchema(driver)
         for (i <- 1 to iterations) {
           val driverName = driver.getClass.toString.stripPrefix("class io.github.plume.oss.drivers.")
           PrettyPrinter.announceIteration(i, driverName)
-          programs.map(Job(d, _, dbName)).foreach { job =>
+          programs.map(Job(driver, _, dbName)).foreach { job =>
             try {
               runExperiment(job)
             } catch {
@@ -61,6 +61,8 @@ object Main extends App {
             }
           }
         }
+      } finally {
+        closeConnection(driver)
       }
       if (conf.getOrDefault("use-docker", false).asInstanceOf[Boolean] &&
           DockerManager.hasDockerDependency(dbName)) {
@@ -70,29 +72,33 @@ object Main extends App {
 
   /**
     * Runs through all the configured experiments.
-   *
+    *
     * @return true if one of the jobs timed out, false if otherwise
     */
-  def runExperiment(job: Job): Boolean = {
-    // Run build and export
-    if (experiment.runBuildAndStore) {
-      Thread.sleep(2500) // Sleep to enable probes to start empty and properly
-      if (RunBenchmark.runBuildAndStore(job)) return true
+  def runExperiment(job: Job): Boolean =
+    try {
+      // Run build and export
+      if (experiment.runBuildAndStore) {
+        if (RunBenchmark.runBuildAndStore(job)) return true
+      }
+      // Run live updates
+      if (experiment.runLiveUpdates) {
+        if (RunBenchmark.runLiveUpdates(job)) return true
+      }
+      // Run disconnected updates
+      if (experiment.runDisconnectedUpdates) {
+        if (RunBenchmark.runDisconnectedUpdates(job)) return true
+      }
+      // Run full builds
+      if (experiment.runFullBuilds) {
+        if (RunBenchmark.runFullBuilds(job)) return true
+      }
+      false
+    } catch {
+      case e: Exception =>
+        logger.error(e.getMessage, e)
+        false
     }
-    // Run live updates
-    if (experiment.runLiveUpdates) {
-      if (RunBenchmark.runLiveUpdates(job)) return true
-    }
-    // Run disconnected updates
-    if (experiment.runDisconnectedUpdates) {
-      if (RunBenchmark.runDisconnectedUpdates(job)) return true
-    }
-    // Run full builds
-    if (experiment.runFullBuilds) {
-      if (RunBenchmark.runFullBuilds(job)) return true
-    }
-    false
-  }
 
   def handleSchema(driver: IDriver): Unit =
     driver match {
@@ -102,11 +108,19 @@ object Main extends App {
       case _ =>
     }
 
-  def handleConnection(driver: IDriver): Unit =
+  def openConnection(driver: IDriver): Unit =
     driver match {
-      case x: GremlinDriver    => x.connect()
-      case y: OverflowDbDriver => y.connect()
-      case z: Neo4jDriver      => z.connect()
+      case x: GremlinDriver    => if (!x.getConnected) x.connect()
+      case y: OverflowDbDriver => if (!y.getConnected$plume) y.connect()
+      case z: Neo4jDriver      => if (!z.getConnected) z.connect()
+      case _                   =>
+    }
+
+  def closeConnection(driver: IDriver): Unit =
+    driver match {
+      case x: GremlinDriver    => if (x.getConnected) x.close()
+      case y: OverflowDbDriver => if (y.getConnected$plume) y.close()
+      case z: Neo4jDriver      => if (z.getConnected) z.close()
       case _                   =>
     }
 
@@ -125,7 +139,7 @@ object Main extends App {
     }
   }
 
-  def openConnection(driver: IDriver): Unit =
+  def openConnectionAndConfigure(driver: IDriver): Unit =
     driver match {
       case w: TinkerGraphDriver =>
         if (w.getConnected) w.close()
@@ -148,7 +162,7 @@ object Main extends App {
       case _ =>
     }
 
-  def closeConnection(driver: IDriver): Unit =
+  def closeConnectionWithExport(driver: IDriver): Unit =
     driver match {
       case w: TinkerGraphDriver =>
         try {
