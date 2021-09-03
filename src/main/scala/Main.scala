@@ -1,15 +1,15 @@
 package io.github.plume.oss
 
 import drivers._
-import metrics.{ CacheMetrics, DriverTimeKey, ExtractorTimeKey, PlumeTimer }
+import metrics.{CacheMetrics, DriverTimeKey, ExtractorTimeKey, PlumeTimer}
 import options.CacheOptions
 import store.LocalCache
-import util.{ ExtractorConst, ResourceCompilationUtil }
+import util.{ExtractorConst, ResourceCompilationUtil}
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import org.yaml.snakeyaml.Yaml
 
-import java.io.{ BufferedWriter, FileWriter, File => JavaFile }
+import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.time.LocalDateTime
 import java.util
 import scala.jdk.CollectionConverters

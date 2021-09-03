@@ -2,7 +2,7 @@ package io.github.plume.oss
 
 import drivers._
 
-import java.io.{ File => JavaFile }
+import java.io.{File => JavaFile}
 import scala.reflect.io.File
 
 object DriverCreator {

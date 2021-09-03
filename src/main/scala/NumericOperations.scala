@@ -1,5 +1,5 @@
 package io.github.plume.oss
-import Numeric.Implicits._
+import scala.Numeric.Implicits._
 object NumericOperations {
 
   def mean[T: Numeric](xs: Iterable[T]): Double = xs.sum.toDouble / xs.size

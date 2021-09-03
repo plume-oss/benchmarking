@@ -60,7 +60,8 @@ object DockerManager {
     } catch {
       case _: StringIndexOutOfBoundsException => // Usually happens just as the services have been created
       case e: IllegalAccessError              => e.printStackTrace()
-      case e: RuntimeException                => logger.warn(s"${e.getMessage}. This may be due to the container still being created.", e)
+      case e: RuntimeException =>
+        logger.warn(s"${e.getMessage}. This may be due to the container still being created.", e)
     }
     1
   }

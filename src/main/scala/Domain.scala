@@ -1,14 +1,14 @@
 package io.github.plume.oss
 
-import io.github.plume.oss.drivers.IDriver
+import drivers.IDriver
 
 import java.io.{File => JavaFile}
 
 case class Experiment(
-  runBuildAndStore: Boolean,
-  runLiveUpdates: Boolean,
-  runDisconnectedUpdates: Boolean,
-  runFullBuilds: Boolean
+    runBuildAndStore: Boolean,
+    runLiveUpdates: Boolean,
+    runDisconnectedUpdates: Boolean,
+    runFullBuilds: Boolean
 )
 
 case class Program(name: String, jars: List[JavaFile])

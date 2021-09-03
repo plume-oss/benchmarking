@@ -1,6 +1,6 @@
 package io.github.plume.oss
 
-import Main.{captureBenchmarkResult, clearSerializedFiles, closeConnection, closeConnectionWithExport, openConnection, openConnectionAndConfigure, runBenchmark}
+import Main._
 import store.LocalCache
 
 import scala.concurrent.ExecutionContext.Implicits.global

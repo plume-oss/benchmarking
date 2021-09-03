@@ -3,7 +3,6 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable.ListBuffer
