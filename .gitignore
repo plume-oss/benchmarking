@@ -11,3 +11,4 @@
 /workspace/
 **/.DS_Store
 *.bin
+src/main/resources/programs

@@ -13,5 +13,9 @@ named after their commit hash.
 
 ## Running the suite
 
-Use `sbt run` to start the benchmarks. Taint analysis is performed from sources
-and sinks defined in `src/main/resources/taint_definitions.yaml`.
+First unpack the dataset by running: 
+
+    tar -xvzf ./src/main/resources/programs.tar.lz -C ./src/main/resources`.
+
+Then use `./RUN.sh` to start the benchmarks - this also contains memory configurations if necessary.
+Taint analysis is performed from sources and sinks defined in `src/main/resources/taint_definitions.yaml`.
