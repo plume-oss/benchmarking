@@ -1,15 +1,15 @@
 package io.github.plume.oss
 
 import drivers._
-import metrics.{CacheMetrics, DriverTimeKey, ExtractorTimeKey, PlumeTimer}
+import metrics.{ CacheMetrics, DriverTimeKey, ExtractorTimeKey, PlumeTimer }
 import options.CacheOptions
 import store.LocalCache
-import util.{ExtractorConst, ResourceCompilationUtil}
+import util.{ ExtractorConst, ResourceCompilationUtil }
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import org.yaml.snakeyaml.Yaml
 
-import java.io.{BufferedWriter, FileWriter, File => JavaFile}
+import java.io.{ BufferedWriter, FileWriter, File => JavaFile }
 import java.time.LocalDateTime
 import java.util
 import scala.jdk.CollectionConverters
@@ -349,8 +349,11 @@ object Main extends App {
               .asInstanceOf[util.ArrayList[String]]
           )
           .asScala
-          .map { f =>
-            new JavaFile(getClass.getResource(s"$PROGRAMS_PATH/$f.jar").getFile)
+          .map { jarName =>
+            s"$PROGRAMS_PATH/${pConf.get("name")}/$jarName.jar"
+          }
+          .map { jarPath =>
+            new JavaFile(getClass.getResource(jarPath).getFile)
           }
           .reverse
           .toList

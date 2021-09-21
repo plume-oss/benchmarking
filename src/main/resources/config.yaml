@@ -12,35 +12,197 @@ experiment:
   run-full-builds: false
 
 programs:
+  conf0:
+    enabled: true
+    name: fastjson
+    jars: # Newest to oldest
+      - "93d8c01e907fe35a8ff0eb5fe1c3b279d2f30282"
+      - "91eaa954c7bb06ca9382edc86c7fdb170b63e2ae"
+      - "23070b2ccd30c5bb3d78e735b098f835756a190a"
+      - "07556942be5a6adf63672cdc366adad4800e2365"
+      - "9a2756445da4f903c3546645a2e47b4859c15e78"
+      - "0f30967e5a86aa518fdfbb7990a9ccca433f763f"
+      - "dbc4a953879c80ab7f4999a21678f854ac411cba"
+      - "96137715db58a0ad587f8d3f47351b9aca5d04f2"
+      - "daec680b7248c2b79fda50b0cee4863a8b228bd4"
+      - "1c520a9dcf3ce5c217decd274b1576cf140163ab"
+      - "833fe4263931ea05de88ec09fd993521854d40b4"
+      - "60067f927a1dc51f8ffd53cb1eebb2b18bee044f"
+      - "732c2a33bd0fdae3e6320fadcb52b766bdd91d7b"
+      - "1a4fb9bb29188ba8474a20868ff8eda6d9b48317"
+      - "8b690ffcc901a9655b5c871795f7be910cef7f0f"
   conf1:
     enabled: true
-    name: "FasterXML/jackson-databind"
+    name: guava
     jars: # Newest to oldest
-      - "4adcbff5373bf0bde7a12760a83e340762b03aa0"
-      - "492fb802380f38ea3a5a31446bc53cb895cca029"
-      - "99e4e19aba9691b3a6b4f47078a3f6eb28cac81b"
-      - "0df9053cbaa8ab3695adb0d2dc0c5c0ec400d7c8"
-      - "2c85bd6499205256056eb8be03f0d52a27b12981"
-
+      - "4bbe12c4e031b6c18074f933e444fa20a371d633"
+      - "d5c30e3f190f2c391559a2e37fbc8f407cdb5785"
+      - "f79d923a38734bb584707ed77a98fb6d84d2aa28"
+      - "0caa47998e249281b8852a2bcde9498ecb8b15be"
+      - "2b6b844683e6ff63fc8ba676692cf636f74504fd"
+      - "1d615ea9853a293abfac770e31db6955c483ea92"
+      - "a35a8e0c1d91fe16ab2320a5286a9a233da1e037"
+      - "38ec4ece5fb45dee5ead0b36a23459499aaa2f91"
+      - "c1cc9df1f19c46cdd9383b7885117501a5161b7b"
+      - "904d567679509526bbc4461c8412ac99db51b248"
+      - "be95256020f4f2d047a3a38d9165c28d5e41d5f6"
+      - "a902c9e225e0c022c4fecd6cbd735926cc6643bf"
+      - "572d39f54decac480619d2df930ecaba5892b489"
+      - "a2e84d76227d49695ad2065910ab9e5d05078e40"
+      - "37a7c77daae1f58bd31c262243ad3d2bb478a2f4"
   conf2:
-    enabled: false
-    name: "apache/tinkerpop/gremlin-driver"
-    jars:
-      - "ee61241999eeb12b9d3fc8d64a3f9a06f6ba47f0"
-      - "8729fd4ce1711b29bc0b90670e87df33e91f4f09"
-      - "e242460c7797ab3e041816d788d859fcb9e8e00a"
-      - "43f729216015c8f2374b42c1b619a16d1e00396e"
-      - "4624355bfeba3c27da9e8141fa93604cf840e9cd"
-
+    enabled: true
+    name: guice
+    jars: # Newest to oldest
+      - "0477f05101eb93a19554a566997cc34e1a20f044"
+      - "738d317387783de3b2bf357d9417d10156c09b27"
+      - "6fc8ad454a57dd0b99a3bc8feb0c35100e78ea97"
+      - "54cccd3406e0060a6b0acdd7784c260d83cb93b2"
+      - "4a66eb4deca051c9a0724a0368a5ebaec36f53f3"
+      - "826a97fced733fe8ea60de4ed0837a6f50ed406e"
+      - "a26bb0100b6154cb86255e19c4ec75db35b48e1d"
+      - "1a410a8bef1ec721e16f9f16a447235f09951f05"
+      - "fd4ef5e6a3dbe570383e1dd6763884dba900ad7c"
+      - "ed6993aa14a4010904ea794ba7623a6f4486fe21"
+      - "a795fcc1b8eae06fe32463057f60883e16a160f8"
+      - "59640fa0df841cd6725e7b227e11d4f19a2aaf64"
+      - "f3f8fc0c7cc2bf5ea1596f7adee7f514d6cf01e8"
+      - "ba5b90a9f62d2ec05e03e0f03bb892a570baa9eb"
+      - "5caa5493958d40f597b4419c5027c61ce13ceaf7"
   conf3:
-    enabled: false
-    name: "neo4j/neo4j"
-    jars:
-      - "50a71a00b5fbaf1f1e71b0fe05147f78f996e7fb"
-      - "8901950334f63bdefba7cc08de78e7ae9a1a2405"
-      - "df4d8bf6236d72e99d606c3c28c602606bf5650d"
-      - "15b4b2ae7b20784cdd1f966066aef0f17f19204e"
-      - "02bb75f297595f822a2ef24437fa1d88489bf119"
+    enabled: true
+    name: jackson-core
+    jars: # Newest to oldest
+      - "171d3442e0745b07244fa8f69912585b69e11ad7"
+      - "9960979ab66ef8b6ff99bfa7f731663b9043f052"
+      - "f6a4751b58839b303d7b73a93fd0246f58b91bd2"
+      - "021801755ed9b84af29f073da39a784555f978c6"
+      - "28397f91e603321239b79aeee04c4867d82bb08e"
+      - "cd393c9b795025f12802042a39ddd2fe948a8d35"
+      - "1f3af9ae26c8429f7c79435c0082bcf4609e7bf3"
+      - "29d37bb358bdeff8757954f5f898436beb8307bb"
+      - "005d28ee240d6efd238c4d5a80c26f41a1085109"
+      - "100e4269b22dbb2b0b72d228537e394a4b165998"
+      - "a5da65ff67fb469e410df15e13fbb4b3bf9ca42a"
+      - "3b994ba1d146f8b566e6dfd1c15ea03947e1387c"
+      - "d6b4973338b1213b880b11c7cbb77e04d2ace078"
+      - "e50ebed1f1e896556eaee75c38ff8c1c49827cc8"
+      - "763e2eb655d7d0e40630061226135f66d118a64c"
+  conf4:
+    enabled: true
+    name: mockito
+    jars: # Newest to oldest
+      - "6d4c50ae3de1efe4f07a47e5960ec56d9cebf37d"
+      - "396aaf3377248348386671de15eec9683a79ed1e"
+      - "d57deb6dcdb73221ffcc6f171c680a7203d7a1c4"
+      - "03ae33aaea120a06034008d42c648c38bfa2a64e"
+      - "a53c3d451e756b51a96700624f517f4fcdd07aed"
+      - "fc7f7e2cad2945e348712ab3910994e4aea61568"
+      - "18607948324da9421170190eee01242ec386d27c"
+      - "cda17e8b93a59102f3fab2fe944845e2629b6660"
+      - "87bae9c6b5c203f2953fbc90e21d5e5576542482"
+      - "531d49ec2f4e059be392ddd5cf860482a67a38ae"
+      - "8525f0f2b6cb398b822569d93f345339b2b5e533"
+      - "163629c5cb5af73f8efd0fabd234963483f09440"
+      - "92cbac227d930f9b306527e8292a89bdb0cde348"
+      - "66998ea7f81c6adf49983cea081586e19760b7a0"
+      - "de59c1260458a707374982c6d311b1f21caeb5b0"
+  conf5:
+    enabled: true
+    name: mybatis-3
+    jars: # Newest to oldest
+      - "e4c60f0d379769503ffbe62c6953b9b8c3c24a61"
+      - "43d94b4f219707b91302e5baa443008dd536f3cd"
+      - "e257a1df9073b80521c8466087a5b7d88d22cf59"
+      - "0cf1efbe8436a4e89e18012e1a6818d1b27edcaa"
+      - "9664fc7f3c7f45228567397604652f509a24e096"
+      - "033be14ee815ea0d2759b01d8aa91f95dadef39d"
+      - "a53444851c84b484f7c64b363338002f487af540"
+      - "af88806c7a42bf6431778c823cf9157a166a1f92"
+      - "1687fb38ac58b221887c729d5976c237d8b87025"
+      - "460cca6fb86180eda8ecb36f127c860b210c7e5f"
+      - "8636bb989acf818e4c0602947438deac7403d4e7"
+      - "4d57711c33ec75bd94d9e9d025aed1efa643d27a"
+      - "06e71aa9288795344496ae840e41bc1094a134e6"
+      - "00ebfeba506d5c64ccc35bd1777e5b0ac82e644e"
+      - "0262a99d9e9553ac062608786e786b33dbbd70d8"
+  conf6:
+    enabled: true
+    name: OpenRefine
+    jars: # Newest to oldest
+      - "dc180faf3004595056d6832ac5792c1d71f0ef1c"
+      - "1e0a012ced36c9db058ad573cfb7fdca44d2725a"
+      - "997dd239460aa84f5748e353d6318d9fa5f85307"
+      - "3670442b8ffcf3730188727ef38bd6618f018660"
+      - "b7652e9036b5d8298346766febd04f0e50be3418"
+      - "da57d09a2cb953e51db03a8c813c6b69160c565d"
+      - "90c074ca681737907cc6554e943297e6a2475135"
+      - "1b02461a1c83c6dd58774b451928fc65db83b616"
+      - "51fe10aec8fa8edd5dc784ba94e3092286b0edc7"
+      - "6efec5469d240787c44193dc87119b8663ad57a2"
+      - "cdd7591adcdc805014f9c03ac722ed57e118705b"
+      - "5843871550b7dcb93c67735a384ae21210f442b0"
+      - "423715d3ca7cf6e526d411a84a5b8aeb400c3a4b"
+      - "685ac580fc4aff0db6fe86212f82b1edca74ae04"
+      - "8021690d4f15a583f13a89db6f83549eadaa102a"
+  conf7:
+    enabled: true
+    name: RxJava
+    jars: # Newest to oldest
+      - "03e8ced54ee1b42450ec6a703a06c38ce0ebbd4e"
+      - "ce45fc2eec103af5876723b167fb660da6af3a58"
+      - "9de33ea8314303d092e70635bbaefcfc6e26639e"
+      - "1d81a9036ffa960df6190fbdfb30a9db88eb3316"
+      - "5b0dd58a8580939754d51c5d132e3978d99ce04c"
+      - "a463d248145d55fc0d0833d192ee11b254012855"
+      - "9ecf8ab36362f2e664f31ed7b9938e028b860140"
+      - "578b4f880abd64400a5c64914ef668d20d580983"
+      - "47c599cb7f976f147b53a32482fb853ecf875da7"
+      - "b7e2f19378dd7e07ae254ed5ce0ede3f9646ce99"
+      - "a5dad0c66a9fab7685efbcc504d64b3c6d80330f"
+      - "0a9b09e62511174edd13194c9e3b2e43c906b1a6"
+      - "4aa1c43b0b620eecb65e91f19c8e56ee5d9bf46a"
+      - "0792e059237ec804f2992ebd665fd0a65020698c"
+      - "c1420ea41159f3011ec88df638e576bc76e23a3e"
+  conf8:
+    enabled: true
+    name: scribejava
+    jars: # Newest to oldest
+      - "124745961e999ccede90e2348c6012f8d335eb8a"
+      - "e10771853ab55641378415af7cd1582bad670f2c"
+      - "9c8e4c12df64fc15a9d7fb0335156e918977a39a"
+      - "ce678fbf0538065943da23be9a2969859cbf3d47"
+      - "33e4b878365c6fe5e5d3939a9241591a26101a10"
+      - "cd5e3af9ebe8605a131b5257996971caf716eefe"
+      - "0b3c0b72ceceea90276746db7dc6b50ebd58eb5b"
+      - "e1f9be595e54a596de46172c131108e90b2c27ef"
+      - "788389b8cb9addfce956f051f9f6d645cc03d329"
+      - "0d4d766a33bf0426cb8f7245684d6afbd94c2755"
+      - "fdde594b7d392d7c73d2c2cb1aaf40aed1079718"
+      - "d908a3a8bf4fc3c60fd6dd7b03849ec30163d5ab"
+      - "92b86e4702d0be7bdc4189ee4fff788c313b3c54"
+      - "aaa438a380e8063a62218f6a80da7e22b6d7b969"
+      - "88e598801840ebefd8408a1a8a9a667e9af08982"
+  conf9:
+    enabled: true
+    name: spring-boot
+    jars: # Newest to oldest
+      - "5ae6679d7d1cce2c7eb6007b3cf409177e43fc06"
+      - "ce95e093087d591626762089095705826b5adab8"
+      - "e231f653eff04d969c4f683b01d56c2216dcc2bb"
+      - "6caf3be8b8d119cf85e303090be0ee44b598e414"
+      - "985a1d6a364d5af344c777bd1c03d76c532af224"
+      - "de93f7630c6061cb12261efedb83c82bb6c6a881"
+      - "69f917799eb9252dfa4ad6a12210ddb16b3ae054"
+      - "494e005981a2e7db8bbfbaaf1ef6c423e16bfadc"
+      - "e15a5863547df0f105ce63d13aa9f712a3146c46"
+      - "5b8406493ae938d5acff80e8a985c1e14cd437dc"
+      - "ef6ad16e895ffeaa2a8475556d6d7d7b9d6a1985"
+      - "7c034c33e21956d4f3d112f0298f54f56c22fe76"
+      - "43a19c16a8396892a30462dd33c90217aaa7f40e"
+      - "157288e1e138fd501c5346b6bd168c93da19fab2"
+      - "657b8cea51800bd42abf10cbef1767a3c00592d6"
+
 
 databases:
   conf1:
