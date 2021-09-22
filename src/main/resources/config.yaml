@@ -1,6 +1,6 @@
 iterations: 1
 cache-size: 100000
-timeout: 5000 # Minutes
+timeout: 300 # in minutes. This is 5 hours
 experiment:
   # Mainly used for memory/storage testing
   run-build-and-store: true
