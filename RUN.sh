@@ -1,3 +1,3 @@
 #!/bin/bash
-export SBT_OPTS="-XX:+CMSClassUnloadingEnabled -Xss2M -Xmx30G"
+export SBT_OPTS="-Xss2M -Xmx12G"
 sbt run

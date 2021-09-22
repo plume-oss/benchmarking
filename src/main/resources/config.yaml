@@ -1,15 +1,15 @@
 iterations: 1
 cache-size: 100000
-timeout: 1
+timeout: 5000 # Minutes
 experiment:
   # Mainly used for memory/storage testing
   run-build-and-store: true
   # Will do an initial build and keep cache and not clear graph
-  run-updates: false
+  run-updates: true
   # Will do an initial build and remove cache/export graph/reconnect etc.
-  run-disconnected-updates: false
+  run-disconnected-updates: true
   # Will do an initial build and discard cache and clear graph between builds
-  run-full-builds: false
+  run-full-builds: true
 
 programs:
   conf0:
@@ -128,25 +128,6 @@ programs:
       - "0262a99d9e9553ac062608786e786b33dbbd70d8"
   conf6:
     enabled: true
-    name: OpenRefine
-    jars: # Newest to oldest
-      - "dc180faf3004595056d6832ac5792c1d71f0ef1c"
-      - "1e0a012ced36c9db058ad573cfb7fdca44d2725a"
-      - "997dd239460aa84f5748e353d6318d9fa5f85307"
-      - "3670442b8ffcf3730188727ef38bd6618f018660"
-      - "b7652e9036b5d8298346766febd04f0e50be3418"
-      - "da57d09a2cb953e51db03a8c813c6b69160c565d"
-      - "90c074ca681737907cc6554e943297e6a2475135"
-      - "1b02461a1c83c6dd58774b451928fc65db83b616"
-      - "51fe10aec8fa8edd5dc784ba94e3092286b0edc7"
-      - "6efec5469d240787c44193dc87119b8663ad57a2"
-      - "cdd7591adcdc805014f9c03ac722ed57e118705b"
-      - "5843871550b7dcb93c67735a384ae21210f442b0"
-      - "423715d3ca7cf6e526d411a84a5b8aeb400c3a4b"
-      - "685ac580fc4aff0db6fe86212f82b1edca74ae04"
-      - "8021690d4f15a583f13a89db6f83549eadaa102a"
-  conf7:
-    enabled: true
     name: RxJava
     jars: # Newest to oldest
       - "03e8ced54ee1b42450ec6a703a06c38ce0ebbd4e"
@@ -164,7 +145,7 @@ programs:
       - "4aa1c43b0b620eecb65e91f19c8e56ee5d9bf46a"
       - "0792e059237ec804f2992ebd665fd0a65020698c"
       - "c1420ea41159f3011ec88df638e576bc76e23a3e"
-  conf8:
+  conf7:
     enabled: true
     name: scribejava
     jars: # Newest to oldest
@@ -183,7 +164,7 @@ programs:
       - "92b86e4702d0be7bdc4189ee4fff788c313b3c54"
       - "aaa438a380e8063a62218f6a80da7e22b6d7b969"
       - "88e598801840ebefd8408a1a8a9a667e9af08982"
-  conf9:
+  conf8:
     enabled: true
     name: spring-boot
     jars: # Newest to oldest

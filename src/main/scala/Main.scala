@@ -154,7 +154,6 @@ object Main extends App {
         x.connect()
       case y: OverflowDbDriver =>
         if (y.getConnected$plume) y.close()
-        y.storageLocation(FILE_PREF + ".bin")
         y.connect()
       case z: Neo4jDriver =>
         if (z.getConnected) z.close()
