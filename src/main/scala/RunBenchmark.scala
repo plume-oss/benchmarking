@@ -3,6 +3,8 @@ package io.github.plume.oss
 import Main._
 import store.LocalCache
 
+import org.slf4j.{ Logger, LoggerFactory }
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ Await, Future }
@@ -10,6 +12,8 @@ import scala.language.postfixOps
 import scala.util.{ Failure, Success, Try }
 
 object RunBenchmark {
+
+  lazy val logger: Logger = LoggerFactory.getLogger(RunBenchmark.getClass)
 
   /**
     * Timeout in minutes
@@ -22,7 +26,7 @@ object RunBenchmark {
   private def runWithTimeout[T](timeoutMin: Long, default: T)(f: => T): T =
     Try(runWithTimeout(timeoutMin)(f)) match {
       case Success(x) => x
-      case Failure(_) => default
+      case Failure(y) => logger.error(y.getMessage); default
     }
 
   /**

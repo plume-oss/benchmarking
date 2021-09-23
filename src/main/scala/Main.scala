@@ -179,7 +179,7 @@ object Main extends App {
 
   def runBenchmark(f: JavaFile, name: String, phase: String, dbName: String, driver: IDriver): BenchmarkResult = {
     PrettyPrinter.announceBenchmark(name, f.getName.stripSuffix(".jar"))
-    new Extractor(driver).load(f).project()
+    new Extractor(driver).load(f).project(true, false)
     val extractorTimes = PlumeTimer.INSTANCE.getExtractorTimes
     val driverTimes = PlumeTimer.INSTANCE.getDriverTimes
     val b = BenchmarkResult(
