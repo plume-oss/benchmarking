@@ -1,6 +1,7 @@
 package io.github.plume.oss
 
 import Main._
+import io.github.plume.oss.drivers.IDriver
 import store.LocalCache
 
 import org.slf4j.{ Logger, LoggerFactory }
@@ -36,23 +37,33 @@ object RunBenchmark {
     */
   def runBuildAndStore(job: Job): Boolean = {
     val default = BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = job.dbName)
-    runWithTimeout(
-      timeout,
-      BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = job.dbName)
-    )({
-      val memoryMonitor = new MemoryMonitor(job)
-      job.driver.clearGraph()
-      LocalCache.INSTANCE.clear()
-      memoryMonitor.start()
-      val ret = runInitBuild(job)
-      closeConnectionWithExport(job.driver)
-      memoryMonitor.close()
-      openConnectionAndConfigure(job.driver)
-      ret
-    }) match {
-      case x: BenchmarkResult => captureBenchmarkResult(x).timedOut
-      case _                  => default.timedOut
+    job.driver.clearGraph()
+    LocalCache.INSTANCE.clear()
+    try {
+      runWithTimeout(
+        timeout,
+        BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = job.dbName)
+      )({
+        val memoryMonitor = new MemoryMonitor(job)
+        memoryMonitor.start()
+        val ret = runInitBuild(job)
+        closeConnectionWithExport(job.driver)
+        memoryMonitor.close()
+        openConnectionAndConfigure(job.driver)
+        ret
+      }) match {
+        case x: BenchmarkResult => captureBenchmarkResult(x).timedOut
+        case _                  => default.timedOut
+      }
+    } finally {
+      cleanUp(job.driver)
     }
+  }
+
+  def cleanUp(driver: IDriver): Unit = {
+    driver.clearGraph()
+    LocalCache.INSTANCE.clear()
+    clearSerializedFiles()
   }
 
   /**
@@ -67,24 +78,27 @@ object RunBenchmark {
     * @return true if one of the jobs timed out, false if otherwise
     */
   def runLiveUpdates(job: Job): Boolean = {
-    job.driver.clearGraph()
     val x = runInitBuild(job)
     if (x.timedOut) return true
-    job.program.jars.drop(1).zipWithIndex.foreach {
-      case (jar, i) =>
-        runWithTimeout(
-          timeout,
-          BenchmarkResult(fileName = job.program.name, phase = s"UPDATE$i", database = job.dbName)
-        )({
-          runBenchmark(jar, job.program.name, s"UPDATE$i", job.dbName, job.driver)
-        }) match {
-          case x: BenchmarkResult =>
-            captureBenchmarkResult(x)
-            if (x.timedOut) return true
-          case _ =>
-        }
+    try {
+      job.program.jars.drop(1).zipWithIndex.foreach {
+        case (jar, i) =>
+          runWithTimeout(
+            timeout,
+            BenchmarkResult(fileName = job.program.name, phase = s"UPDATE$i", database = job.dbName)
+          )({
+            runBenchmark(jar, job.program.name, s"UPDATE$i", job.dbName, job.driver)
+          }) match {
+            case x: BenchmarkResult =>
+              captureBenchmarkResult(x)
+              if (x.timedOut) return true
+            case _ =>
+          }
+      }
+      false
+    } finally {
+      cleanUp(job.driver)
     }
-    false
   }
 
   /**
@@ -93,31 +107,32 @@ object RunBenchmark {
     * @return true if one of the jobs timed out, false if otherwise
     */
   def runDisconnectedUpdates(job: Job): Boolean = {
-    LocalCache.INSTANCE.clear()
-    job.driver.clearGraph()
-    clearSerializedFiles()
+    cleanUp(job.driver)
     runInitBuild(job)
     closeConnectionWithExport(job.driver)
-    job.program.jars.drop(1).zipWithIndex.foreach {
-      case (jar, i) =>
-        runWithTimeout(
-          timeout,
-          BenchmarkResult(fileName = job.program.name, phase = s"DISCUPT$i", database = job.dbName)
-        )({
-          LocalCache.INSTANCE.clear()
-          openConnectionAndConfigure(job.driver)
-          val ret = runBenchmark(jar, job.program.name, s"DISCUPT$i", job.dbName, job.driver)
-          closeConnectionWithExport(job.driver)
-          ret
-        }) match {
-          case x: BenchmarkResult =>
-            captureBenchmarkResult(x)
-            if (x.timedOut) return true
-          case _ =>
-        }
+    try {
+      job.program.jars.drop(1).zipWithIndex.foreach {
+        case (jar, i) =>
+          runWithTimeout(
+            timeout,
+            BenchmarkResult(fileName = job.program.name, phase = s"DISCUPT$i", database = job.dbName)
+          )({
+            LocalCache.INSTANCE.clear()
+            openConnectionAndConfigure(job.driver)
+            val ret = runBenchmark(jar, job.program.name, s"DISCUPT$i", job.dbName, job.driver)
+            closeConnectionWithExport(job.driver)
+            ret
+          }) match {
+            case x: BenchmarkResult =>
+              captureBenchmarkResult(x)
+              if (x.timedOut) return true
+            case _ =>
+          }
+      }
+    } finally {
+      openConnection(job.driver)
+      cleanUp(job.driver)
     }
-    openConnection(job.driver)
-    clearSerializedFiles()
     false
   }
 
@@ -127,23 +142,25 @@ object RunBenchmark {
     * @return true if one of the jobs timed out, false if otherwise
     */
   def runFullBuilds(job: Job): Boolean = {
-    LocalCache.INSTANCE.clear()
-    job.driver.clearGraph()
-    job.program.jars.drop(1).zipWithIndex.foreach {
-      case (jar, i) =>
-        runWithTimeout(
-          timeout,
-          BenchmarkResult(fileName = job.program.name, phase = s"DISCUPT$i", database = job.dbName)
-        )({
-          LocalCache.INSTANCE.clear()
-          job.driver.clearGraph()
-          runBenchmark(jar, job.program.name, s"BUILD$i", job.dbName, job.driver)
-        }) match {
-          case x: BenchmarkResult =>
-            captureBenchmarkResult(x)
-            if (x.timedOut) return true
-          case _ =>
-        }
+    cleanUp(job.driver)
+    try {
+      job.program.jars.drop(1).zipWithIndex.foreach {
+        case (jar, i) =>
+          runWithTimeout(
+            timeout,
+            BenchmarkResult(fileName = job.program.name, phase = s"DISCUPT$i", database = job.dbName)
+          )({
+            cleanUp(job.driver)
+            runBenchmark(jar, job.program.name, s"BUILD$i", job.dbName, job.driver)
+          }) match {
+            case x: BenchmarkResult =>
+              captureBenchmarkResult(x)
+              if (x.timedOut) return true
+            case _ =>
+          }
+      }
+    } finally {
+      cleanUp(job.driver)
     }
     false
   }
