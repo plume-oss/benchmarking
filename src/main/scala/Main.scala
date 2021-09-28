@@ -93,6 +93,10 @@ object Main extends App {
       if (experiment.runFullBuilds) {
         if (RunBenchmark.runFullBuilds(job)) return true
       }
+      // Run Soot only builds
+      if (experiment.runSootOnlyBuilds) {
+        if (RunBenchmark.runBuildAndStore(job.copy(sootOnly = true))) return true
+      }
       false
     } catch {
       case e: Exception =>
@@ -177,15 +181,20 @@ object Main extends App {
       case _                   =>
     }
 
-  def runBenchmark(f: JavaFile, name: String, phase: String, dbName: String, driver: IDriver): BenchmarkResult = {
+  def runBenchmark(f: JavaFile,
+                   name: String,
+                   phase: String,
+                   dbName: String,
+                   driver: IDriver,
+                   sootOnly: Boolean = false): BenchmarkResult = {
     PrettyPrinter.announceBenchmark(name, f.getName.stripSuffix(".jar"))
-    new Extractor(driver).load(f).project(true, false)
+    new Extractor(driver).load(f).project(true, sootOnly)
     val extractorTimes = PlumeTimer.INSTANCE.getExtractorTimes
     val driverTimes = PlumeTimer.INSTANCE.getDriverTimes
     val b = BenchmarkResult(
       fileName = name,
       phase = phase,
-      database = dbName,
+      database = if (!sootOnly) dbName else "Soot",
       compilingAndUnpacking = extractorTimes.get(ExtractorTimeKey.COMPILING_AND_UNPACKING),
       soot = extractorTimes.get(ExtractorTimeKey.SOOT),
       programStructureBuilding = extractorTimes.get(ExtractorTimeKey.PROGRAM_STRUCTURE_BUILDING),
@@ -387,6 +396,11 @@ object Main extends App {
         .get("experiment")
         .asInstanceOf[util.LinkedHashMap[String, Any]]
         .getOrDefault("run-full-builds", false)
+        .asInstanceOf[Boolean],
+      runSootOnlyBuilds = config
+        .get("experiment")
+        .asInstanceOf[util.LinkedHashMap[String, Any]]
+        .getOrDefault("run-soot-builds", false)
         .asInstanceOf[Boolean]
     )
 

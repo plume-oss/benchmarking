@@ -8,12 +8,13 @@ case class Experiment(
     runBuildAndStore: Boolean,
     runLiveUpdates: Boolean,
     runDisconnectedUpdates: Boolean,
-    runFullBuilds: Boolean
+    runFullBuilds: Boolean,
+    runSootOnlyBuilds: Boolean,
 )
 
 case class Program(name: String, jars: List[JavaFile])
 
-case class Job(driver: IDriver, program: Program, dbName: String) {
+case class Job(driver: IDriver, program: Program, dbName: String, sootOnly: Boolean = false) {
   val driverName: String = driver.getClass.toString.stripPrefix("class io.github.plume.oss.drivers.")
 }
 

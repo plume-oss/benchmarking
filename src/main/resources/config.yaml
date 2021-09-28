@@ -10,6 +10,8 @@ experiment:
   run-disconnected-updates: true
   # Will do an initial build and discard cache and clear graph between builds
   run-full-builds: true
+  # Will do a database-less build loading programs only into soot to measure soot impact
+  run-soot-builds: true
 
 programs:
   conf0:

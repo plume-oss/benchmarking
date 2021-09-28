@@ -36,13 +36,14 @@ object RunBenchmark {
     * @return true if one of the jobs timed out, false if otherwise
     */
   def runBuildAndStore(job: Job): Boolean = {
-    val default = BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = job.dbName)
+    val dbName = if (!job.sootOnly) job.dbName else "Soot"
+    val default = BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = dbName)
     job.driver.clearGraph()
     LocalCache.INSTANCE.clear()
     try {
       runWithTimeout(
         timeout,
-        BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = job.dbName)
+        BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = dbName)
       )({
         val memoryMonitor = new MemoryMonitor(job)
         memoryMonitor.start()
@@ -70,7 +71,7 @@ object RunBenchmark {
     * Runs the first JAR (oldest).
     */
   def runInitBuild(job: Job): BenchmarkResult =
-    runBenchmark(job.program.jars.head, job.program.name, "INITIAL", job.dbName, job.driver)
+    runBenchmark(job.program.jars.head, job.program.name, "INITIAL", job.dbName, job.driver, job.sootOnly)
 
   /**
     * Runs the jobs where no connection lost and no cache cleared between runs.

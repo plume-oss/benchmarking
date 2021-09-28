@@ -10,7 +10,7 @@ import scala.util.Using
 
 class MemoryMonitor(job: Job) extends Thread {
 
-  val db: String = job.driverName
+  val db: String = if (!job.sootOnly) job.dbName else "Soot"
   val project: String =
     job.program.name.subSequence(job.program.name.lastIndexOf('/') + 1, job.program.name.length).toString
 
@@ -36,7 +36,7 @@ class MemoryMonitor(job: Job) extends Thread {
     val minuteFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
     val date = minuteFormat.format(now)
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(s"$date,${job.dbName},$project,$mean,$stddev,$max,$min\n")
+      _.append(s"$date,$db,$project,$mean,$stddev,$max,$min\n")
     }
     join()
   }
