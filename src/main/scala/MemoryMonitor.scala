@@ -20,7 +20,7 @@ class MemoryMonitor(job: Job) extends Thread {
   override def run(): Unit =
     while (!stopProcess.get()) {
       captureMemoryResult()
-      Thread.sleep(300)
+      Thread.sleep(100)
     }
 
   def close(): Unit = {
