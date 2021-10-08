@@ -2,6 +2,8 @@ import os.path
 import sys
 from subprocess import *
 import time
+import re
+from datetime import datetime
 
 dbs = ["NEO", "TG"]
 selected_db = "NEO"
@@ -13,21 +15,32 @@ elif sys.argv[1] not in dbs:
 else:
     selected_db = sys.argv[1]
 
-MEM_FILE = './results/db_memory_results.csv'
+OUT_FILE = './results/db_mem_storage_results.csv'
 init_headers = False
 
-if not os.path.isfile(MEM_FILE):
+if os.path.isfile(OUT_FILE) == False:
     init_headers = True
 
-with open('./results/db_memory.csv', 'a') as f:
-    print("Recording memory and storage for {}".format(selected_db))
-    print("Use Ctrl+C to stop monitoring")
-    if init_headers is True:
-            f.write('DATE,DATABASE,DATA\n')
-    while True:
+print("Recording memory and storage for {}".format(selected_db))
+print("Use Ctrl+C to stop monitoring")
+while True:
+    with open(OUT_FILE, 'a') as f:
+        if init_headers is True:
+            f.write('DATE,DATABASE,MEMORY,STORAGE\n')
+            init_headers = False
+
         if selected_db == "NEO":
-            proc = Popen(["sudo", "du", "/var/lib/docker/volumes/docker_neo4j-data"], stdout=PIPE).communicate()[-1]
-            print(proc)
+            # Get storage
+            proc = Popen(["sudo", "du", "/var/lib/docker/volumes/docker_neo4j-data"], stdout=PIPE).communicate()[0]
+            storage = "".join(map(chr, proc)).split('\n')[-2].split()[0]
+            # Get memory
+            proc = Popen(["docker", "exec", "-it", "neo4j-plume-benchmark", "pidof", "java"], stdout=PIPE).communicate()[0]
+            pid = "".join(map(chr, proc)).strip()
+            proc = Popen(["docker", "exec", "-it", "neo4j-plume-benchmark", "pmap", pid], stdout=PIPE).communicate()[0]
+            memory = "".join(map(chr, proc)).strip().split('\n')[-1].split()[1]
+            memory =  re.sub('\D', '', memory)
+            # Do time
+            f.write('{},{},{},{}\n'.format(datetime.now(), 'Neo4j', memory, storage))
         elif selected_db == "TG":
             pass
-        time.sleep(500)
+    time.sleep(5)
