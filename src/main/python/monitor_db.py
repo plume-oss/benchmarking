@@ -43,5 +43,22 @@ while True:
             # Do time
             f.write('{},{},{},{}\n'.format(datetime.now(), 'Neo4j', memory, storage))
         elif selected_db == "TG":
-            pass
+            # Get storage
+            proc = Popen(["sudo", "du", "/tmp/plume/tigergraph-data"], stdout=PIPE).communicate()[0]
+            storage = "".join(map(chr, proc)).split('\n')[-2].split()[0]
+            # Get memory
+            pids = []
+            proc = Popen(["docker", "exec", "-it", "tigergraph-plume-benchmark", "pidof", "java"], stdout=PIPE).communicate()[0]
+            pids += "".join(map(chr, proc)).strip().split()
+            proc = Popen(["docker", "exec", "-it", "tigergraph-plume-benchmark", "pidof", "nginx"], stdout=PIPE).communicate()[0]
+            pids += "".join(map(chr, proc)).strip().split()
+            proc = Popen(["docker", "exec", "-it", "tigergraph-plume-benchmark", "pgrep", "tg_*"], stdout=PIPE).communicate()[0]
+            pids += "".join(map(chr, proc)).strip().split()
+            memory = 0
+            for pid in pids:
+                proc = Popen(["docker", "exec", "-itu", "tigergraph", "tigergraph-plume-benchmark",  "pmap", pid], stdout=PIPE).communicate()[0]
+                memory_str = "".join(map(chr, proc)).strip().split('\n')[-1].split()[1]
+                memory += int(re.sub('\D', '', memory_str))
+            # Do time
+            f.write('{},{},{},{}\n'.format(datetime.now(), 'TigerGraph', memory, storage))
     time.sleep(5)
