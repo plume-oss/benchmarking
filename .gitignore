@@ -8,6 +8,7 @@
 /results/*result*.csv
 /venv/
 /results/*.pdf
+/results/*.png
 /workspace/
 **/.DS_Store
 *.bin

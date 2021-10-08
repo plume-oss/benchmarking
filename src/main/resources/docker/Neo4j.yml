@@ -1,14 +1,13 @@
 version: '3'
 services:
   neo4j:
-    image: bitnami/neo4j:4-debian-10
+    image: bitnami/neo4j:4.2.7-debian-10-r10
     container_name: neo4j-plume-benchmark
     environment:
       NEO4J_PASSWORD: "neo4j123"
     ports:
       - "7687:7687"
       - "7474:7474"
-      - "3637:3637"
     healthcheck:
       test: perl -MIO::Socket::INET -e 'exit(! defined( IO::Socket::INET->new("localhost:7687")))'
       interval: 5s
