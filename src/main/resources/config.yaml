@@ -190,7 +190,7 @@ programs:
 databases:
   conf1:
     db: "TinkerGraph"
-    enabled: false
+    enabled: true
   conf2:
     db: "OverflowDB"
     enabled: true

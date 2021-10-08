@@ -12,6 +12,7 @@ if len(sys.argv) < 2:
     print("Database name as argument required i.e. {}".format(dbs))
 elif sys.argv[1] not in dbs:
     print("Valid args are {}".format(dbs))
+    exit(1)
 else:
     selected_db = sys.argv[1]
 
