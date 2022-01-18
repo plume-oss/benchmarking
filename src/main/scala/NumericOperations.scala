@@ -1,4 +1,4 @@
-package io.github.plume.oss
+package com.github.plume.oss
 import scala.Numeric.Implicits._
 object NumericOperations {
 

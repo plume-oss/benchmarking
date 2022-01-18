@@ -1,21 +1,5 @@
-iterations: 1
-cache-size: 100000
-timeout: 300 # in minutes. This is 5 hours
-experiment:
-  # Mainly used for memory/storage testing
-  run-build-and-store: true
-  # Will do an initial build and keep cache and not clear graph
-  run-updates: true
-  # Will do an initial build and remove cache/export graph/reconnect etc.
-  run-disconnected-updates: true
-  # Will do an initial build and discard cache and clear graph between builds
-  run-full-builds: true
-  # Will do a database-less build loading programs only into soot to measure soot impact
-  run-soot-builds: true
-
-programs:
-  conf0:
-    enabled: true
+configs:
+  - enabled: true
     name: fastjson
     jars: # Newest to oldest
       - "93d8c01e907fe35a8ff0eb5fe1c3b279d2f30282"
@@ -33,8 +17,7 @@ programs:
       - "732c2a33bd0fdae3e6320fadcb52b766bdd91d7b"
       - "1a4fb9bb29188ba8474a20868ff8eda6d9b48317"
       - "8b690ffcc901a9655b5c871795f7be910cef7f0f"
-  conf1:
-    enabled: true
+  - enabled: true
     name: guava
     jars: # Newest to oldest
       - "4bbe12c4e031b6c18074f933e444fa20a371d633"
@@ -52,8 +35,7 @@ programs:
       - "572d39f54decac480619d2df930ecaba5892b489"
       - "a2e84d76227d49695ad2065910ab9e5d05078e40"
       - "37a7c77daae1f58bd31c262243ad3d2bb478a2f4"
-  conf2:
-    enabled: true
+  - enabled: true
     name: guice
     jars: # Newest to oldest
       - "0477f05101eb93a19554a566997cc34e1a20f044"
@@ -71,8 +53,7 @@ programs:
       - "f3f8fc0c7cc2bf5ea1596f7adee7f514d6cf01e8"
       - "ba5b90a9f62d2ec05e03e0f03bb892a570baa9eb"
       - "5caa5493958d40f597b4419c5027c61ce13ceaf7"
-  conf3:
-    enabled: true
+  - enabled: true
     name: jackson-core
     jars: # Newest to oldest
       - "171d3442e0745b07244fa8f69912585b69e11ad7"
@@ -90,8 +71,7 @@ programs:
       - "d6b4973338b1213b880b11c7cbb77e04d2ace078"
       - "e50ebed1f1e896556eaee75c38ff8c1c49827cc8"
       - "763e2eb655d7d0e40630061226135f66d118a64c"
-  conf4:
-    enabled: true
+  - enabled: true
     name: mockito
     jars: # Newest to oldest
       - "6d4c50ae3de1efe4f07a47e5960ec56d9cebf37d"
@@ -109,8 +89,7 @@ programs:
       - "92cbac227d930f9b306527e8292a89bdb0cde348"
       - "66998ea7f81c6adf49983cea081586e19760b7a0"
       - "de59c1260458a707374982c6d311b1f21caeb5b0"
-  conf5:
-    enabled: true
+  - enabled: true
     name: mybatis-3
     jars: # Newest to oldest
       - "e4c60f0d379769503ffbe62c6953b9b8c3c24a61"
@@ -128,8 +107,7 @@ programs:
       - "06e71aa9288795344496ae840e41bc1094a134e6"
       - "00ebfeba506d5c64ccc35bd1777e5b0ac82e644e"
       - "0262a99d9e9553ac062608786e786b33dbbd70d8"
-  conf6:
-    enabled: true
+  - enabled: true
     name: RxJava
     jars: # Newest to oldest
       - "03e8ced54ee1b42450ec6a703a06c38ce0ebbd4e"
@@ -147,8 +125,7 @@ programs:
       - "4aa1c43b0b620eecb65e91f19c8e56ee5d9bf46a"
       - "0792e059237ec804f2992ebd665fd0a65020698c"
       - "c1420ea41159f3011ec88df638e576bc76e23a3e"
-  conf7:
-    enabled: true
+  - enabled: true
     name: scribejava
     jars: # Newest to oldest
       - "124745961e999ccede90e2348c6012f8d335eb8a"
@@ -166,8 +143,7 @@ programs:
       - "92b86e4702d0be7bdc4189ee4fff788c313b3c54"
       - "aaa438a380e8063a62218f6a80da7e22b6d7b969"
       - "88e598801840ebefd8408a1a8a9a667e9af08982"
-  conf8:
-    enabled: true
+  - enabled: true
     name: spring-boot
     jars: # Newest to oldest
       - "c62a6819fe55e1126d796baee093ec641b5c0ce0"
@@ -185,63 +161,3 @@ programs:
       - "bb26b7bdf54a8b348eb74e238fded5142809f651"
       - "a5e95ef4c8964541a590b831f187dde017dfbf01"
       - "9d2cb162e6a6010d3bd1c3ef615ad171bf147966"
-
-
-databases:
-  conf1:
-    db: "TinkerGraph"
-    enabled: true
-  conf2:
-    db: "OverflowDB"
-    enabled: true
-    set_overflow: true
-    set_heap_percentage_threshold: 80
-    set_serialization_stats_enabled: false
-  conf3:
-    db: "JanusGraph_BerkeleyJE_Lucene"
-    enabled: false
-    use-docker: true
-    containers:
-      - "janus-berkeleyje-lucene"
-    remote_config: "src/main/resources/conf/remote-graph.properties"
-  conf4:
-    db: "JanusGraph_Scylla_ElasticSearch"
-    enabled: false
-    use-docker: true
-    containers:
-      - "janus-plume-benchmark"
-      - "scylla-plume-benchmark"
-      - "elastic-plume-benchmark"
-    remote_config: "src/main/resources/conf/remote-graph.properties"
-  conf5:
-    db: "Neptune"
-    enabled: false
-    hostnames:
-      - "127.0.0.1"
-    port: 8182
-    key_cert_chain_file: "src/main/resources/conf/SFSRootCAG2.pem"
-    id_storage_location: "/tmp/plume/"
-  conf6:
-    db: "Neo4j"
-    enabled: false
-    use-docker: true
-    containers:
-      - "neo4j-plume-benchmark"
-    hostname: "127.0.0.1"
-    port: 7687
-    username: "neo4j"
-    password: "neo4j123"
-    database: "neo4j"
-  conf7:
-    db: "TigerGraph"
-    enabled: false
-    use-docker: true
-    containers:
-      - "tigergraph-plume-benchmark"
-    username: "tigergraph"
-    password: "tigergraph"
-    hostname: "127.0.0.1"
-    restPpPort: 9000
-    gsqlPort: 14240
-    secure: false
-#    auth_key: "secret"
