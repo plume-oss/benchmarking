@@ -11,6 +11,7 @@ import net.jcazevedo.moultingyaml.{
   YamlString,
   YamlValue
 }
+
 import java.io.{ File => JFile }
 
 abstract class DriverConfig {
@@ -27,11 +28,7 @@ case class OverflowDbConfig(enabled: Boolean,
     extends DriverConfig
 case class TinkerGraphConfig(enabled: Boolean, storageLocation: String) extends DriverConfig
 case class NeptuneConfig(enabled: Boolean, hostname: String, port: Int, keyCertChainFile: String) extends DriverConfig
-case class Neo4jConfig(enabled: Boolean,
-                       hostname: String,
-                       port: Int,
-                       username: String,
-                       password: String)
+case class Neo4jConfig(enabled: Boolean, hostname: String, port: Int, username: String, password: String)
     extends DriverConfig
 case class TigerGraphConfig(enabled: Boolean,
                             username: String,
@@ -141,7 +138,6 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                 properties.getOrElse(YamlString("port"), 7687).asInstanceOf[YamlNumber].value.toInt,
                 properties.getOrElse(YamlString("username"), "neo4j").asInstanceOf[YamlString].value,
                 properties.getOrElse(YamlString("password"), "neo4j").asInstanceOf[YamlString].value,
-                properties.getOrElse(YamlString("database"), "neo4j").asInstanceOf[YamlString].value,
               )
             case "TigerGraph" =>
               TigerGraphConfig(
@@ -205,7 +201,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
   implicit val datasetConfigsFormat = yamlFormat1(DatasetConfigurations)
 }
 
-case class Job(driver: DriverConfig, program: DatasetConfig, sootOnly: Boolean = false)
+case class Job(driverName: String, driverConfig: DriverConfig, program: DatasetConfig, experiment: ExperimentConfig)
 
 case class BenchmarkResult(
     fileName: String,

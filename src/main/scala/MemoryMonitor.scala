@@ -10,8 +10,8 @@ import scala.util.Using
 
 class MemoryMonitor(job: Job) extends Thread {
 
-  val db: String = if (!job.sootOnly) {
-    job.driver match {
+  val db: String = if (!job.experiment.runSootOnlyBuilds) {
+    job.driverConfig match {
       case _: OverflowDbConfig => "OverflowDB"
       case _: TinkerGraphConfig => "TinkerGraph"
       case _: NeptuneConfig => "Neptune"

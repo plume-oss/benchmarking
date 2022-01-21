@@ -1,14 +1,16 @@
 package com.github.plume.oss
 
-import Main._
-import com.github.plume.oss.{ExperimentConfig, YamlDeserializer}
+import drivers._
+
+import com.github.nscala_time.time.Imports.LocalDateTime
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.io.{BufferedWriter, FileWriter, File => JFile}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success, Try, Using}
 
 object RunBenchmark {
 
@@ -31,49 +33,133 @@ object RunBenchmark {
       case Success(x) => x
       case Failure(y) => logger.error(y.getMessage); default
     }
-//
-//  /**
-//    * This job runs the first build while recording memory usage of the application.
-//    *
-//    * @return true if one of the jobs timed out, false if otherwise
-//    */
-//  def runBuildAndStore(job: Job): Boolean = {
-//    val dbName = if (!job.sootOnly) job.dbName else "Soot"
-//    val default = BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = dbName)
-//    job.driver.clearGraph()
-//    LocalCache.INSTANCE.clear()
-//    try {
-//      runWithTimeout(
-//        timeout,
-//        BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = dbName)
-//      )({
-//        val memoryMonitor = new MemoryMonitor(job)
-//        memoryMonitor.start()
-//        val ret = runInitBuild(job)
-//        closeConnectionWithExport(job.driver)
-//        memoryMonitor.close()
-//        openConnectionAndConfigure(job.driver)
-//        ret
-//      }) match {
-//        case x: BenchmarkResult => captureBenchmarkResult(x).timedOut
-//        case _                  => default.timedOut
-//      }
-//    } finally {
-//      cleanUp(job.driver)
-//    }
-//  }
-//
-//  def cleanUp(driver: IDriver): Unit = {
-//    driver.clearGraph()
-//    LocalCache.INSTANCE.clear()
-//    clearSerializedFiles()
-//  }
-//
-//  /**
-//    * Runs the first JAR (oldest).
-//    */
-//  def runInitBuild(job: Job): BenchmarkResult =
-//    runBenchmark(job.program.jars.head, job.program.name, "INITIAL", job.dbName, job.driver, job.sootOnly)
+
+  private def clearSerializedFiles(driver: DriverConfig): Unit = {
+    val storage = driver match {
+      case d: TinkerGraphConfig => Some(d.storageLocation)
+      case d: OverflowDbConfig  => Some(d.storageLocation)
+      case _                    => None
+    }
+    storage match {
+      case Some(filePath) =>
+        try {
+          new JFile(filePath).delete()
+        } catch {
+          case _: Exception =>
+        }
+      case None =>
+    }
+  }
+
+  /**
+    * This job runs the first build while recording memory usage of the application.
+    *
+    * @return true if one of the jobs timed out, false if otherwise
+    */
+  def runBuildAndStore(job: Job): Boolean = {
+    val dbName = if (!job.experiment.runSootOnlyBuilds) job.driverName else "Soot"
+    val default = BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = dbName)
+    val driver = DriverUtil.createDriver(job.driverConfig)
+    try {
+      runWithTimeout(
+        timeout,
+        BenchmarkResult(fileName = job.program.name, phase = "INITIAL", database = dbName)
+      )({
+        val memoryMonitor = new MemoryMonitor(job)
+        memoryMonitor.start()
+        val ret = runInitBuild(job, driver)
+        closeConnectionWithExport(job, driver)
+        memoryMonitor.close()
+        ret
+      }) match {
+        case x: BenchmarkResult => captureBenchmarkResult(x).timedOut
+        case _                  => default.timedOut
+      }
+    } finally {
+      cleanUp(job, driver)
+      driver.close()
+    }
+  }
+
+  def cleanUp(job: Job, driver: IDriver): Unit = {
+    driver.clear()
+    clearSerializedFiles(job.driverConfig)
+  }
+
+  def runBenchmark(f: JFile, job: Job, driver: IDriver, phase: String): BenchmarkResult = {
+    def time[R](block: => R): Long = {
+      val t0 = System.nanoTime()
+      block // call-by-name
+      val t1 = System.nanoTime()
+      t1 - t0
+    }
+    PrettyPrinter.announceBenchmark(job.program.name, f.getName.stripSuffix(".jar"))
+    val extractionTime = time { new Jimple2Cpg().createCpg(f.getName, driver = driver) }
+    val b = BenchmarkResult(
+      fileName = job.program.name,
+      phase = phase,
+      database = if (!job.experiment.runSootOnlyBuilds) job.program.name else "Soot",
+      time = extractionTime,
+      connectDeserialize = -1L, // TODO: Measure these
+      disconnectSerialize = -1L
+    )
+    PrettyPrinter.announceResults(b)
+    b
+  }
+
+  def captureBenchmarkResult(b: BenchmarkResult): BenchmarkResult = {
+    val csv = new JFile("./results/result.csv")
+    if (!csv.exists()) {
+      new JFile("./results/").mkdir()
+      csv.createNewFile()
+      Using.resource(new BufferedWriter(new FileWriter(csv))) {
+        _.append(
+          "DATE," +
+            "FILE_NAME," +
+            "PHASE," +
+            "DATABASE," +
+            "TIME," +
+            "CONNECT_DESERIALIZE," +
+            "DISCONNECT_SERIALIZE" +
+            "\n"
+        )
+      }
+    }
+    Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
+      _.append(
+        s"${LocalDateTime.now()}," +
+          s"${b.fileName}," +
+          s"${b.phase}," +
+          s"${b.database}," +
+          s"${b.time}," +
+          s"${b.connectDeserialize}," +
+          s"${b.disconnectSerialize}\n"
+      )
+    }
+    b
+  }
+
+  def closeConnectionWithExport(job: Job, driver: IDriver): Unit =
+    driver match {
+      case w: TinkerGraphDriver =>
+        try {
+          w.exportGraph(job.driverConfig.asInstanceOf[TinkerGraphConfig].storageLocation)
+        } catch {
+          case _: Exception => logger.debug("TinkerGraph export does not exist yet.")
+        } finally {
+          w.close()
+        }
+      case x: GremlinDriver    => x.close()
+      case y: OverflowDbDriver => y.close()
+      case z: Neo4jDriver      => z.close()
+      case _                   =>
+    }
+
+  /**
+    * Runs the first JAR (oldest).
+    */
+  def runInitBuild(job: Job, driver: IDriver): BenchmarkResult =
+    runBenchmark(job.program.jars.head, job, driver, "INITIAL")
 //
 //  /**
 //    * Runs the jobs where no connection lost and no cache cleared between runs.
