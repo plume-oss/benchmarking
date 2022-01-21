@@ -4,7 +4,7 @@ configs:
     properties:
       storageLocation: "cpg.kryo"
   - db: "OverflowDB"
-    enabled: true
+    enabled: false
     properties:
       storageLocation: "cpg.odb"
       setOverflow: true
@@ -23,7 +23,6 @@ configs:
       port: 7687
       username: "neo4j"
       password: "neo4j"
-      database: "neo4j"
   - db: "TigerGraph"
     enabled: false
     properties:

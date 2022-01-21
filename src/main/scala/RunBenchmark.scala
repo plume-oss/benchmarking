@@ -21,16 +21,16 @@ object RunBenchmark {
     */
   var timeout: Long = 5L * 60L
 
-//  private def runWithTimeout[T](timeoutMin: Long)(f: => T): T = {
-//    System.gc()
-//    Await.result(Future(f), timeoutMin minutes)
-//  }
-//
-//  private def runWithTimeout[T](timeoutMin: Long, default: T)(f: => T): T =
-//    Try(runWithTimeout(timeoutMin)(f)) match {
-//      case Success(x) => x
-//      case Failure(y) => logger.error(y.getMessage); default
-//    }
+  private def runWithTimeout[T](timeoutMin: Long)(f: => T): T = {
+    System.gc()
+    Await.result(Future(f), timeoutMin minutes)
+  }
+
+  private def runWithTimeout[T](timeoutMin: Long, default: T)(f: => T): T =
+    Try(runWithTimeout(timeoutMin)(f)) match {
+      case Success(x) => x
+      case Failure(y) => logger.error(y.getMessage); default
+    }
 //
 //  /**
 //    * This job runs the first build while recording memory usage of the application.

@@ -13,7 +13,7 @@ import net.jcazevedo.moultingyaml.{
 }
 import java.io.{ File => JFile }
 
-sealed trait DriverConfig {
+abstract class DriverConfig {
   def enabled: Boolean
 }
 
@@ -31,8 +31,7 @@ case class Neo4jConfig(enabled: Boolean,
                        hostname: String,
                        port: Int,
                        username: String,
-                       password: String,
-                       database: String)
+                       password: String)
     extends DriverConfig
 case class TigerGraphConfig(enabled: Boolean,
                             username: String,
