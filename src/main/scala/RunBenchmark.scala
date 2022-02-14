@@ -59,7 +59,7 @@ object RunBenchmark {
   def runBuildAndStore(job: Job): Boolean = {
     val driver = DriverUtil.createDriver(job.driverConfig)
     try {
-      val x = runInitBuild(job, driver)
+      val x = runInitBuild(job, driver, withExport = true)
       captureBenchmarkResult(x).timedOut
     } finally {
       cleanUp(job, driver)
@@ -139,7 +139,7 @@ object RunBenchmark {
   /**
     * Runs the first JAR (oldest).
     */
-  def runInitBuild(job: Job, driver: IDriver): BenchmarkResult = {
+  def runInitBuild(job: Job, driver: IDriver, withExport: Boolean = false): BenchmarkResult = {
     val default = generateDefaultResult(job)
     runWithTimeout(
       timeout,
@@ -148,7 +148,7 @@ object RunBenchmark {
       val memoryMonitor = new MemoryMonitor(job)
       memoryMonitor.start()
       val ret = runBenchmark(job.program.jars.head, job, driver, "INITIAL")
-      closeConnectionWithExport(job, driver)
+      if (withExport) closeConnectionWithExport(job, driver)
       memoryMonitor.close()
       ret
     })
