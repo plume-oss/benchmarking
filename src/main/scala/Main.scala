@@ -1,16 +1,8 @@
 package com.github.plume.oss
 
-import drivers._
-
 import org.slf4j.{ Logger, LoggerFactory }
-import org.yaml.snakeyaml.Yaml
 
-import java.io.{ BufferedWriter, FileWriter, File => JavaFile }
-import java.time.LocalDateTime
-import java.util
-import scala.jdk.CollectionConverters
 import scala.language.postfixOps
-import scala.util.Using
 
 object Main extends App {
 
@@ -29,7 +21,7 @@ object Main extends App {
   driverConfigs.filter(_.enabled).foreach { driverConf =>
     for (i <- 1 to experimentConfig.iterations) {
       val driverName =
-        driverConf.getClass.toString.stripPrefix("class com.github.plume.oss.Domain$").stripSuffix("Config")
+        driverConf.getClass.toString.stripPrefix("class com.github.plume.oss.").stripSuffix("Config")
       PrettyPrinter.announceIteration(i, driverName)
 
       datasetConfigs
@@ -38,6 +30,19 @@ object Main extends App {
         .foreach(runExperiment)
     }
   }
+
+  private val mailBody =
+    s"""
+    |Benchmark measuring:
+    |${driverConfigs
+         .filter(_.enabled)
+         .map(_.getClass.toString.stripPrefix("class com.github.plume.oss.").stripSuffix("Config"))
+         .map(x => s"\t* $x")
+         .mkString("\n")}
+    |is complete.
+    |""".stripMargin
+  println(mailBody)
+  MailUtil.sendNotification(mailBody)
 
   /**
     * Runs through all the configured experiments.

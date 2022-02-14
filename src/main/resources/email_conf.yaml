@@ -1,0 +1,6 @@
+enabled: false
+host: ""
+user: ""
+password: ""
+port: 1234
+recipient: "dbe@sun.ac.za"

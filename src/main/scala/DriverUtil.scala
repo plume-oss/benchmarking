@@ -2,8 +2,6 @@ package com.github.plume.oss
 
 import drivers._
 
-import better.files.File
-
 import scala.reflect.io.Path
 
 object DriverUtil {
@@ -26,12 +24,11 @@ object DriverUtil {
         new TigerGraphDriver(c.hostname, c.restPpPort, c.gsqlPort, c.username, c.password, secure = c.secure)
     }
 
-  def handleSchema(d: IDriver): Unit = {
+  def handleSchema(d: IDriver): Unit =
     d match {
       case x: ISchemaSafeDriver =>
-      com.github.plume.oss.Main.logger.info("Building schema...")
+        com.github.plume.oss.Main.logger.info("Building schema...")
         x.buildSchema()
       case _ =>
     }
-  }
 }

@@ -1,18 +1,8 @@
 package com.github.plume.oss
 
-import net.jcazevedo.moultingyaml.{
-  deserializationError,
-  DefaultYamlProtocol,
-  YamlArray,
-  YamlBoolean,
-  YamlFormat,
-  YamlNumber,
-  YamlObject,
-  YamlString,
-  YamlValue
-}
+import net.jcazevedo.moultingyaml.{DefaultYamlProtocol, YamlArray, YamlBoolean, YamlFormat, YamlNumber, YamlObject, YamlString, YamlValue, deserializationError}
 
-import java.io.{ File => JFile }
+import java.io.{File => JFile}
 
 abstract class DriverConfig {
   def enabled: Boolean
@@ -197,9 +187,51 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
       YamlString("runSootOnlyBuilds") -> YamlBoolean(o.runSootOnlyBuilds),
     )
   }
+
+  implicit object EmailConfigFormat extends YamlFormat[EmailConfig] {
+
+    override def read(yaml: YamlValue): EmailConfig =
+      yaml.asYamlObject.getFields(
+        YamlString("enabled"),
+        YamlString("host"),
+        YamlString("user"),
+        YamlString("password"),
+        YamlString("port"),
+        YamlString("recipient"),
+      ) match {
+        case Seq(
+            YamlBoolean(enabled),
+            YamlString(host),
+            YamlString(user),
+            YamlString(password),
+            YamlNumber(port),
+            YamlString(recipient),
+            ) =>
+          EmailConfig(enabled, host, user, password, port.toInt, recipient)
+        case _ => deserializationError("EmailConfig expected")
+      }
+
+    override def write(o: EmailConfig): YamlValue = YamlObject(
+      YamlString("enabled") -> YamlBoolean(o.enabled),
+      YamlString("host") -> YamlString(o.host),
+      YamlString("user") -> YamlString(o.user),
+      YamlString("password") -> YamlString(o.password),
+      YamlString("port") -> YamlNumber(o.port),
+      YamlString("recipient") -> YamlString(o.recipient),
+    )
+  }
+
   implicit val driverConfigsFormat = yamlFormat1(DriverConfigurations)
   implicit val datasetConfigsFormat = yamlFormat1(DatasetConfigurations)
+  implicit val emailConfigsFormat = yamlFormat6(EmailConfig)
 }
+
+case class EmailConfig(enabled: Boolean = false,
+                       host: String,
+                       user: String,
+                       password: String,
+                       port: Int,
+                       recipient: String)
 
 case class Job(driverName: String, driverConfig: DriverConfig, program: DatasetConfig, experiment: ExperimentConfig)
 
