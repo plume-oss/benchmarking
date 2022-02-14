@@ -63,7 +63,7 @@ object RunBenchmark {
       captureBenchmarkResult(x).timedOut
     } finally {
       cleanUp(job, driver)
-      driver.close()
+      if (driver.isConnected) driver.close()
     }
   }
 
