@@ -63,12 +63,12 @@ object RunBenchmark {
       captureBenchmarkResult(x).timedOut
     } finally {
       cleanUp(job, driver)
-      if (driver.isConnected) driver.close()
+      driver.close()
     }
   }
 
   def cleanUp(job: Job, driver: IDriver): Unit = {
-    driver.clear()
+    if (driver.isConnected) driver.clear()
     clearSerializedFiles(job.driverConfig)
   }
 
@@ -190,7 +190,7 @@ object RunBenchmark {
       false
     } finally {
       cleanUp(job, driver)
-      driver.close()
+      if (driver.isConnected) driver.close()
     }
   }
 
