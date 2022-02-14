@@ -1,4 +1,4 @@
-package io.github.plume.oss
+package com.github.plume.oss
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
@@ -10,7 +10,16 @@ import scala.util.Using
 
 class MemoryMonitor(job: Job) extends Thread {
 
-  val db: String = if (!job.sootOnly) job.dbName else "Soot"
+  val db: String = if (!job.experiment.runSootOnlyBuilds) {
+    job.driverConfig match {
+      case _: OverflowDbConfig => "OverflowDB"
+      case _: TinkerGraphConfig => "TinkerGraph"
+      case _: NeptuneConfig => "Neptune"
+      case _: Neo4jConfig => "Neo4j"
+      case _: TigerGraphConfig => "TigerGraph"
+    }
+  } else "Soot"
+
   val project: String =
     job.program.name.subSequence(job.program.name.lastIndexOf('/') + 1, job.program.name.length).toString
 

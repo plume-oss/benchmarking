@@ -1,30 +1,28 @@
+Global / excludeLintKeys += lintUnused
+
 enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaServerAppPackaging)
 
 name := "Plume Benchmarking"
 version := "0.1"
-scalaVersion := "2.13.4"
+scalaVersion := "2.13.7"
 maintainer := "dbe@sun.ac.za"
 
-idePackagePrefix := Some("io.github.plume.oss")
+idePackagePrefix := Some("com.github.plume.oss")
 run := Defaults.runTask(fullClasspath in Runtime, mainClass in run in Compile, runner in run).evaluated
 
-val plume_version = "0.6.2"
-val snakeyaml_version = "1.27"
-val log4j_version = "2.11.2"
-val circle_version = "0.14.0-M4"
+val plume_version = "1.0.8"
+val moulting_yaml_version = "0.4.2"
+val log4j_version = "2.17.0"
+val javaMailVersion = "1.6.2"
 
 libraryDependencies ++= Seq(
-  "io.github.plume-oss" % "plume" % plume_version exclude ("io.github.plume-oss", "cpgconv"),
+  "com.github.plume-oss" % "plume" % plume_version,
   "org.apache.logging.log4j" % "log4j-core" % log4j_version,
-  "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j_version,
-  "org.yaml" % "snakeyaml" % snakeyaml_version,
-) ++ Seq(
-  "io.circe" %% "circe-core",
-  "io.circe" %% "circe-generic",
-  "io.circe" %% "circe-parser"
-).map(_ % circle_version)
+  "net.jcazevedo" % "moultingyaml_2.13" % moulting_yaml_version,
+  "com.sun.mail" % "javax.mail" % javaMailVersion
+)
 
 ThisBuild / resolvers ++= Seq(
   Resolver.mavenLocal,
@@ -33,14 +31,4 @@ ThisBuild / resolvers ++= Seq(
   "jitpack" at "https://jitpack.io"
 )
 
-javaOptions in Universal += Seq(
-  "-Djava.rmi.server.hostname=127.0.0.1",
-  "-Dcom.sun.management.jmxremote.port=9090", // port of the rmi registery
-  "-Dcom.sun.management.jmxremote.rmi.port=9090", // port of the rmi server
-  "-Dcom.sun.management.jmxremote.ssl=false", // To disable SSL
-  "-Dcom.sun.management.jmxremote.local.only=false", // when true, it indicates that the local JMX RMI connector will only accept connection requests from local interfaces
-  "-Dcom.sun.management.jmxremote.authenticate=false", // Password authentication for remote monitoring is disabled
-).mkString(" ")
-
-
-mainClass in assembly := Some("io.github.plume.oss.Main")
+mainClass in assembly := Some("com.github.plume.oss.Main")
