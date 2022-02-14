@@ -3,14 +3,14 @@ package com.github.plume.oss
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
-import java.io.{BufferedWriter, FileWriter, File => JFile}
+import java.io.{ BufferedWriter, FileWriter, File => JFile }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.{ Failure, Success, Try, Using }
 
 object RunBenchmark {
 
@@ -87,21 +87,15 @@ object RunBenchmark {
   }
 
   def runBenchmark(f: JFile, job: Job, driver: IDriver, phase: String): BenchmarkResult = {
-    def time[R](block: => R): Long = {
-      val t0 = System.nanoTime()
-      block // call-by-name
-      val t1 = System.nanoTime()
-      t1 - t0
-    }
     PrettyPrinter.announceBenchmark(job.program.name, f.getName.stripSuffix(".jar"))
-    val extractionTime = time { new Jimple2Cpg().createCpg(f.getName, driver = driver) }
+    new Jimple2Cpg().createCpg(f.getAbsolutePath, driver = driver)
     val b = BenchmarkResult(
       fileName = job.program.name,
       phase = phase,
       database = if (!job.experiment.runSootOnlyBuilds) job.program.name else "Soot",
-      time = extractionTime,
-      connectDeserialize = -1L, // TODO: Measure these
-      disconnectSerialize = -1L
+      time = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_EXTRACTION, -1L),
+      connectDeserialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_OPEN_DRIVER, -1L),
+      disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L)
     )
     PrettyPrinter.announceResults(b)
     b

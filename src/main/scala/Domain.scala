@@ -198,6 +198,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
         YamlString("password"),
         YamlString("port"),
         YamlString("recipient"),
+        YamlString("machineId"),
       ) match {
         case Seq(
             YamlBoolean(enabled),
@@ -206,8 +207,9 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
             YamlString(password),
             YamlNumber(port),
             YamlString(recipient),
+            YamlString(machineId),
             ) =>
-          EmailConfig(enabled, host, user, password, port.toInt, recipient)
+          EmailConfig(enabled, host, user, password, port.toInt, recipient, machineId)
         case _ => deserializationError("EmailConfig expected")
       }
 
@@ -218,12 +220,13 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
       YamlString("password") -> YamlString(o.password),
       YamlString("port") -> YamlNumber(o.port),
       YamlString("recipient") -> YamlString(o.recipient),
+      YamlString("machineId") -> YamlString(o.machineId),
     )
   }
 
   implicit val driverConfigsFormat = yamlFormat1(DriverConfigurations)
   implicit val datasetConfigsFormat = yamlFormat1(DatasetConfigurations)
-  implicit val emailConfigsFormat = yamlFormat6(EmailConfig)
+  implicit val emailConfigsFormat = yamlFormat7(EmailConfig)
 }
 
 case class EmailConfig(enabled: Boolean = false,
@@ -231,7 +234,8 @@ case class EmailConfig(enabled: Boolean = false,
                        user: String,
                        password: String,
                        port: Int,
-                       recipient: String)
+                       recipient: String,
+                       machineId: String)
 
 case class Job(driverName: String, driverConfig: DriverConfig, program: DatasetConfig, experiment: ExperimentConfig)
 

@@ -39,10 +39,19 @@ object Main extends App {
          .map(_.getClass.toString.stripPrefix("class com.github.plume.oss.").stripSuffix("Config"))
          .map(x => s"\t* $x")
          .mkString("\n")}
+    |With config:
+    |__________________________________________________________
+    |\titerations             | ${experimentConfig.iterations}
+    |\ttimeout                | ${experimentConfig.timeout}
+    |\trunBuildAndStore       | ${experimentConfig.runBuildAndStore}
+    |\trunLiveUpdates         | ${experimentConfig.runLiveUpdates}
+    |\trunDisconnectedUpdates | ${experimentConfig.runDisconnectedUpdates}
+    |\trunFullBuilds          | ${experimentConfig.runFullBuilds}
+    |__________________________________________________________
     |is complete.
     |""".stripMargin
-  println(mailBody)
-  MailUtil.sendNotification(mailBody)
+
+  MailUtil.sendNotification("Plume Benchmark Complete", mailBody)
 
   /**
     * Runs through all the configured experiments.
@@ -74,6 +83,7 @@ object Main extends App {
       false
     } catch {
       case e: Exception =>
+        MailUtil.sendError(e)
         logger.error(e.getMessage, e)
         false
     }
