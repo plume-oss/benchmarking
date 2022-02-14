@@ -1,6 +1,6 @@
 package com.github.plume.oss
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.language.postfixOps
 
@@ -64,18 +64,18 @@ object Main extends App {
       if (job.experiment.runBuildAndStore) {
         if (RunBenchmark.runBuildAndStore(job)) return true
       }
-//      // Run live updates
-//      if (job.experiment.runLiveUpdates) {
-//        if (RunBenchmark.runLiveUpdates(job)) return true
-//      }
-//      // Run disconnected updates
-//      if (job.experiment.runDisconnectedUpdates) {
-//        if (RunBenchmark.runDisconnectedUpdates(job)) return true
-//      }
-//      // Run full builds
-//      if (job.experiment.runFullBuilds) {
-//        if (RunBenchmark.runFullBuilds(job)) return true
-//      }
+      // Run live updates
+      if (job.experiment.runLiveUpdates) {
+        if (RunBenchmark.runLiveUpdates(job)) return true
+      }
+      // Run disconnected updates
+      if (job.experiment.runDisconnectedUpdates) {
+        if (RunBenchmark.runDisconnectedUpdates(job)) return true
+      }
+      // Run full builds
+      if (job.experiment.runFullBuilds) {
+        if (RunBenchmark.runFullBuilds(job)) return true
+      }
 //      // Run Soot only builds
 //      if (job.experiment.runSootOnlyBuilds) {
 //        if (RunBenchmark.runBuildAndStore(job.copy(sootOnly = true))) return true
