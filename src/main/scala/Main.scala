@@ -1,6 +1,7 @@
 package com.github.plume.oss
 
-import org.slf4j.{Logger, LoggerFactory}
+import com.github.plume.oss.drivers.ISchemaSafeDriver
+import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.language.postfixOps
 
@@ -60,6 +61,11 @@ object Main extends App {
     */
   def runExperiment(job: Job): Boolean =
     try {
+      job.driverConfig match {
+        case c: TigerGraphConfig => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
+        case c: Neo4jConfig      => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
+        case _                   =>
+      }
       // Run build and export
       if (job.experiment.runBuildAndStore) {
         if (RunBenchmark.runBuildAndStore(job)) return true
