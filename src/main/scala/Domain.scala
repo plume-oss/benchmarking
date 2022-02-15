@@ -155,7 +155,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                 properties.getOrElse(YamlString("password"), "tigergraph").asInstanceOf[YamlString].value,
                 properties.getOrElse(YamlString("hostname"), "127.0.0.1").asInstanceOf[YamlString].value,
                 properties.getOrElse(YamlString("restPpPort"), 9000).asInstanceOf[YamlNumber].value.toInt,
-                properties.getOrElse(YamlString("restPpPort"), 14240).asInstanceOf[YamlNumber].value.toInt,
+                properties.getOrElse(YamlString("gsqlPort"), 14240).asInstanceOf[YamlNumber].value.toInt,
                 properties.getOrElse(YamlString("secure"), false).asInstanceOf[YamlBoolean].boolean,
               )
             case _ => deserializationError("OverflowDB, TinkerGraph, Neptune, Neo4j, or TigerGraph expected")
