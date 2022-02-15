@@ -15,7 +15,8 @@ object DriverUtil {
       case c: OverflowDbConfig =>
         new OverflowDbDriver(if (c.storageLocation.isBlank) None else Some(c.storageLocation),
                              c.setHeapPercentageThreshold,
-                             c.setSerializationStatsEnabled)
+                             c.setSerializationStatsEnabled,
+                             c.dataFlowCacheFile)
       case c: NeptuneConfig =>
         new NeptuneDriver(c.hostname, c.port, c.keyCertChainFile)
       case c: Neo4jConfig =>

@@ -10,6 +10,7 @@ configs:
       setOverflow: true
       setHeapPercentageThreshold: 80
       setSerializationStatsEnabled: false
+      dataFlowCacheFile: ""
   - db: "Neptune"
     enabled: false
     properties:

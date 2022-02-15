@@ -1,8 +1,19 @@
 package com.github.plume.oss
 
-import net.jcazevedo.moultingyaml.{DefaultYamlProtocol, YamlArray, YamlBoolean, YamlFormat, YamlNumber, YamlObject, YamlString, YamlValue, deserializationError}
+import net.jcazevedo.moultingyaml.{
+  deserializationError,
+  DefaultYamlProtocol,
+  YamlArray,
+  YamlBoolean,
+  YamlFormat,
+  YamlNumber,
+  YamlObject,
+  YamlString,
+  YamlValue
+}
 
-import java.io.{File => JFile}
+import java.io.{ File => JFile }
+import java.nio.file.{ Files, Path, Paths }
 
 abstract class DriverConfig {
   def enabled: Boolean
@@ -14,7 +25,8 @@ case class OverflowDbConfig(enabled: Boolean,
                             storageLocation: String,
                             setOverflow: Boolean,
                             setHeapPercentageThreshold: Int,
-                            setSerializationStatsEnabled: Boolean)
+                            setSerializationStatsEnabled: Boolean,
+                            dataFlowCacheFile: Option[Path])
     extends DriverConfig
 case class TinkerGraphConfig(enabled: Boolean, storageLocation: String) extends DriverConfig
 case class NeptuneConfig(enabled: Boolean, hostname: String, port: Int, keyCertChainFile: String) extends DriverConfig
@@ -96,6 +108,10 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
             ) =>
           db match {
             case "OverflowDB" =>
+              val cacheFileStr = properties
+                .getOrElse(YamlString("dataFlowCacheFile"), "")
+                .asInstanceOf[YamlString]
+                .value
               OverflowDbConfig(
                 enabled,
                 properties.getOrElse(YamlString("storageLocation"), "cpg.odb").asInstanceOf[YamlString].value,
@@ -105,6 +121,9 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                   .getOrElse(YamlString("setSerializationStatsEnabled"), true)
                   .asInstanceOf[YamlBoolean]
                   .boolean,
+                if (Files.isRegularFile(Paths.get(cacheFileStr)))
+                  Some(Paths.get(cacheFileStr))
+                else None
               )
             case "TinkerGraph" =>
               TinkerGraphConfig(
