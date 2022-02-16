@@ -141,6 +141,7 @@ object RunBenchmark {
     */
   def runInitBuild(job: Job, driver: IDriver, withExport: Boolean = false): BenchmarkResult = {
     val default = generateDefaultResult(job)
+    driver.clear()
     runWithTimeout(
       timeout,
       default

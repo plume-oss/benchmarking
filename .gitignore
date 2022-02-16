@@ -10,6 +10,7 @@
 /results/*.pdf
 /results/*.png
 /workspace/
-**/.DS_Store
+**.DS_Store
 *.bin
 src/main/resources/programs
+*.gzip

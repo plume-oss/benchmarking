@@ -82,15 +82,16 @@ object Main extends App {
       if (job.experiment.runFullBuilds) {
         if (RunBenchmark.runFullBuilds(job)) return true
       }
-//      // Run Soot only builds
-//      if (job.experiment.runSootOnlyBuilds) {
-//        if (RunBenchmark.runBuildAndStore(job.copy(sootOnly = true))) return true
-//      }
+      // Run Soot only builds
+      if (job.experiment.runSootOnlyBuilds) {
+        if (RunBenchmark.runBuildAndStore(job)) return true
+      }
       false
     } catch {
       case e: Exception =>
         MailUtil.sendError(e)
         logger.error(e.getMessage, e)
+        e.printStackTrace()
         false
     }
 
