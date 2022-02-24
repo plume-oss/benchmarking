@@ -20,6 +20,11 @@ object Main extends App {
   logger.debug(s"The files are: ${datasetConfigs.map(_.name).mkString(",")}")
 
   driverConfigs.filter(_.enabled).foreach { driverConf =>
+    driverConf match {
+      case c: TigerGraphConfig => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
+      case c: Neo4jConfig      => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
+      case _                   =>
+    }
     for (i <- 1 to experimentConfig.iterations) {
       val driverName =
         driverConf.getClass.toString.stripPrefix("class com.github.plume.oss.").stripSuffix("Config")
@@ -61,11 +66,6 @@ object Main extends App {
     */
   def runExperiment(job: Job): Boolean =
     try {
-      job.driverConfig match {
-        case c: TigerGraphConfig => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
-        case c: Neo4jConfig      => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
-        case _                   =>
-      }
       // Run build and export
       if (job.experiment.runBuildAndStore) {
         if (RunBenchmark.runBuildAndStore(job)) return true
