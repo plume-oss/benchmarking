@@ -21,8 +21,16 @@ object Main extends App {
 
   driverConfigs.filter(_.enabled).foreach { driverConf =>
     driverConf match {
-      case c: TigerGraphConfig => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
-      case c: Neo4jConfig      => DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver].buildSchema()
+      case c: TigerGraphConfig =>
+        val d = DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver]
+        d.buildSchema()
+      case c: Neo4jConfig      =>
+        val d = DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver]
+        d.clear()
+        d.buildSchema()
+      case c: NeptuneConfig      =>
+        val d = DriverUtil.createDriver(c)
+        d.clear()
       case _                   =>
     }
     for (i <- 1 to experimentConfig.iterations) {
