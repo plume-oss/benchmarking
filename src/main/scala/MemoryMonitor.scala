@@ -3,6 +3,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable.ListBuffer
@@ -40,7 +41,7 @@ class MemoryMonitor(job: Job) extends Thread {
   def writeLine(usedMemory: Long): Unit = {
     val csv = initializeFile()
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(s"$db,$project,$usedMemory\n")//$mean,$stddev,$max,$min\n")
+      _.append(s"${LocalDateTime.now()},$db,$project,$usedMemory\n")//$mean,$stddev,$max,$min\n")
     }
   }
 
@@ -57,7 +58,7 @@ class MemoryMonitor(job: Job) extends Thread {
       logger.info(s"Creating memory capture file ${csv.getAbsolutePath}")
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append("Database,Project,Memory\n")//Mean,StdDev,Max,Min\n")
+        _.append("StartTime,Database,Project,Memory\n")//Mean,StdDev,Max,Min\n")
       }
     }
     csv

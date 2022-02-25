@@ -1,19 +1,11 @@
 package com.github.plume.oss
 
-import net.jcazevedo.moultingyaml.{
-  deserializationError,
-  DefaultYamlProtocol,
-  YamlArray,
-  YamlBoolean,
-  YamlFormat,
-  YamlNumber,
-  YamlObject,
-  YamlString,
-  YamlValue
-}
+import net.jcazevedo.moultingyaml.{DefaultYamlProtocol, YamlArray, YamlBoolean, YamlFormat, YamlNumber, YamlObject, YamlString, YamlValue, deserializationError}
+import org.joda.time.DateTime
 
-import java.io.{ File => JFile }
-import java.nio.file.{ Files, Path, Paths }
+import java.io.{File => JFile}
+import java.nio.file.{Files, Path, Paths}
+import java.time.LocalDateTime
 
 abstract class DriverConfig {
   def enabled: Boolean
@@ -265,7 +257,8 @@ case class BenchmarkResult(
     timedOut: Boolean = false,
     time: Long = -1L,
     connectDeserialize: Long = -1L,
-    disconnectSerialize: Long = -1L
+    disconnectSerialize: Long = -1L,
+    startTime: java.time.LocalDateTime = LocalDateTime.now()
 ) {
 
   override def toString: String =
