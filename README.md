@@ -13,7 +13,10 @@ named after their commit hash.
 
 ## Running the suite
 
-First unpack the dataset by running: 
+First unpack the dataset by:
+
+* Heading into `experiments` directory
+* Running: 
 
     unlzma src/main/resources/programs.tar.lzma && \
         tar xvf src/main/resources/programs.tar -C ./src/main/resources
