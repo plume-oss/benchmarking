@@ -52,9 +52,9 @@ class MemoryMonitor(job: Job) extends Thread {
   }
 
   private def initializeFile(): JavaFile = {
-    val csv = new JavaFile(s"./results/memory_results.csv")
+    val csv = new JavaFile(s"../results/memory_results.csv")
     if (!csv.exists()) {
-      new JavaFile("./results/").mkdir()
+      new JavaFile("../results/").mkdir()
       logger.info(s"Creating memory capture file ${csv.getAbsolutePath}")
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {

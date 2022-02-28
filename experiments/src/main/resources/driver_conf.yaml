@@ -1,10 +1,10 @@
 configs:
   - db: "TinkerGraph"
-    enabled: true
+    enabled: false
     properties:
       storageLocation: "cpg.kryo"
   - db: "OverflowDB"
-    enabled: false
+    enabled: true
     properties:
       storageLocation: "cpg.odb"
       setOverflow: true
@@ -23,7 +23,7 @@ configs:
       hostname: "127.0.0.1"
       port: 7687
       username: "neo4j"
-      password: "neo4j"
+      password: "neo4j123"
   - db: "TigerGraph"
     enabled: false
     properties:

@@ -1,5 +1,5 @@
 configs:
-  - enabled: true
+  - enabled: false
     name: fastjson
     jars: # Newest to oldest
       - "93d8c01e907fe35a8ff0eb5fe1c3b279d2f30282"
@@ -17,7 +17,7 @@ configs:
       - "732c2a33bd0fdae3e6320fadcb52b766bdd91d7b"
       - "1a4fb9bb29188ba8474a20868ff8eda6d9b48317"
       - "8b690ffcc901a9655b5c871795f7be910cef7f0f"
-  - enabled: true
+  - enabled: false
     name: guava
     jars: # Newest to oldest
       - "4bbe12c4e031b6c18074f933e444fa20a371d633"
@@ -35,7 +35,7 @@ configs:
       - "572d39f54decac480619d2df930ecaba5892b489"
       - "a2e84d76227d49695ad2065910ab9e5d05078e40"
       - "37a7c77daae1f58bd31c262243ad3d2bb478a2f4"
-  - enabled: true
+  - enabled: false
     name: guice
     jars: # Newest to oldest
       - "0477f05101eb93a19554a566997cc34e1a20f044"
@@ -53,7 +53,7 @@ configs:
       - "f3f8fc0c7cc2bf5ea1596f7adee7f514d6cf01e8"
       - "ba5b90a9f62d2ec05e03e0f03bb892a570baa9eb"
       - "5caa5493958d40f597b4419c5027c61ce13ceaf7"
-  - enabled: true
+  - enabled: false
     name: jackson-core
     jars: # Newest to oldest
       - "171d3442e0745b07244fa8f69912585b69e11ad7"
@@ -71,7 +71,7 @@ configs:
       - "d6b4973338b1213b880b11c7cbb77e04d2ace078"
       - "e50ebed1f1e896556eaee75c38ff8c1c49827cc8"
       - "763e2eb655d7d0e40630061226135f66d118a64c"
-  - enabled: true
+  - enabled: false
     name: mockito
     jars: # Newest to oldest
       - "6d4c50ae3de1efe4f07a47e5960ec56d9cebf37d"
@@ -89,7 +89,7 @@ configs:
       - "92cbac227d930f9b306527e8292a89bdb0cde348"
       - "66998ea7f81c6adf49983cea081586e19760b7a0"
       - "de59c1260458a707374982c6d311b1f21caeb5b0"
-  - enabled: true
+  - enabled: false
     name: mybatis-3
     jars: # Newest to oldest
       - "e4c60f0d379769503ffbe62c6953b9b8c3c24a61"
@@ -107,7 +107,7 @@ configs:
       - "06e71aa9288795344496ae840e41bc1094a134e6"
       - "00ebfeba506d5c64ccc35bd1777e5b0ac82e644e"
       - "0262a99d9e9553ac062608786e786b33dbbd70d8"
-  - enabled: true
+  - enabled: false
     name: RxJava
     jars: # Newest to oldest
       - "03e8ced54ee1b42450ec6a703a06c38ce0ebbd4e"
@@ -143,7 +143,7 @@ configs:
       - "92b86e4702d0be7bdc4189ee4fff788c313b3c54"
       - "aaa438a380e8063a62218f6a80da7e22b6d7b969"
       - "88e598801840ebefd8408a1a8a9a667e9af08982"
-  - enabled: true
+  - enabled: false
     name: spring-boot
     jars: # Newest to oldest
       - "c62a6819fe55e1126d796baee093ec641b5c0ce0"

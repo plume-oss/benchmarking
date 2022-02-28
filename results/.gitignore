@@ -1,0 +1,6 @@
+*result*.csv
+*.pdf
+*.png
+/workspace/
+**.DS_Store
+*.gzip

@@ -1,0 +1,12 @@
+*.class
+*.log
+/.bsp/
+/.idea/
+project/target/
+project/project/target/
+target
+/workspace/
+**.DS_Store
+*.bin
+src/main/resources/programs
+*.gzip

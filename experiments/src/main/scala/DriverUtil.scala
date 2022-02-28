@@ -22,7 +22,7 @@ object DriverUtil {
       case c: Neo4jConfig =>
         new Neo4jDriver(c.hostname, c.port, c.username, c.password)
       case c: TigerGraphConfig =>
-        new TigerGraphDriver(c.hostname, c.restPpPort, c.gsqlPort, c.username, c.password, secure = c.secure)
+        new TigerGraphDriver(c.hostname, c.restPpPort, c.gsqlPort, c.username, c.password)
     }
 
   def handleSchema(d: IDriver): Unit =

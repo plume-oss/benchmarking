@@ -1,5 +1,6 @@
 package com.github.plume.oss
 
+import com.github.plume.oss.RunBenchmark.clearSerializedFiles
 import com.github.plume.oss.drivers.ISchemaSafeDriver
 import org.slf4j.{ Logger, LoggerFactory }
 
@@ -24,15 +25,16 @@ object Main extends App {
       case c: TigerGraphConfig =>
         val d = DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver]
         d.buildSchema()
-      case c: Neo4jConfig      =>
+      case c: Neo4jConfig =>
         val d = DriverUtil.createDriver(c).asInstanceOf[ISchemaSafeDriver]
         d.clear()
         d.buildSchema()
-      case c: NeptuneConfig      =>
+      case c: NeptuneConfig =>
         val d = DriverUtil.createDriver(c)
         d.clear()
-      case _                   =>
+      case _ => clearSerializedFiles(driverConf)
     }
+
     for (i <- 1 to experimentConfig.iterations) {
       val driverName =
         driverConf.getClass.toString.stripPrefix("class com.github.plume.oss.").stripSuffix("Config")

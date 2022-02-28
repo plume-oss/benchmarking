@@ -1,0 +1,5 @@
+/.idea/
+/venv/
+/workspace/
+**.DS_Store
+*.bin

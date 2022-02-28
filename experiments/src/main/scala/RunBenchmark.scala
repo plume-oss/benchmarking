@@ -34,7 +34,7 @@ object RunBenchmark {
       case Failure(y) => logger.error(y.getMessage); default
     }
 
-  private def clearSerializedFiles(driver: DriverConfig): Unit = {
+  def clearSerializedFiles(driver: DriverConfig): Unit = {
     val storage = driver match {
       case d: TinkerGraphConfig => Some(d.storageLocation)
       case d: OverflowDbConfig  => Some(d.storageLocation)
@@ -45,7 +45,8 @@ object RunBenchmark {
         try {
           new JFile(filePath).delete()
         } catch {
-          case _: Exception =>
+          case e: Exception =>
+            logger.error(s"Exception while deleting serialized file ${filePath}.", e)
         }
       case None =>
     }
@@ -78,7 +79,7 @@ object RunBenchmark {
     val b = BenchmarkResult(
       fileName = job.program.name,
       phase = phase,
-      database = if (!job.experiment.runSootOnlyBuilds) job.program.name else "Soot",
+      database = if (!job.experiment.runSootOnlyBuilds) job.driverName else "Soot",
       time = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_EXTRACTION, -1L),
       connectDeserialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_OPEN_DRIVER, -1L),
       disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L)
@@ -89,9 +90,9 @@ object RunBenchmark {
   }
 
   def captureBenchmarkResult(b: BenchmarkResult): BenchmarkResult = {
-    val csv = new JFile("./results/result.csv")
+    val csv = new JFile("../results/result.csv")
     if (!csv.exists()) {
-      new JFile("./results/").mkdir()
+      new JFile("../results/").mkdir()
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
