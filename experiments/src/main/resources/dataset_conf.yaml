@@ -1,7 +1,8 @@
 configs:
-  - enabled: false
+  - enabled: true
     name: fastjson
     jars: # Newest to oldest
+      - "869746101f6dd73b70d8a9c2b6dc59de4352519e"
       - "93d8c01e907fe35a8ff0eb5fe1c3b279d2f30282"
       - "91eaa954c7bb06ca9382edc86c7fdb170b63e2ae"
       - "23070b2ccd30c5bb3d78e735b098f835756a190a"
@@ -9,7 +10,6 @@ configs:
       - "9a2756445da4f903c3546645a2e47b4859c15e78"
       - "0f30967e5a86aa518fdfbb7990a9ccca433f763f"
       - "dbc4a953879c80ab7f4999a21678f854ac411cba"
-      - "96137715db58a0ad587f8d3f47351b9aca5d04f2"
       - "daec680b7248c2b79fda50b0cee4863a8b228bd4"
       - "1c520a9dcf3ce5c217decd274b1576cf140163ab"
       - "833fe4263931ea05de88ec09fd993521854d40b4"
@@ -125,7 +125,7 @@ configs:
       - "4aa1c43b0b620eecb65e91f19c8e56ee5d9bf46a"
       - "0792e059237ec804f2992ebd665fd0a65020698c"
       - "c1420ea41159f3011ec88df638e576bc76e23a3e"
-  - enabled: true
+  - enabled: false
     name: scribejava
     jars: # Newest to oldest
       - "124745961e999ccede90e2348c6012f8d335eb8a"

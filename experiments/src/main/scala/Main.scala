@@ -2,13 +2,30 @@ package com.github.plume.oss
 
 import com.github.plume.oss.RunBenchmark.clearSerializedFiles
 import com.github.plume.oss.drivers.ISchemaSafeDriver
-import org.slf4j.{ Logger, LoggerFactory }
+import com.github.plume.oss.passes.parallel.PlumeReachingDefPass
+import io.joern.dataflowengineoss.passes.reachingdef.ReachingDefPass
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.LoggerContext
+import org.slf4j.{Logger, LoggerFactory}
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.config.Configurator
 
 import scala.language.postfixOps
 
 object Main extends App {
 
   lazy val logger: Logger = LoggerFactory.getLogger(Main.getClass)
+
+  val ctx = LogManager.getContext(false).asInstanceOf[LoggerContext]
+  val config = ctx.getConfiguration
+  Configurator.setLevel(LogManager.getLogger(classOf[PlumeReachingDefPass]).getName, Level.OFF)
+  Configurator.setLevel(LogManager.getLogger(classOf[ReachingDefPass]).getName, Level.OFF)
+
+  import org.apache.logging.log4j.LogManager
+  import org.apache.logging.log4j.core.config.Configurator
+
+  Configurator.setAllLevels(LogManager.getRootLogger.getName, Level.OFF)
+  ctx.updateLoggers()
 
   val experimentConfig = YamlDeserializer.experimentConfig("/experiments_conf.yaml")
   val driverConfigs = YamlDeserializer.driverConfig("/driver_conf.yaml").configs

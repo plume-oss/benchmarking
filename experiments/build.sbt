@@ -10,16 +10,22 @@ scalaVersion := "2.13.7"
 maintainer := "dbe@sun.ac.za"
 
 idePackagePrefix := Some("com.github.plume.oss")
-run := Defaults.runTask(fullClasspath in Runtime, mainClass in run in Compile, runner in run).evaluated
+run := Defaults
+  .runTask(
+    Runtime / fullClasspath,
+    Compile / run / mainClass,
+    run / runner
+  )
+  .evaluated
 
-val plume_version = "1.0.15"
+val plume_version = "1.0.16"
 val moulting_yaml_version = "0.4.2"
 val logback_version = "1.2.10"
 val javaMailVersion = "1.6.2"
 
 libraryDependencies ++= Seq(
-  "com.github.plume-oss" % "plume_2.13" % plume_version,
-  "ch.qos.logback" % "logback-classic"  % logback_version,
+  "com.github.plume-oss" % "plume" % plume_version,
+  "ch.qos.logback" % "logback-classic" % logback_version,
   "net.jcazevedo" % "moultingyaml_2.13" % moulting_yaml_version,
   "com.sun.mail" % "javax.mail" % javaMailVersion
 )
