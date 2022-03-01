@@ -18,8 +18,8 @@ val log4j_version = "2.17.1"
 val javaMailVersion = "1.6.2"
 
 libraryDependencies ++= Seq(
-  "com.github.plume-oss" % "plume" % plume_version,
-  "org.apache.logging.log4j" % "log4j-slf4j18-impl" % log4j_version,
+  "com.github.plume-oss" % "plume_2.13" % plume_version,
+  "ch.qos.logback" % "logback-classic"  % logback_version,
   "net.jcazevedo" % "moultingyaml_2.13" % moulting_yaml_version,
   "com.sun.mail" % "javax.mail" % javaMailVersion
 )
