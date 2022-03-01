@@ -14,7 +14,7 @@ run := Defaults.runTask(fullClasspath in Runtime, mainClass in run in Compile, r
 
 val plume_version = "1.0.15"
 val moulting_yaml_version = "0.4.2"
-val log4j_version = "2.17.1"
+val logback_version = "1.2.10"
 val javaMailVersion = "1.6.2"
 
 libraryDependencies ++= Seq(
