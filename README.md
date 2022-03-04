@@ -13,13 +13,12 @@ named after their commit hash.
 
 ## Running the suite
 
-First unpack the dataset by:
-
 * Heading into `experiments` directory
-* Running: 
-
+* Then unpack the dataset with: 
+```
     unlzma src/main/resources/programs.tar.lzma && \
         tar xvf src/main/resources/programs.tar -C ./src/main/resources
+```
+* Then use `./RUN.sh` to start the benchmarks - this also contains memory configurations if necessary.
 
-Then use `./RUN.sh` to start the benchmarks - this also contains memory configurations if necessary.
 Taint analysis is performed from sources and sinks defined in `src/main/resources/taint_definitions.yaml`.
