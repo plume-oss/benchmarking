@@ -5,6 +5,7 @@
         </encoder>
     </appender>
     <logger name="io.shiftleft.passes.CpgPass" level="WARN" />
+    <logger name="com.github.plume.oss.drivers.IDriver$" level="WARN" />
     <logger name="com.github.plume.oss.passes.reachingdef.PlumeReachingDefPass" level="WARN" />
     <root level="INFO">
         <appender-ref ref="STDOUT" />
