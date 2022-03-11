@@ -182,9 +182,9 @@ object RunBenchmark {
         case (jar, i) =>
           val x = runWithTimeout(
             timeout,
-            generateDefaultResult(job, s"UPDATE$i")
+            generateDefaultResult(job, s"UPDATE${i + 1}")
           )({
-            runBenchmark(jar, job, driver, s"UPDATE$i")
+            runBenchmark(jar, job, driver, s"UPDATE${i + 1}")
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true

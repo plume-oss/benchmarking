@@ -4,7 +4,8 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="com.github.plume.oss.passes.parallel.PlumeReachingDefPass" level="WARN" />
+    <logger name="io.shiftleft.passes.CpgPass" level="WARN" />
+    <logger name="com.github.plume.oss.passes.reachingdef.PlumeReachingDefPass" level="WARN" />
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
