@@ -18,7 +18,7 @@ run := Defaults
   )
   .evaluated
 
-val plume_version = "1.0.20"
+val plume_version = "1.0.21"
 val moulting_yaml_version = "0.4.2"
 val logback_version = "1.2.11"
 val javaMailVersion = "1.6.2"

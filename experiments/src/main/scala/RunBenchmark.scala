@@ -69,7 +69,11 @@ object RunBenchmark {
 
   def cleanUp(job: Job, driver: IDriver): Unit = {
     if (driver.isConnected) {
-      driver.clear()
+      driver match {
+        case _: TinkerGraphDriver =>
+        case _: OverflowDbDriver =>
+        case _ => driver.clear() // remote db's need to be explicitly cleared.
+      }
       driver.close()
     }
     clearSerializedFiles(job.driverConfig)
@@ -192,11 +196,12 @@ object RunBenchmark {
           captureBenchmarkResult(x)
           if (x.timedOut) return true
       }
-      false
     } finally {
+      logger.info("Live update experiments done, cleaning up...")
       cleanUp(job, driver)
       if (driver.isConnected) driver.close()
     }
+    false
   }
 
   /**
@@ -236,6 +241,7 @@ object RunBenchmark {
           else closeConnectionWithExport(job, driver)
       }
     } finally {
+      logger.info("Disconnected update experiments done, cleaning up...")
       cleanUp(job, driver)
       if (driver.isConnected) driver.close()
     }
@@ -276,6 +282,7 @@ object RunBenchmark {
           driver.close()
       }
     } finally {
+      logger.info("Full build experiments done, cleaning up...")
       cleanUp(job, driver)
       if (driver.isConnected) driver.close()
     }
