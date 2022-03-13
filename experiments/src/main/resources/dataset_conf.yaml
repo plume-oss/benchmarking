@@ -92,21 +92,21 @@ configs:
   - enabled: false
     name: mybatis-3
     jars: # Newest to oldest
+      - "b454d47733d38c99a2ac38d678390e956bf9583d"
+      - "4bd65080cbf85cc8ddcd8ddf184649d2fad8bf2c"
+      - "983e664650b26bcba5d40c1cc4fa361052e9f89c"
+      - "6931ad9e7f4ca6ca8a3a5a182a41a9bf5f0b94c1"
       - "e4c60f0d379769503ffbe62c6953b9b8c3c24a61"
-#      - "43d94b4f219707b91302e5baa443008dd536f3cd"
-#      - "e257a1df9073b80521c8466087a5b7d88d22cf59"
       - "0cf1efbe8436a4e89e18012e1a6818d1b27edcaa"
-#      - "9664fc7f3c7f45228567397604652f509a24e096"
       - "033be14ee815ea0d2759b01d8aa91f95dadef39d"
-#      - "a53444851c84b484f7c64b363338002f487af540"
       - "af88806c7a42bf6431778c823cf9157a166a1f92"
       - "1687fb38ac58b221887c729d5976c237d8b87025"
       - "460cca6fb86180eda8ecb36f127c860b210c7e5f"
       - "8636bb989acf818e4c0602947438deac7403d4e7"
       - "4d57711c33ec75bd94d9e9d025aed1efa643d27a"
       - "06e71aa9288795344496ae840e41bc1094a134e6"
-#      - "00ebfeba506d5c64ccc35bd1777e5b0ac82e644e"
       - "0262a99d9e9553ac062608786e786b33dbbd70d8"
+      - "2fc8ec060dd2042cc4ab22ab60ed8accedf1e903"
   - enabled: false
     name: RxJava
     jars: # Newest to oldest
