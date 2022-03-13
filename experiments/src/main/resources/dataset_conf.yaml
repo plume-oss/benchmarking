@@ -56,21 +56,21 @@ configs:
   - enabled: false
     name: jackson-core
     jars: # Newest to oldest
-      - "171d3442e0745b07244fa8f69912585b69e11ad7"
-      - "9960979ab66ef8b6ff99bfa7f731663b9043f052"
-      - "f6a4751b58839b303d7b73a93fd0246f58b91bd2"
-#      - "021801755ed9b84af29f073da39a784555f978c6"
-      - "28397f91e603321239b79aeee04c4867d82bb08e"
-      - "cd393c9b795025f12802042a39ddd2fe948a8d35"
-#      - "1f3af9ae26c8429f7c79435c0082bcf4609e7bf3"
-      - "29d37bb358bdeff8757954f5f898436beb8307bb"
-      - "005d28ee240d6efd238c4d5a80c26f41a1085109"
-      - "100e4269b22dbb2b0b72d228537e394a4b165998"
-      - "a5da65ff67fb469e410df15e13fbb4b3bf9ca42a"
-      - "3b994ba1d146f8b566e6dfd1c15ea03947e1387c"
-      - "d6b4973338b1213b880b11c7cbb77e04d2ace078"
-      - "e50ebed1f1e896556eaee75c38ff8c1c49827cc8"
-      - "763e2eb655d7d0e40630061226135f66d118a64c"
+      - "3cb5ce818e476d5b0b504b1833c7d33be80e9ca4"
+      - "e037d5dca014b369ac9fa6f3ad89691a0f3170f5"
+      - "c5b123b88961eaef9326eb084fbb10aca65b52ad"
+      - "21117bae1af265bffac713364a36140606b62124"
+      - "b4e6b565caa34e7d5985f9774a817eaac79d4558"
+      - "f3f1f781ba9c9157dddb453ae469d053b1eef46b"
+      - "be2854d5c69be9f1fe52f3acd427768ba3df5f9b"
+      - "d4d97a6ab8c69ca6fd779eac63fa1da5a68afa6d"
+      - "706bc22ef9f30f5715238015fbd0c7d6c430d57c"
+      - "456b20fa70737eba334ce3a7cc372466d49920ea"
+      - "c5aa1e18c71507fbd080567cde14332d684e8e5a"
+      - "0501e21b75f74e432af49ed51783426a13963ecb"
+      - "143eecedfb37bacfb33c1fb58f24bfdee67edf78"
+      - "3740a938231cb6871de0f83c627a002c12e4b260"
+      - "9633143afff8469751b7799bfb1cebd9c8768d93"
   - enabled: false
     name: mockito
     jars: # Newest to oldest
