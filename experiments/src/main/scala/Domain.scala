@@ -2,6 +2,7 @@ package com.github.plume.oss
 
 import net.jcazevedo.moultingyaml.{DefaultYamlProtocol, YamlArray, YamlBoolean, YamlFormat, YamlNumber, YamlObject, YamlString, YamlValue, deserializationError}
 import org.joda.time.DateTime
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.{File => JFile}
 import java.nio.file.{Files, Path, Paths}
@@ -53,6 +54,8 @@ case class ExperimentConfig(
 
 object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
 
+  val logger: Logger = LoggerFactory.getLogger(PlumeBenchmarkProtocol.getClass)
+
   val PROGRAMS_PATH = "/programs"
 
   implicit object DatasetConfigFormat extends YamlFormat[DatasetConfig] {
@@ -74,6 +77,8 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
               .map(_.convertTo[String])
               .map(x => s"$PROGRAMS_PATH/$name/$x.jar")
               .map { jarPath =>
+                if (getClass.getResource(jarPath) == null)
+                  logger.error(s"Cannot find JAR at $jarPath")
                 new JFile(getClass.getResource(jarPath).getFile)
               }
               .reverse

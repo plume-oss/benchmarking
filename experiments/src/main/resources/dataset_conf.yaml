@@ -107,24 +107,24 @@ configs:
       - "06e71aa9288795344496ae840e41bc1094a134e6"
       - "0262a99d9e9553ac062608786e786b33dbbd70d8"
       - "2fc8ec060dd2042cc4ab22ab60ed8accedf1e903"
-  - enabled: false
+  - enabled: true
     name: RxJava
     jars: # Newest to oldest
+      - "abeab97a31980cb9df143c0eabd38908ee225172"
+      - "47189ac2ffb71304ca2e44c3d5f51eb9a0ea4e86"
+      - "c2bf5148d8cb094a984677813c000c762f0daf50"
+      - "17e71ab4e6dc432ac536bf5bf193055b32b3fb17"
       - "03e8ced54ee1b42450ec6a703a06c38ce0ebbd4e"
       - "ce45fc2eec103af5876723b167fb660da6af3a58"
       - "9de33ea8314303d092e70635bbaefcfc6e26639e"
-#      - "1d81a9036ffa960df6190fbdfb30a9db88eb3316"
       - "5b0dd58a8580939754d51c5d132e3978d99ce04c"
+      - "75e7e5010279b535de2b957961d3da561255ebaa"
+      - "bb814d2064e061d27cbdcd1ac64528d96f97feea"
       - "a463d248145d55fc0d0833d192ee11b254012855"
       - "9ecf8ab36362f2e664f31ed7b9938e028b860140"
-#      - "578b4f880abd64400a5c64914ef668d20d580983"
-#      - "47c599cb7f976f147b53a32482fb853ecf875da7"
-#      - "b7e2f19378dd7e07ae254ed5ce0ede3f9646ce99"
-#      - "a5dad0c66a9fab7685efbcc504d64b3c6d80330f"
-#      - "0a9b09e62511174edd13194c9e3b2e43c906b1a6"
-#      - "4aa1c43b0b620eecb65e91f19c8e56ee5d9bf46a"
-#      - "0792e059237ec804f2992ebd665fd0a65020698c"
       - "c1420ea41159f3011ec88df638e576bc76e23a3e"
+      - "5c0ca03592620d9a9aa0c279e378e2490121b43e"
+      - "1c3594c214db82e4e85c33af7ad6bb315fa477a5"
   - enabled: false
     name: scribejava
     jars: # Newest to oldest
