@@ -68,9 +68,9 @@ configs:
       - "456b20fa70737eba334ce3a7cc372466d49920ea"
       - "c5aa1e18c71507fbd080567cde14332d684e8e5a"
       - "0501e21b75f74e432af49ed51783426a13963ecb"
-      - "143eecedfb37bacfb33c1fb58f24bfdee67edf78"
       - "3740a938231cb6871de0f83c627a002c12e4b260"
       - "9633143afff8469751b7799bfb1cebd9c8768d93"
+      - "e655e46e61d20340924128b2bcdf9466600d1aea"
   - enabled: false
     name: mockito
     jars: # Newest to oldest
