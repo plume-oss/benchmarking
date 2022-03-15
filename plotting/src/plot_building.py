@@ -1,28 +1,32 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import constants
-
-
-def plot_phase(df, title, cond):
-    sns.catplot(data=df[cond], kind="bar",
-                x="Project", y="Time [Minutes]", hue="Database",
-                alpha=.6, height=6)
-    plt.title(title)
-    plt.xticks(rotation=45)
-    plt.show()
 
 
 def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
     df.info()
-    df['TIME'] = df[constants.TIME_COLUMNS].sum(axis=1).apply(lambda x: x / 6e+10)
+    df['TIME_SEC'] = df['TIME'].apply(lambda x: x / 1e+9)
     df.info()
+    df['PHASE'] = df['PHASE'] \
+        .map(lambda x: "Online Update" if "UPDATE" in x else x) \
+        .map(lambda x: "Disconnected Update" if "DISCUPT" in x else x) \
+        .map(lambda x: "Full Build" if "INIT" in x or "BUILD" in x else x)
+
     df = df.rename(columns={
-        'TIME': 'Time [Minutes]',
-        'FILE_NAME': 'Project',
-        'DATABASE': 'Database'
+        'TIME_SEC': 'Time [Seconds]',
+        'FILE_NAME': 'Library',
+        'DATABASE': 'Database',
+        'PHASE': 'Update Type'
     })
-    plot_phase(df, 'Full Builds', (df['PHASE'].str.contains('INIT')) | (df['PHASE'].str.contains('BUILD')))
-    plot_phase(df, 'Online Updates', df['PHASE'].str.contains('UPDATE'))
-    plot_phase(df, 'Disconnected Updates', df['PHASE'].str.contains('DISCUPT'))
+
+    ax = sns.catplot(data=df, kind="bar",
+                     x="Library", y="Time [Seconds]", hue="Update Type",
+                     alpha=.6, height=6,
+                     aspect=12.7 / 8.27,
+                     order=["RxJava", "guava", "fastjson", "spring-boot", "jackson-core", "mybatis-3", "mockito",
+                            "guice", "scribejava"]
+                     )
+    plt.xticks(rotation=10)
+    plt.tight_layout()
+    plt.savefig("build.pdf")

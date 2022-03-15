@@ -173,13 +173,11 @@ object RunBenchmark {
       case Failure(e) =>
         logger.error("Failure while running live update initializer.", e)
         cleanUp(job, driver)
-        driver.close()
         return false
       case Success(initResult) =>
         captureBenchmarkResult(initResult)
         if (initResult.timedOut) {
           cleanUp(job, driver)
-          driver.close()
           return true
         }
     }
@@ -215,11 +213,9 @@ object RunBenchmark {
       case Failure(e) =>
         logger.error("Failure while running disconnected update initializer.", e)
         cleanUp(job, driver)
-        driver.close()
       case Success(initResult) =>
         if (initResult.timedOut) {
           cleanUp(job, driver)
-          driver.close()
           return true
         } else {
           closeConnectionWithExport(job, driver)
@@ -232,9 +228,9 @@ object RunBenchmark {
           driver = DriverUtil.createDriver(job.driverConfig)
           val x = runWithTimeout(
             timeout,
-            generateDefaultResult(job, s"DISCUPT$i")
+            generateDefaultResult(job, s"DISCUPT${i + 1}")
           )({
-            runBenchmark(jar, job, driver, s"DISCUPT$i")
+            runBenchmark(jar, job, driver, s"DISCUPT${i + 1}")
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true
@@ -259,10 +255,8 @@ object RunBenchmark {
       case Failure(e) =>
         logger.error("Failure while running full build initializer.", e)
         cleanUp(job, driver)
-        driver.close()
       case Success(initResult) =>
         cleanUp(job, driver)
-        driver.close()
         if (initResult.timedOut) return true
     }
 
@@ -272,14 +266,13 @@ object RunBenchmark {
           driver = DriverUtil.createDriver(job.driverConfig)
           val x = runWithTimeout(
             timeout,
-            generateDefaultResult(job, s"BUILD$i")
+            generateDefaultResult(job, s"BUILD${i + 1}")
           )({
-            runBenchmark(jar, job, driver, s"BUILD$i")
+            runBenchmark(jar, job, driver, s"BUILD${i + 1}")
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true
           cleanUp(job, driver)
-          driver.close()
       }
     } finally {
       logger.info("Full build experiments done, cleaning up...")

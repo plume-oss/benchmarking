@@ -18,14 +18,15 @@ run := Defaults
   )
   .evaluated
 
-val plume_version = "1.0.21"
+val plume_version = "1.1.0"
 val moulting_yaml_version = "0.4.2"
 val logback_version = "1.2.11"
 val javaMailVersion = "1.6.2"
 
 libraryDependencies ++= Seq(
   "com.github.plume-oss" %% "plume" % plume_version,
-  "ch.qos.logback" % "logback-classic" % logback_version,
+  "org.apache.logging.log4j" % "log4j-core" % "2.17.2",
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.2",
   "net.jcazevedo" % "moultingyaml_2.13" % moulting_yaml_version,
   "com.sun.mail" % "javax.mail" % javaMailVersion
 )
@@ -37,4 +38,4 @@ ThisBuild / resolvers ++= Seq(
   "jitpack" at "https://jitpack.io"
 )
 
-assembly / mainClass  := Some("com.github.plume.oss.Main")
+assembly / mainClass := Some("com.github.plume.oss.Main")

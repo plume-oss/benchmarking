@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import plot_memory
 import plot_building
 
-ROOT_DIRECTORY = './results/'
+ROOT_DIRECTORY = '../../results/'
 RESULT_FILE = ROOT_DIRECTORY + 'result.csv'
 MEMORY_FILE = ROOT_DIRECTORY + 'memory_results.csv'
 
