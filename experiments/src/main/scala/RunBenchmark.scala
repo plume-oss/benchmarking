@@ -125,7 +125,9 @@ object RunBenchmark {
           s"${b.database}," +
           s"${b.time}," +
           s"${b.connectDeserialize}," +
-          s"${b.disconnectSerialize}\n"
+          s"${b.disconnectSerialize}," +
+          s"${b.changedClasses}," +
+          s"${b.changedMethods}\n"
       )
     }
     b
