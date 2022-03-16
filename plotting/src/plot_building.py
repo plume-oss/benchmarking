@@ -24,8 +24,8 @@ def plot(input_file):
                 orient="h",
                 alpha=.6, height=6,
                 aspect=8.27 / 10.7,
-                order=["RxJava", "guava", "fastjson", "spring-boot", "jackson-core", "mybatis-3", "mockito",
-                       "guice", "scribejava"]
+                order=["guava", "RxJava", "mybatis-3", "spring-boot", "guice", "mockito", "jackson-core", "fastjson",
+                       "scribejava"]
                 )
     plt.xticks(rotation=10)
     plt.tight_layout()

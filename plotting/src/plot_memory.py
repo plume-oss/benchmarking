@@ -12,10 +12,12 @@ def plot(input_file):
     df = df.rename(columns={'Memory': 'Memory [Gb]'})
     sns.set(style="darkgrid")
     # Create the boxplot
-    sns.boxenplot(y="Project", x="Memory [Gb]", data=df, orient="h",)
-    sns.stripplot(y="Project", x="Memory [Gb]", data=df, orient="h", size=2, color=".26")
-    # sns.boxenplot(x="Project", y="Memory [Gb]", data=df)
-    # plt.title("Process Memory Consumption")
+    sns.boxenplot(y="Project", x="Memory [Gb]", data=df, orient="h",
+                  order=["guava", "RxJava", "mybatis-3", "spring-boot", "guice", "mockito", "jackson-core", "fastjson",
+                         "scribejava"])
+    sns.stripplot(y="Project", x="Memory [Gb]", data=df, orient="h", size=2, color=".26",
+                  order=["guava", "RxJava", "mybatis-3", "spring-boot", "guice", "mockito", "jackson-core", "fastjson",
+                         "scribejava"])
     plt.xticks(rotation=15)
     plt.tight_layout()
     plt.savefig("memory.pdf")

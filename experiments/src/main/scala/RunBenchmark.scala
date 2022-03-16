@@ -71,8 +71,8 @@ object RunBenchmark {
     if (driver.isConnected) {
       driver match {
         case _: TinkerGraphDriver =>
-        case _: OverflowDbDriver =>
-        case _ => driver.clear() // remote db's need to be explicitly cleared.
+        case _: OverflowDbDriver  =>
+        case _                    => driver.clear() // remote db's need to be explicitly cleared.
       }
       driver.close()
     }
@@ -91,6 +91,8 @@ object RunBenchmark {
       time = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_EXTRACTION, -1L),
       connectDeserialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_OPEN_DRIVER, -1L),
       disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L),
+      programClasses = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_CLASSES, 0L),
+      programMethods = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_METHODS, 0L),
       changedClasses = PlumeStatistics.results().getOrElse(PlumeStatistics.CHANGED_CLASSES, 0L),
       changedMethods = PlumeStatistics.results().getOrElse(PlumeStatistics.CHANGED_METHODS, 0L),
     )
@@ -114,7 +116,9 @@ object RunBenchmark {
             "CONNECT_DESERIALIZE," +
             "DISCONNECT_SERIALIZE," +
             "CHANGED_CLASSES," +
-            "CHANGED_METHODS" +
+            "CHANGED_METHODS," +
+            "PROGRAM_CLASSES," +
+            "PROGRAM_METHODS" +
             "\n"
         )
       }
@@ -129,7 +133,9 @@ object RunBenchmark {
           s"${b.connectDeserialize}," +
           s"${b.disconnectSerialize}," +
           s"${b.changedClasses}," +
-          s"${b.changedMethods}\n"
+          s"${b.changedMethods}," +
+          s"${b.programClasses}," +
+          s"${b.programMethods}\n"
       )
     }
     b
