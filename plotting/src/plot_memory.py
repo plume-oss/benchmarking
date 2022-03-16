@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+import constants
+
 
 def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
@@ -14,3 +16,7 @@ def plot(input_file):
     plt.xticks(rotation=15)
     plt.tight_layout()
     plt.savefig("memory.pdf")
+
+
+if __name__ == '__main__':
+    plot(constants.MEMORY_FILE)

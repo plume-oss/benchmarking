@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import constants
 
 
 def plot(input_file):
@@ -30,3 +31,7 @@ def plot(input_file):
     plt.xticks(rotation=10)
     plt.tight_layout()
     plt.savefig("build.pdf")
+
+
+if __name__ == '__main__':
+    plot(constants.RESULT_FILE)
