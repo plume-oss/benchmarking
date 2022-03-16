@@ -263,6 +263,8 @@ case class BenchmarkResult(
     time: Long = -1L,
     connectDeserialize: Long = -1L,
     disconnectSerialize: Long = -1L,
+    changedClasses: Long = -1L,
+    changedMethods: Long = -1L,
     startTime: java.time.LocalDateTime = LocalDateTime.now()
 ) {
 

@@ -33,6 +33,8 @@ object PrettyPrinter {
     logger.info(s"\tCPG Projection time...........${readableTime(totalTime)} (wall clock)")
     logger.info(s"\tConnect/Deserialize...........${readableTime(b.connectDeserialize)}")
     logger.info(s"\tDisconnect/Serialize..........${readableTime(b.disconnectSerialize)}")
+    logger.info(s"\tChanged Classes...............${b.changedClasses}")
+    logger.info(s"\tChanged Methods...............${b.changedMethods}")
     logger.info(s"")
   }
 

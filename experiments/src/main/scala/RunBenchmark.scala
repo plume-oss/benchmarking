@@ -88,7 +88,9 @@ object RunBenchmark {
       database = if (!job.experiment.runSootOnlyBuilds) job.driverName else "Soot",
       time = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_EXTRACTION, -1L),
       connectDeserialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_OPEN_DRIVER, -1L),
-      disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L)
+      disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L),
+      changedClasses = PlumeStatistics.results().getOrElse(PlumeStatistics.CHANGED_CLASSES, 0L),
+      changedMethods = PlumeStatistics.results().getOrElse(PlumeStatistics.CHANGED_METHODS, 0L),
     )
     PrettyPrinter.announceResults(b)
     PlumeStatistics.reset()
@@ -108,7 +110,9 @@ object RunBenchmark {
             "DATABASE," +
             "TIME," +
             "CONNECT_DESERIALIZE," +
-            "DISCONNECT_SERIALIZE" +
+            "DISCONNECT_SERIALIZE," +
+            "CHANGED_CLASSES," +
+            "CHANGED_METHODS" +
             "\n"
         )
       }
