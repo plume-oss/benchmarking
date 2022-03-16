@@ -50,6 +50,7 @@ def plot(input_file):
     ax.set(ylim=(-2, 48))
     plt.tight_layout()
     plt.savefig("change_relation.pdf")
+    plt.show()
 
 
 if __name__ == '__main__':
