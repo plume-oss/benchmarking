@@ -81,7 +81,9 @@ object RunBenchmark {
 
   def runBenchmark(f: JFile, job: Job, driver: IDriver, phase: String): BenchmarkResult = {
     PrettyPrinter.announceBenchmark(job.program.name, f.getName.stripSuffix(".jar"))
-    new Jimple2Cpg().createCpg(f.getAbsolutePath, driver = driver, sootOnlyBuild = job.experiment.runSootOnlyBuilds)
+    new Jimple2Cpg()
+      .createCpg(f.getAbsolutePath, driver = driver, sootOnlyBuild = job.experiment.runSootOnlyBuilds)
+      .close() // close reference graph
     val b = BenchmarkResult(
       fileName = job.program.name,
       phase = phase,
