@@ -120,8 +120,6 @@ sanitization:
 sinks:
   java.lang.Runtime:
     - exec
-  javax.xml.xpath.XPath:
-    - compile
   java.lang.Thread:
     - sleep
   java.lang.System:
@@ -158,15 +156,14 @@ sinks:
     - addHeader
     - setIntHeader
     - addIntHeader
+    - sendRedirect
+    - getRequestDispatcher
   javax.servlet.ServletResponse:
     - setCharacterEncoding
     - setContentType
   javax.servlet.http.HttpSession:
     - setAttribute
     - putValue
-  javax.servlet.http.HttpServletResponse:
-    - sendRedirect
-    - getRequestDispatcher
   javax.naming.directory.InitialDirContext:
     - InitialDirContext
     - search
@@ -207,9 +204,6 @@ sinks:
     - FileInputStream
     - FileWriter
     - FileOutputStream
-  java.lang.Class:
-    - getResource
-    - getResourceAsStream
   javax.mail.internet.InternetAddress:
     - InternetAddress
     - parse
@@ -219,6 +213,8 @@ sinks:
     - getMethod
     - getDeclaredField
     - getDeclaredMethod
+    - getResource
+    - getResourceAsStream
   java.sql.DriverManager:
     - getConnection
   java.sql.(Prepared|Callable)?Statement:

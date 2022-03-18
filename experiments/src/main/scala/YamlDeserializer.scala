@@ -21,6 +21,9 @@ object YamlDeserializer {
   def emailConfig(config: String): EmailConfig =
     fileToContents(config).parseYaml.convertTo[EmailConfig]
 
+  def taintDefsConfig(config: String): TaintConfig =
+    fileToContents(config).parseYaml.convertTo[TaintConfig]
+
   private def fileToContents(path: String): String =
     Try(getClass.getResourceAsStream(path)) match {
       case Failure(exception) => logger.error("Unable to load file contents!"); throw exception

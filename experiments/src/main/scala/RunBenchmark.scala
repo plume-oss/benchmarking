@@ -3,7 +3,9 @@ package com.github.plume.oss
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
+import io.shiftleft.codepropertygraph.generated.nodes.Call
 import org.slf4j.{ Logger, LoggerFactory }
+import overflowdb.traversal.Traversal
 
 import java.io.{ BufferedWriter, FileWriter, File => JFile }
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,6 +19,7 @@ object RunBenchmark {
   lazy val logger: Logger = LoggerFactory.getLogger(RunBenchmark.getClass)
 
   val experimentConfig: ExperimentConfig = YamlDeserializer.experimentConfig("/experiments_conf.yaml")
+  val taintConfig: TaintConfig = YamlDeserializer.taintDefsConfig("/taint_definitions.yaml")
 
   /**
     * Timeout in minutes
@@ -31,7 +34,7 @@ object RunBenchmark {
   private def runWithTimeout[T](timeoutMin: Long, default: T)(f: => T): T =
     Try(runWithTimeout(timeoutMin)(f)) match {
       case Success(x) => x
-      case Failure(y) => logger.error(y.getMessage); default
+      case Failure(y) => logger.error("Error occurred during experiment", y); default
     }
 
   def clearSerializedFiles(driver: DriverConfig): Unit = {
@@ -190,6 +193,7 @@ object RunBenchmark {
         return false
       case Success(initResult) =>
         captureBenchmarkResult(initResult)
+        runTaintAnalysis(driver)
         if (initResult.timedOut) {
           cleanUp(job, driver)
           return true
@@ -205,6 +209,7 @@ object RunBenchmark {
           )({
             runBenchmark(jar, job, driver, s"UPDATE${i + 1}")
           })
+          runTaintAnalysis(driver)
           captureBenchmarkResult(x)
           if (x.timedOut) return true
       }
@@ -232,6 +237,7 @@ object RunBenchmark {
           cleanUp(job, driver)
           return true
         } else {
+          runTaintAnalysis(driver)
           closeConnectionWithExport(job, driver)
         }
     }
@@ -247,6 +253,7 @@ object RunBenchmark {
             runBenchmark(jar, job, driver, s"DISCUPT${i + 1}")
           })
           captureBenchmarkResult(x)
+          runTaintAnalysis(driver)
           if (x.timedOut) return true
           else closeConnectionWithExport(job, driver)
       }
@@ -286,6 +293,7 @@ object RunBenchmark {
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true
+          runTaintAnalysis(driver)
           cleanUp(job, driver)
       }
     } finally {
@@ -295,6 +303,32 @@ object RunBenchmark {
     }
     false
   }
+
+  private def runTaintAnalysis(driver: IDriver): Unit =
+    driver match {
+      case d: OverflowDbDriver if experimentConfig.runTaintAnalysis =>
+        logger.info("Running taint analysis")
+        import io.shiftleft.semanticcpg.language._
+        val sources = taintConfig.sources.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
+        val sanitizers = taintConfig.sanitization.flatMap {
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*")
+        }.toSeq
+        val sinks = taintConfig.sinks.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
+
+        def sink: Traversal[Call] = d.cpg.call.methodFullName(sinks: _*)
+        def sanitizer: Traversal[Call] = d.cpg.call.methodFullName(sanitizers: _*)
+        def source: Traversal[Call] = d.cpg.call.methodFullName(sources: _*)
+
+        logger.info(s"Matched ${sink.size} sinks and ${sources.size} sources. ${sanitizers.size} sanitizers found.")
+
+        val flows = d.nodesReachableBy(source, sink)
+        if (flows.isEmpty) {
+          logger.info("No data flows matched.")
+        } else {
+          logger.info(s"${flows.size} data flows matched.")
+        }
+      case _ =>
+    }
 
   private def generateDefaultResult(job: Job, phase: String = "INITIAL") = {
     val dbName = if (!job.experiment.runSootOnlyBuilds) job.driverName else "Soot"

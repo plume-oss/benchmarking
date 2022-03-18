@@ -1,11 +1,20 @@
 package com.github.plume.oss
 
-import net.jcazevedo.moultingyaml.{DefaultYamlProtocol, YamlArray, YamlBoolean, YamlFormat, YamlNumber, YamlObject, YamlString, YamlValue, deserializationError}
-import org.joda.time.DateTime
-import org.slf4j.{Logger, LoggerFactory}
+import net.jcazevedo.moultingyaml.{
+  deserializationError,
+  DefaultYamlProtocol,
+  YamlArray,
+  YamlBoolean,
+  YamlFormat,
+  YamlNumber,
+  YamlObject,
+  YamlString,
+  YamlValue
+}
+import org.slf4j.{ Logger, LoggerFactory }
 
-import java.io.{File => JFile}
-import java.nio.file.{Files, Path, Paths}
+import java.io.{ File => JFile }
+import java.nio.file.{ Files, Path, Paths }
 import java.time.LocalDateTime
 
 abstract class DriverConfig {
@@ -50,6 +59,7 @@ case class ExperimentConfig(
     runDisconnectedUpdates: Boolean,
     runFullBuilds: Boolean,
     runSootOnlyBuilds: Boolean,
+    runTaintAnalysis: Boolean
 )
 
 object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
@@ -163,47 +173,6 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
     override def write(o: DriverConfig): YamlValue = YamlObject()
   }
 
-  implicit object ExperimentConfigFormat extends YamlFormat[ExperimentConfig] {
-    override def read(yaml: YamlValue): ExperimentConfig =
-      yaml.asYamlObject.getFields(
-        YamlString("iterations"),
-        YamlString("timeout"),
-        YamlString("runBuildAndStore"),
-        YamlString("runLiveUpdates"),
-        YamlString("runDisconnectedUpdates"),
-        YamlString("runFullBuilds"),
-        YamlString("runSootOnlyBuilds")
-      ) match {
-        case Seq(
-            YamlNumber(iterations),
-            YamlNumber(timeout),
-            YamlBoolean(runBuildAndStore),
-            YamlBoolean(runLiveUpdates),
-            YamlBoolean(runDisconnectedUpdates),
-            YamlBoolean(runFullBuilds),
-            YamlBoolean(runSootOnlyBuilds)
-            ) =>
-          ExperimentConfig(iterations.toInt,
-                           timeout.toInt,
-                           runBuildAndStore,
-                           runLiveUpdates,
-                           runDisconnectedUpdates,
-                           runFullBuilds,
-                           runSootOnlyBuilds)
-        case _ => deserializationError("ExperimentConfig expected")
-      }
-
-    override def write(o: ExperimentConfig): YamlValue = YamlObject(
-      YamlString("iterations") -> YamlNumber(o.iterations),
-      YamlString("timeout") -> YamlNumber(o.timeout),
-      YamlString("runBuildAndStore") -> YamlBoolean(o.runBuildAndStore),
-      YamlString("runLiveUpdates") -> YamlBoolean(o.runLiveUpdates),
-      YamlString("runDisconnectedUpdates") -> YamlBoolean(o.runDisconnectedUpdates),
-      YamlString("runFullBuilds") -> YamlBoolean(o.runFullBuilds),
-      YamlString("runSootOnlyBuilds") -> YamlBoolean(o.runSootOnlyBuilds),
-    )
-  }
-
   implicit object EmailConfigFormat extends YamlFormat[EmailConfig] {
 
     override def read(yaml: YamlValue): EmailConfig =
@@ -240,9 +209,11 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
     )
   }
 
+  implicit val experimentConfigsFormat = yamlFormat8(ExperimentConfig)
   implicit val driverConfigsFormat = yamlFormat1(DriverConfigurations)
   implicit val datasetConfigsFormat = yamlFormat1(DatasetConfigurations)
   implicit val emailConfigsFormat = yamlFormat7(EmailConfig)
+  implicit val taintFormat = yamlFormat3(TaintConfig)
 }
 
 case class EmailConfig(enabled: Boolean = false,
@@ -252,6 +223,12 @@ case class EmailConfig(enabled: Boolean = false,
                        port: Int,
                        recipient: String,
                        machineId: String)
+
+case class TaintConfig(
+    sources: Map[String, List[String]],
+    sanitization: Map[String, List[String]],
+    sinks: Map[String, List[String]]
+)
 
 case class Job(driverName: String, driverConfig: DriverConfig, program: DatasetConfig, experiment: ExperimentConfig)
 
