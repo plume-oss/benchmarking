@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
@@ -19,8 +21,8 @@ def plot(input_file):
     update_df = update_df.rename(columns={
         'TIME_SEC': 'Time [Seconds]',
         'FILE_NAME': 'Library',
-        'CHANGED_CLASSES': 'No. Changed Classes Per Commit',
-        'CHANGED_METHODS': 'No. Affected Methods Per Commit',
+        'PROGRAM_CLASSES': 'No. Changed Classes Per Commit',
+        'PROGRAM_METHODS': 'No. Affected Methods Per Commit',
         'PHASE': 'Update Type'
     })
 
@@ -44,14 +46,20 @@ def plot(input_file):
         plt.axhline(y=avg_build, c=lib_to_col[lib], linestyle='dashed', zorder=-1)
 
     if x_axis == "No. Affected Methods Per Commit":
-        ax.set(xlim=(-5, 500))
+        ax.set(xlim=(-5, 300))
     else:
         ax.set(xlim=(-1, 105))
-    ax.set(ylim=(-2, 48))
+    ax.set(ylim=(-2, 38))
     plt.tight_layout()
-    plt.savefig("change_relation.pdf")
+
+    plt.savefig("../pdf/change_relation.pdf")
+    plt.savefig("../png/change_relation.png")
     plt.show()
 
 
 if __name__ == '__main__':
+    if not os.path.exists("../pdf"):
+        os.makedirs("../pdf")
+    if not os.path.exists("../png"):
+        os.makedirs("../png")
     plot(constants.RESULT_FILE)
