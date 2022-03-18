@@ -1,6 +1,6 @@
 package com.github.plume.oss
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
 import java.time.Duration
 
@@ -34,7 +34,8 @@ object PrettyPrinter {
     logger.info(s"\tConnect/Deserialize...........${readableTime(b.connectDeserialize)}")
     logger.info(s"\tDisconnect/Serialize..........${readableTime(b.disconnectSerialize)}")
     logger.info(s"\tProcessed Classes.............${b.programClasses}")
-    logger.info(s"\tProcessed Methods.............${b.programMethods}")
+    logger.info(s"\tProcessed Methods (LIB/EXT)...(${b.programMethods}/${b.externalMethods})")
+    logger.info(s"\tGraph Size (N/E)..............(${b.nodeCount}/${b.edgeCount})")
     logger.info(s"")
   }
 

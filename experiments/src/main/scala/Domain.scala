@@ -242,6 +242,9 @@ case class BenchmarkResult(
     disconnectSerialize: Long = -1L,
     programClasses: Long = -1L,
     programMethods: Long = -1L,
+    externalMethods: Long = -1L,
+    nodeCount: Long = -1L,
+    edgeCount: Long = -1L,
     startTime: java.time.LocalDateTime = LocalDateTime.now()
 ) {
 

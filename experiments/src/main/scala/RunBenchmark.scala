@@ -3,6 +3,8 @@ package com.github.plume.oss
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
+import io.shiftleft.codepropertygraph.generated.NodeTypes
+import io.shiftleft.codepropertygraph.generated.edges.Ast.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.Call
 import org.slf4j.{ Logger, LoggerFactory }
 import overflowdb.traversal.Traversal
@@ -87,6 +89,18 @@ object RunBenchmark {
     new Jimple2Cpg()
       .createCpg(f.getAbsolutePath, driver = driver, sootOnlyBuild = job.experiment.runSootOnlyBuilds)
       .close() // close reference graph
+    // Capture additional graph info
+    val (nodeCount, edgeCount) = driver match {
+      case d: OverflowDbDriver => (d.cpg.graph.nodeCount(), d.cpg.graph.edgeCount())
+      case _                   => (-1, -1)
+    }
+    val externalMethods = driver
+      .propertyFromNodes(NodeTypes.METHOD, "IS_EXTERNAL", "FULL_NAME")
+      .count { m: Map[String, Any] =>
+        val isExternal = m("IS_EXTERNAL").asInstanceOf[Boolean]
+        val fullName = m("FULL_NAME").toString
+        isExternal && !fullName.contains("<operator>")
+      }
     val b = BenchmarkResult(
       fileName = job.program.name,
       phase = phase,
@@ -96,6 +110,9 @@ object RunBenchmark {
       disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L),
       programClasses = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_CLASSES, 0L),
       programMethods = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_METHODS, 0L),
+      externalMethods = externalMethods,
+      nodeCount = nodeCount,
+      edgeCount = edgeCount
     )
     PrettyPrinter.announceResults(b)
     PlumeStatistics.reset()
@@ -117,7 +134,10 @@ object RunBenchmark {
             "CONNECT_DESERIALIZE," +
             "DISCONNECT_SERIALIZE," +
             "PROGRAM_CLASSES," +
-            "PROGRAM_METHODS" +
+            "PROGRAM_METHODS," +
+            "EXTERNAL_METHODS," +
+            "NODE_COUNT," +
+            "EDGE_COUNT" +
             "\n"
         )
       }
@@ -132,7 +152,10 @@ object RunBenchmark {
           s"${b.connectDeserialize}," +
           s"${b.disconnectSerialize}," +
           s"${b.programClasses}," +
-          s"${b.programMethods}\n"
+          s"${b.programMethods}," +
+          s"${b.externalMethods}," +
+          s"${b.nodeCount}," +
+          s"${b.edgeCount}\n"
       )
     }
     b
