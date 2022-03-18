@@ -183,17 +183,20 @@ object RunBenchmark {
   def runInitBuild(job: Job, driver: IDriver, withExport: Boolean = false): BenchmarkResult = {
     val default = generateDefaultResult(job)
     driver.clear()
-    runWithTimeout(
-      timeout,
-      default
-    )({
-      val memoryMonitor = new MemoryMonitor(job)
-      memoryMonitor.start()
-      val ret = runBenchmark(job.program.jars.head, job, driver, "INITIAL")
-      if (withExport) closeConnectionWithExport(job, driver)
+    val memoryMonitor = new MemoryMonitor(job)
+    try {
+      runWithTimeout(
+        timeout,
+        default
+      )({
+        memoryMonitor.start()
+        val ret = runBenchmark(job.program.jars.head, job, driver, "INITIAL")
+        if (withExport) closeConnectionWithExport(job, driver)
+        ret
+      })
+    } finally {
       memoryMonitor.close()
-      ret
-    })
+    }
   }
 
   /**
