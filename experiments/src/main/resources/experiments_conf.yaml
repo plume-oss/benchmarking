@@ -11,3 +11,5 @@ runDisconnectedUpdates: false
 runFullBuilds: false
 # Will do a database-less build loading programs only into soot to measure soot impact
 runSootOnlyBuilds: false
+# After each extraction will run through the taint definitions config and look for reachability
+runTaintAnalysis: false
