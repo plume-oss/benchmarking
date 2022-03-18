@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -24,14 +26,19 @@ def plot(input_file):
                 orient="h",
                 alpha=.6, height=6,
                 aspect=8.27 / 10.7,
-                order=["guava", "RxJava", "mybatis-3", "spring-boot", "guice", "mockito", "jackson-core", "fastjson",
-                       "scribejava"]
+                order=constants.PLOT_ORDER
                 )
     plt.xticks(rotation=10)
     plt.tight_layout()
-    plt.savefig("build.pdf")
+
+    plt.savefig("../pdf/build.pdf")
+    plt.savefig("../png/build.png")
     plt.show()
 
 
 if __name__ == '__main__':
+    if not os.path.exists("../pdf"):
+        os.makedirs("../pdf")
+    if not os.path.exists("../png"):
+        os.makedirs("../png")
     plot(constants.RESULT_FILE)

@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -13,16 +15,19 @@ def plot(input_file):
     sns.set(style="darkgrid")
     # Create the boxplot
     sns.boxenplot(y="Project", x="Memory [Gb]", data=df, orient="h",
-                  order=["guava", "RxJava", "mybatis-3", "spring-boot", "guice", "mockito", "jackson-core", "fastjson",
-                         "scribejava"])
+                  order=constants.PLOT_ORDER)
     sns.stripplot(y="Project", x="Memory [Gb]", data=df, orient="h", size=2, color=".26",
-                  order=["guava", "RxJava", "mybatis-3", "spring-boot", "guice", "mockito", "jackson-core", "fastjson",
-                         "scribejava"])
+                  order=constants.PLOT_ORDER)
     plt.xticks(rotation=15)
     plt.tight_layout()
-    plt.savefig("memory.pdf")
+    plt.savefig("../pdf/memory.pdf")
+    plt.savefig("../png/memory.png")
     plt.show()
 
 
 if __name__ == '__main__':
+    if not os.path.exists("../pdf"):
+        os.makedirs("../pdf")
+    if not os.path.exists("../png"):
+        os.makedirs("../png")
     plot(constants.MEMORY_FILE)
