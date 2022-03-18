@@ -96,8 +96,6 @@ object RunBenchmark {
       disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L),
       programClasses = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_CLASSES, 0L),
       programMethods = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_METHODS, 0L),
-      changedClasses = PlumeStatistics.results().getOrElse(PlumeStatistics.CHANGED_CLASSES, 0L),
-      changedMethods = PlumeStatistics.results().getOrElse(PlumeStatistics.CHANGED_METHODS, 0L),
     )
     PrettyPrinter.announceResults(b)
     PlumeStatistics.reset()
@@ -118,8 +116,6 @@ object RunBenchmark {
             "TIME," +
             "CONNECT_DESERIALIZE," +
             "DISCONNECT_SERIALIZE," +
-            "CHANGED_CLASSES," +
-            "CHANGED_METHODS," +
             "PROGRAM_CLASSES," +
             "PROGRAM_METHODS" +
             "\n"
@@ -135,8 +131,6 @@ object RunBenchmark {
           s"${b.time}," +
           s"${b.connectDeserialize}," +
           s"${b.disconnectSerialize}," +
-          s"${b.changedClasses}," +
-          s"${b.changedMethods}," +
           s"${b.programClasses}," +
           s"${b.programMethods}\n"
       )

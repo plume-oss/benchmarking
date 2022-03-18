@@ -18,16 +18,16 @@ run := Defaults
   )
   .evaluated
 
-val plume_version = "1.1.2"
-val moulting_yaml_version = "0.4.2"
-val logback_version = "1.2.11"
+val plumeVersion = "1.1.5"
+val moultingYamlVersion = "0.4.2"
+val log4jVersion = "2.17.2"
 val javaMailVersion = "1.6.2"
 
 libraryDependencies ++= Seq(
-  "com.github.plume-oss" % "plume" % plume_version,
-  "org.apache.logging.log4j" % "log4j-core" % "2.17.2",
-  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.2",
-  "net.jcazevedo" % "moultingyaml_2.13" % moulting_yaml_version,
+  "com.github.plume-oss" %% "plume" % plumeVersion,
+  "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
+  "net.jcazevedo" %% "moultingyaml" % moultingYamlVersion,
   "com.sun.mail" % "javax.mail" % javaMailVersion
 )
 
