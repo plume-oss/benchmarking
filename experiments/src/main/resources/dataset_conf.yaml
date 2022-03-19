@@ -1,5 +1,5 @@
 configs:
-  - enabled: false
+  - enabled: true
     name: fastjson
     jars: # Newest to oldest
       - "1286becf8fa258f47c0d0a3f6cddc48677ac3256"
@@ -17,7 +17,7 @@ configs:
       - "6f0e65216a0c5eeac2fff95d1b8e2ad7a581e94d"
       - "e59c1be9219e1e8ed8ebd48603b9f5567654a468"
       - "88ba92f4e7c34447a70c6cdf378748ec005ede94"
-  - enabled: false
+  - enabled: true
     name: guava
     jars: # Newest to oldest
       - "75a3d4dd360112c762200e7807b519853e0ee0b0"
@@ -35,7 +35,7 @@ configs:
       - "ac11adc359943ff2ae897ec4093c67b990ded3a6"
       - "1962106f6f6d1b86bcb23200ba5e80b65e04ae8f"
       - "7256a1d9b2113b942070cf1e16a7dbff0c341680"
-  - enabled: false
+  - enabled: true
     name: guice
     jars: # Newest to oldest
       - "7eddc637b64a8a3322655496617a2786b2683927"
@@ -53,7 +53,7 @@ configs:
       - "c6fd1423ce4caa346f915ae7ae46df3d4b01c684"
       - "cf759d44c78e8490e3d54df6a27918e0811bbdf9"
       - "25fe439254199107116eba235bc5f10c7b47c7c1"
-  - enabled: false
+  - enabled: true
     name: jackson-core
     jars: # Newest to oldest
       - "b4e6b565caa34e7d5985f9774a817eaac79d4558"
@@ -71,7 +71,7 @@ configs:
       - "ffab4b13522f26a62254667319538992ac774027"
       - "24418350dea279d663c41a3ab64b3637090004ba"
       - "21f9aa730289e09f0a5dfccb53e46f2d2e9aba88"
-  - enabled: false
+  - enabled: true
     name: mockito
     jars: # Newest to oldest
       - "aabb8f62a2b44e99938d0cccf17e9877f4fc6189"
@@ -89,22 +89,25 @@ configs:
       - "ebc1685f700100be8664e6903f0187afe474759a"
       - "584504e8c8ec027d41865eb593be915cb376fb72"
       - "b37eed8102b7df7df5896eba82a1e47f0b94a401"
-  - enabled: false # TODO: Fix this dataset
+  - enabled: true
     name: mybatis-3
     jars: # Newest to oldest
-#      - "43b13ca0a16f67b5e4e6b7bc0ee5e7de30f3a0c9"
-#      - "f1cf03a39ccea00ffa8a456171db3bfa422d886c"
-#      - "6ebcbfdb6e18bb5f8c14667213f3ddaf6acf044d"
-#      - "96f279411343ea5d3e37d169a9910c2b2540e6c8"
-#      - "253982f40a6d82c903002437536696e16ebec7d0"
-#      - "455fe6ec93aeaccf2c432bef9f0b57da2d73da49"
-#      - "b454d47733d38c99a2ac38d678390e956bf9583d"
-#      - "ccc3fb2550d87ed9ced46f0aac46a1d27e72e31b" # 144
       - "e4c60f0d379769503ffbe62c6953b9b8c3c24a61"
       - "47c72ae9957c728828975b68d8a7787209405aa4"
       - "5fca451c3bced44c6acc89551ac0ab9081ee382d"
-      - "38e392b3caa10703baf03331073c37358e5e9a55"
-  - enabled: false
+      - "0cf1efbe8436a4e89e18012e1a6818d1b27edcaa"
+      - "335a72c82c9f4fa6244d629c65237e452e076370"
+      - "033be14ee815ea0d2759b01d8aa91f95dadef39d"
+      - "b791f4476f6fba6d717196d0489820eb65a946bb"
+      - "76c2513bdc8e17b612e90bfca48533d15f023764"
+      - "395be63314d77cf5b956a77631ab0620de26df7a"
+      - "21fedabead276456229b943074850ebd71c746a0"
+      - "ea48f1ac3b6cab89e5a59077cd631a800370fde4"
+      - "1d8286581645ff9fddf0a6e01c512f19540b6c6f"
+      - "0262a99d9e9553ac062608786e786b33dbbd70d8"
+      - "f86bb1040f6d643d22ebfb5f6bcdd9e39647a9a8"
+      - "fc4b0a7124299d4e0394c9083cf7c44e6ad15580"
+  - enabled: true
     name: RxJava
     jars: # Newest to oldest
       - "47189ac2ffb71304ca2e44c3d5f51eb9a0ea4e86"
@@ -122,7 +125,7 @@ configs:
       - "75e7e5010279b535de2b957961d3da561255ebaa"
       - "bb814d2064e061d27cbdcd1ac64528d96f97feea"
       - "66fd701417563fd21c24c177447c332191931dc4"
-  - enabled: false
+  - enabled: true
     name: scribejava
     jars: # Newest to oldest
       - "e10771853ab55641378415af7cd1582bad670f2c"
@@ -140,26 +143,21 @@ configs:
       - "1dbeabbaf2d7dc39114166e9eea510de4f694128"
       - "08d6ecb0bc140b4f25bafea489e77ae7bc6f350c"
       - "50e7c96ccb48ff2a1cc4838d3e673b867072cf84"
-  - enabled: true # TODO: Fix this dataset
+  - enabled: true
     name: spring-boot
     jars: # Newest to oldest
-      - "4777dce03cef81f6db4ec9d5b7b9e16c6053602c"
       - "af15a18e025f16a418e3d5d356b1f5fd297ed038"
-      - "12d9127d3be1bd8df4055ec3c865c373caf4e12a"
-      - "39b6f2bd7de5c1cb234e1b1283a30703da5afa75"
-      - "42d8eba99dfc76c266e082f0adcdd2b90138c0db"
-      - "568cd687af8ccb6119b97dd3083e5968b32a233b"
-      - "e60001fb163b2c9d105938e29c8800477b843cee"
-      - "f693d7dfad1d8d1bd08e09a21b9bbc64cdcc49cb"
-      - "36f24cf6bb9983d34ac212f8e4f972f757050fd6"
-      - "6625a77f641fd314d12d2b03688830ea7a72868e"
-      - "3afda66be2d2c298c77eb74cf6a8eaa29ab1306d"
-      - "92e5e91623b0b6dbf246ebb1838c06338938e59c"
-      - "76f2c81932890b440a431a3965ac0e79a99edf15"
-      - "5c944bf5b82e4c12975d642ce14be76ad60060ce"
-      - "29746e1029806a9c47152fba9fd46bc63d632701"
       - "625ccc7c11518c9b6d9dd978b846031bd893e97e"
-      - "1784fc19bb50d1c4652da84df0c2a37596f2ca92"
-      - "ca16ae080462a6f0fe8fa2ea8b95d909f555b570"
-      - "8cb458ce47d0bd442736aac786f768262896207b"
-      - "8ac39137675c22c2e8e7aabf5c64de31bbab1b66"
+      - "f5ca5680141da6cbbc2c7ee60425384878526d00"
+      - "a031c0c659fee246b780bb2e5cfca6776a339a9a"
+      - "0a81c238c2d596319ab40ce0c7a6799d138f36ed"
+      - "099e811a388fb92387602273a371ddb78beea906"
+      - "6f8ce3deb503c953f0dd8366189bf51ba2c94716"
+      - "a1ee9c45782f77c2c5b82091187e8680018881d1"
+      - "5454e2e26add471fc879f7641794e9e747a9bdda"
+      - "b64a6e6229c546e4581a7397de77c0a4b18a8a8a"
+      - "d42f675959d7e2f4a2b21cf5967c790e6a44d302"
+      - "d59b89cd8299780462bb65d6ee89141a2f8f4b58"
+      - "8209980ca0964552784e78d36f8ca7d571d1d1d0"
+      - "78dde15da4d277bca2d70b0b72c6c906b1918cba"
+      - "44b88cc88c2e848154a98ae17c03b1cd6c8f5830"

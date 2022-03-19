@@ -4,7 +4,6 @@ import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
 import io.shiftleft.codepropertygraph.generated.NodeTypes
-import io.shiftleft.codepropertygraph.generated.edges.Ast.PropertyNames
 import io.shiftleft.codepropertygraph.generated.nodes.Call
 import org.slf4j.{ Logger, LoggerFactory }
 import overflowdb.traversal.Traversal

@@ -4,8 +4,13 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaServerAppPackaging)
 
+val plumeVersion = "1.1.7"
+val moultingYamlVersion = "0.4.2"
+val log4jVersion = "2.17.2"
+val javaMailVersion = "1.6.2"
+
 name := "Plume Benchmarking"
-version := "0.1"
+version := plumeVersion
 scalaVersion := "2.13.7"
 maintainer := "dbe@sun.ac.za"
 
@@ -17,11 +22,6 @@ run := Defaults
     run / runner
   )
   .evaluated
-
-val plumeVersion = "1.1.5"
-val moultingYamlVersion = "0.4.2"
-val log4jVersion = "2.17.2"
-val javaMailVersion = "1.6.2"
 
 libraryDependencies ++= Seq(
   "com.github.plume-oss" %% "plume" % plumeVersion,
