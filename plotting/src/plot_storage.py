@@ -8,21 +8,17 @@ import constants
 
 def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
-    df['TIME_SEC'] = df['TIME'].apply(lambda x: x / 1e+9)
-    df['PHASE'] = df['PHASE'] \
-        .map(lambda x: "Online Update" if "UPDATE" in x else x) \
-        .map(lambda x: "Disconnected Update" if "DISCUPT" in x else x) \
-        .map(lambda x: "Full Build" if "INIT" in x or "BUILD" in x else x)
+    df.info()
+    df['FILE_SIZE_MB'] = df['FILE_SIZE'].apply(lambda x: x / 1024 ** 2)
 
     df = df.rename(columns={
-        'TIME_SEC': 'Time [Seconds]',
+        'FILE_SIZE_MB': 'File Size [MB]',
+        'FILE_TYPE': 'File Type',
         'FILE_NAME': 'Library',
-        'DATABASE': 'Database',
-        'PHASE': 'Update Type'
     })
 
     sns.catplot(data=df, kind="bar",
-                y="Library", x="Time [Seconds]", hue="Update Type",
+                y="Library", x="File Size [MB]", hue="File Type",
                 orient="h",
                 alpha=.6, height=6,
                 aspect=8.27 / 10.7,
@@ -30,8 +26,8 @@ def plot(input_file):
                 )
     plt.tight_layout()
 
-    plt.savefig("../pdf/build.pdf")
-    plt.savefig("../png/build.png")
+    plt.savefig("../pdf/storage.pdf")
+    plt.savefig("../png/storage.png")
     plt.show()
 
 
@@ -40,4 +36,4 @@ if __name__ == '__main__':
         os.makedirs("../pdf")
     if not os.path.exists("../png"):
         os.makedirs("../png")
-    plot(constants.RESULT_FILE)
+    plot(constants.STORAGE_FILE)
