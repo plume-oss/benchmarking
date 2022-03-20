@@ -1,10 +1,10 @@
-iterations: 1
+iterations: 20
 timeout: 300 # in minutes. This is 5 hours
 
 # Mainly used for memory/storage testing
-runBuildAndStore: false
+runBuildAndStore: true
 # Will do an initial build and keep cache and not clear graph
-runLiveUpdates: true
+runLiveUpdates: false
 # Will do an initial build and remove cache/export graph/reconnect etc.
 runDisconnectedUpdates: false
 # Will do an initial build and discard cache and clear graph between builds

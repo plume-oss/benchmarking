@@ -1,5 +1,6 @@
 package com.github.plume.oss
 
+import CompressionUtil._
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
@@ -9,6 +10,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 import overflowdb.traversal.Traversal
 
 import java.io.{ BufferedWriter, FileWriter, File => JFile }
+import java.nio.file.{ Files, Paths }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ Await, Future }
@@ -57,7 +59,7 @@ object RunBenchmark {
   }
 
   /**
-    * This job runs the first build while recording memory usage of the application.
+    * This job runs the first build while recording memory usage of the application and storage for serializable graphs.
     *
     * @return true if one of the jobs timed out, false if otherwise
     */
@@ -65,9 +67,53 @@ object RunBenchmark {
     val driver = DriverUtil.createDriver(job.driverConfig)
     try {
       val x = runInitBuild(job, driver, withExport = true)
+      if (!job.experiment.runSootOnlyBuilds) measureStorage(job)
       captureBenchmarkResult(x).timedOut
     } finally {
       cleanUp(job, driver)
+    }
+  }
+
+  private def measureStorage(job: Job): Unit = {
+    val zipP = Files.createTempFile("plume-zip-benchmark-", ".zip").toAbsolutePath
+    val zstdP = Files.createTempFile("plume-zstd-benchmark-", ".tar.zstd").toAbsolutePath
+    val tarP = Files.createTempFile("plume-tar-benchmark-", ".tar").toAbsolutePath
+    val xzP = Files.createTempFile("plume-lzma-benchmark-", ".tar.xz").toAbsolutePath
+    try {
+      val maybeSizes = job.driverConfig match {
+        case c: OverflowDbConfig =>
+          val input = Paths.get(c.storageLocation)
+          tar(input, tarP)
+          Some(
+            StorageResult(
+              job.program.jars.last.length,
+              input.toFile.length(),
+              zip(input, zipP),
+              zstd(tarP, zstdP),
+              xz(tarP, xzP)
+            )
+          )
+        case c: TinkerGraphConfig =>
+          val input = Paths.get(c.storageLocation)
+          tar(input, tarP)
+          Some(
+            StorageResult(
+              job.program.jars.last.length,
+              input.toFile.length(),
+              zip(input, zipP),
+              zstd(tarP, zstdP),
+              xz(tarP, xzP)
+            )
+          )
+        case _ => None
+      }
+      maybeSizes match {
+        case Some(result) =>
+          captureStorageResult(job, result)
+        case None =>
+      }
+    } finally {
+      Seq(zipP, zstdP, tarP, xzP).foreach(_.toFile.delete())
     }
   }
 
@@ -158,6 +204,36 @@ object RunBenchmark {
       )
     }
     b
+  }
+
+  case class StorageResult(jarSize: Long, graphSize: Long, zipSize: Long, zstdSize: Long, xzSize: Long)
+
+  def captureStorageResult(job: Job, result: StorageResult): Unit = {
+    val csv = new JFile("../results/storage_results.csv")
+    if (!csv.exists()) {
+      new JFile("../results/").mkdir()
+      csv.createNewFile()
+      Using.resource(new BufferedWriter(new FileWriter(csv))) {
+        _.append(
+          "DATE," +
+            "FILE_NAME," +
+            "DATABASE," +
+            "FILE_TYPE," +
+            "FILE_SIZE" +
+            "\n"
+        )
+      }
+    }
+    Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
+      _.append(
+        s"""${LocalDateTime.now()},${job.program.name},${job.driverName},Project JAR File,${result.jarSize}
+           |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph,${result.graphSize}
+           |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph (ZIP),${result.zipSize}
+           |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph (Zstd),${result.zstdSize}
+           |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph (XZ),${result.xzSize}
+           |""".stripMargin
+      )
+    }
   }
 
   def closeConnectionWithExport(job: Job, driver: IDriver): Unit =
