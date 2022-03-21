@@ -60,6 +60,7 @@ object RunBenchmark {
 
   /**
     * This job runs the first build while recording memory usage of the application and storage for serializable graphs.
+    * If Soot Only mode is enabled then only memory will be recorded.
     *
     * @return true if one of the jobs timed out, false if otherwise
     */
@@ -67,8 +68,12 @@ object RunBenchmark {
     val driver = DriverUtil.createDriver(job.driverConfig)
     try {
       val x = runInitBuild(job, driver, withExport = true)
-      if (!job.experiment.runSootOnlyBuilds) measureStorage(job)
-      captureBenchmarkResult(x).timedOut
+      if (!job.experiment.runSootOnlyBuilds) {
+        measureStorage(job)
+        captureBenchmarkResult(x).timedOut
+      } else {
+        false
+      }
     } finally {
       cleanUp(job, driver)
     }
