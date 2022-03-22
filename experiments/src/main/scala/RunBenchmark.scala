@@ -151,6 +151,7 @@ object RunBenchmark {
         val fullName = m("FULL_NAME").toString
         isExternal && !fullName.contains("<operator>")
       }
+    if (phase.contains("DISCUPT")) closeConnectionWithExport(job, driver)
     val b = BenchmarkResult(
       fileName = job.program.name,
       phase = phase,
@@ -292,8 +293,8 @@ object RunBenchmark {
         cleanUp(job, driver)
         return false
       case Success(initResult) =>
-        captureBenchmarkResult(initResult)
         runTaintAnalysis(driver)
+        captureBenchmarkResult(initResult)
         if (initResult.timedOut) {
           cleanUp(job, driver)
           return true
@@ -339,6 +340,7 @@ object RunBenchmark {
         } else {
           runTaintAnalysis(driver)
           closeConnectionWithExport(job, driver)
+          captureBenchmarkResult(initResult)
         }
     }
 
@@ -352,10 +354,9 @@ object RunBenchmark {
           )({
             runBenchmark(jar, job, driver, s"DISCUPT${i + 1}")
           })
-          captureBenchmarkResult(x)
           runTaintAnalysis(driver)
+          captureBenchmarkResult(x)
           if (x.timedOut) return true
-          else closeConnectionWithExport(job, driver)
       }
     } finally {
       logger.info("Disconnected update experiments done, cleaning up...")
@@ -378,6 +379,7 @@ object RunBenchmark {
         cleanUp(job, driver)
       case Success(initResult) =>
         cleanUp(job, driver)
+        captureBenchmarkResult(initResult)
         if (initResult.timedOut) return true
     }
 
