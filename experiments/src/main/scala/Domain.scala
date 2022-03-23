@@ -128,8 +128,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                   .getOrElse(YamlString("setSerializationStatsEnabled"), true)
                   .asInstanceOf[YamlBoolean]
                   .boolean,
-                if (Files.isRegularFile(Paths.get(cacheFileStr)))
-                  Some(Paths.get(cacheFileStr))
+                if (!cacheFileStr.isBlank) Some(Paths.get(cacheFileStr))
                 else None
               )
             case "TinkerGraph" =>

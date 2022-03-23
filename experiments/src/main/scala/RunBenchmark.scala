@@ -4,8 +4,9 @@ import CompressionUtil._
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
-import io.shiftleft.codepropertygraph.generated.NodeTypes
-import io.shiftleft.codepropertygraph.generated.nodes.Call
+import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics
+import io.shiftleft.codepropertygraph.generated.{ Cpg, NodeTypes }
+import io.shiftleft.codepropertygraph.generated.nodes.Expression
 import org.slf4j.{ Logger, LoggerFactory }
 import overflowdb.traversal.Traversal
 
@@ -42,19 +43,22 @@ object RunBenchmark {
 
   def clearSerializedFiles(driver: DriverConfig): Unit = {
     val storage = driver match {
-      case d: TinkerGraphConfig => Some(d.storageLocation)
-      case d: OverflowDbConfig  => Some(d.storageLocation)
-      case _                    => None
+      case d: TinkerGraphConfig =>
+        Seq(d.storageLocation)
+      case d: OverflowDbConfig =>
+        (if (d.dataFlowCacheFile.isDefined)
+           Seq(d.dataFlowCacheFile.get.toFile.getAbsolutePath)
+         else
+           Seq()) ++ Seq(d.storageLocation)
+      case _ => Seq()
     }
-    storage match {
-      case Some(filePath) =>
-        try {
-          new JFile(filePath).delete()
-        } catch {
-          case e: Exception =>
-            logger.error(s"Exception while deleting serialized file ${filePath}.", e)
-        }
-      case None =>
+    storage.foreach { filePath =>
+      try {
+        new JFile(filePath).delete()
+      } catch {
+        case e: Exception =>
+          logger.error(s"Exception while deleting serialized file $filePath.", e)
+      }
     }
   }
 
@@ -151,6 +155,7 @@ object RunBenchmark {
         val fullName = m("FULL_NAME").toString
         isExternal && !fullName.contains("<operator>")
       }
+    val taintAnalysisResult = runTaintAnalysis(job, driver)
     if (phase.contains("DISCUPT")) closeConnectionWithExport(job, driver)
     val b = BenchmarkResult(
       fileName = job.program.name,
@@ -167,6 +172,15 @@ object RunBenchmark {
     )
     PrettyPrinter.announceResults(b)
     PlumeStatistics.reset()
+    taintAnalysisResult match {
+      case Some(result) =>
+        PrettyPrinter.announceTaintAnalysisResults(result)
+        captureTaintAnalysisResult(
+          job,
+          result
+        )
+      case None =>
+    }
     b
   }
 
@@ -293,7 +307,6 @@ object RunBenchmark {
         cleanUp(job, driver)
         return false
       case Success(initResult) =>
-        runTaintAnalysis(driver)
         captureBenchmarkResult(initResult)
         if (initResult.timedOut) {
           cleanUp(job, driver)
@@ -310,7 +323,6 @@ object RunBenchmark {
           )({
             runBenchmark(jar, job, driver, s"UPDATE${i + 1}")
           })
-          runTaintAnalysis(driver)
           captureBenchmarkResult(x)
           if (x.timedOut) return true
       }
@@ -338,7 +350,6 @@ object RunBenchmark {
           cleanUp(job, driver)
           return true
         } else {
-          runTaintAnalysis(driver)
           closeConnectionWithExport(job, driver)
           captureBenchmarkResult(initResult)
         }
@@ -354,7 +365,6 @@ object RunBenchmark {
           )({
             runBenchmark(jar, job, driver, s"DISCUPT${i + 1}")
           })
-          runTaintAnalysis(driver)
           captureBenchmarkResult(x)
           if (x.timedOut) return true
       }
@@ -395,7 +405,6 @@ object RunBenchmark {
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true
-          runTaintAnalysis(driver)
           cleanUp(job, driver)
       }
     } finally {
@@ -406,31 +415,75 @@ object RunBenchmark {
     false
   }
 
-  private def runTaintAnalysis(driver: IDriver): Unit =
+  case class TaintAnalysisResult(time: Long,
+                                 phase: String,
+                                 sinks: Long,
+                                 sources: Long,
+                                 sanitizers: Long,
+                                 flows: Long,
+                                 cacheHits: Long,
+                                 cacheMisses: Long)
+
+  private def runTaintAnalysis(job: Job, driver: IDriver): Option[TaintAnalysisResult] =
     driver match {
       case d: OverflowDbDriver if experimentConfig.runTaintAnalysis =>
         logger.info("Running taint analysis")
         import io.shiftleft.semanticcpg.language._
-        val sources = taintConfig.sources.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
-        val sanitizers = taintConfig.sanitization.flatMap {
+        val sourcesToQuery = taintConfig.sources.flatMap {
           case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*")
         }.toSeq
-        val sinks = taintConfig.sinks.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
+        val sanitizersToQuery = taintConfig.sanitization.flatMap {
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*")
+        }.toSeq
+        val sinksToQuery = taintConfig.sinks.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
 
-        def sink: Traversal[Call] = d.cpg.call.methodFullName(sinks: _*)
-        def sanitizer: Traversal[Call] = d.cpg.call.methodFullName(sanitizers: _*)
-        def source: Traversal[Call] = d.cpg.call.methodFullName(sources: _*)
+        def sink(cpg: Cpg): Traversal[Expression] = cpg.call.methodFullName(sinksToQuery: _*)
+        def sanitizer(cpg: Cpg): Set[String] = cpg.call.methodFullName(sanitizersToQuery: _*).methodFullName.toSet
+        def source(cpg: Cpg): Traversal[Expression] = cpg.call.methodFullName(sourcesToQuery: _*).argument
 
-        logger.info(s"Matched ${sink.size} sinks and ${sources.size} sources. ${sanitizers.size} sanitizers found.")
+        val flows = d.nodesReachableBy(source(d.cpg), sink(d.cpg), sanitizer(d.cpg))
 
-        val flows = d.nodesReachableBy(source, sink)
-        if (flows.isEmpty) {
-          logger.info("No data flows matched.")
-        } else {
-          logger.info(s"${flows.size} data flows matched.")
-        }
-      case _ =>
+        val result = TaintAnalysisResult(
+          PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_REACHABLE_BY_QUERYING, 0L),
+          job.program.name,
+          sink(d.cpg).size,
+          source(d.cpg).size,
+          sanitizer(d.cpg).size,
+          flows.size,
+          QueryEngineStatistics.results().getOrElse(QueryEngineStatistics.PATH_CACHE_HITS, 0L),
+          QueryEngineStatistics.results().getOrElse(QueryEngineStatistics.PATH_CACHE_MISSES, 0L),
+        )
+        QueryEngineStatistics.reset()
+        Some(result)
+      case _ => None
     }
+
+  def captureTaintAnalysisResult(job: Job, result: TaintAnalysisResult): Unit = {
+    val csv = new JFile("../results/taint_results.csv")
+    if (!csv.exists()) {
+      new JFile("../results/").mkdir()
+      csv.createNewFile()
+      Using.resource(new BufferedWriter(new FileWriter(csv))) {
+        _.append(
+          "DATE," +
+            "FILE_NAME," +
+            "DATABASE," +
+            "PHASE," +
+            "TIME," +
+            "CACHE_HITS," +
+            "CACHE_MISSES" +
+            "\n"
+        )
+      }
+    }
+    Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
+      _.append(
+        s"""${LocalDateTime
+             .now()},${job.program.name},${job.driverName},${result.phase},${result.time},${result.cacheHits},${result.cacheMisses}
+           |""".stripMargin
+      )
+    }
+  }
 
   private def generateDefaultResult(job: Job, phase: String = "INITIAL") = {
     val dbName = if (!job.experiment.runSootOnlyBuilds) job.driverName else "Soot"

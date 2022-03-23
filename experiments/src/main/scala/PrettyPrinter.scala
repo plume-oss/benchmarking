@@ -1,6 +1,7 @@
 package com.github.plume.oss
 
-import org.slf4j.{ Logger, LoggerFactory }
+import com.github.plume.oss.RunBenchmark.TaintAnalysisResult
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.Duration
 
@@ -30,12 +31,25 @@ object PrettyPrinter {
     logger.info(s"Benchmark results of ${b.fileName}")
     logger.info(s"")
     logger.info(s"PHASE ${b.phase}")
-    logger.info(s"\tCPG Projection time...........${readableTime(totalTime)} (wall clock)")
+    logger.info(s"\tCPG Projection time...........${readableTime(totalTime)}")
     logger.info(s"\tConnect/Deserialize...........${readableTime(b.connectDeserialize)}")
     logger.info(s"\tDisconnect/Serialize..........${readableTime(b.disconnectSerialize)}")
     logger.info(s"\tProcessed Classes.............${b.programClasses}")
     logger.info(s"\tProcessed Methods (LIB/EXT)...(${b.programMethods}/${b.externalMethods})")
     logger.info(s"\tGraph Size (N/E)..............(${b.nodeCount}/${b.edgeCount})")
+    logger.info(s"")
+  }
+
+  def announceTaintAnalysisResults(b: TaintAnalysisResult): Unit = {
+    val totalTime = b.time
+    logger.info(s"")
+    logger.info(s"Taint analysis results")
+    logger.info(s"")
+    logger.info(s"\tTotal Duration................${readableTime(totalTime)}")
+    logger.info(s"\tMatched Sources...............${b.sources}")
+    logger.info(s"\tMatched Sinks.................${b.sinks}")
+    logger.info(s"\tMatched Flows.................${b.flows}")
+    logger.info(s"\tCache Hit Percentage..........${b.cacheHits.toDouble / (b.cacheHits + b.cacheMisses) * 100.0}")
     logger.info(s"")
   }
 
