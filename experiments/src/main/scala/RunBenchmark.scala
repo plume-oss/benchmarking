@@ -7,16 +7,16 @@ import com.github.nscala_time.time.Imports.LocalDateTime
 import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics
 import io.shiftleft.codepropertygraph.generated.NodeTypes
 import io.shiftleft.codepropertygraph.generated.nodes.Expression
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import overflowdb.traversal.Traversal
 
-import java.io.{BufferedWriter, FileWriter, File => JFile}
-import java.nio.file.{Files, Paths}
+import java.io.{ BufferedWriter, FileWriter, File => JFile }
+import java.nio.file.{ Files, Paths }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.{ Failure, Success, Try, Using }
 
 object RunBenchmark {
 
@@ -24,6 +24,7 @@ object RunBenchmark {
 
   val experimentConfig: ExperimentConfig = YamlDeserializer.experimentConfig("/experiments_conf.yaml")
   val taintConfig: TaintConfig = YamlDeserializer.taintDefsConfig("/taint_definitions.yaml")
+  PrettyPrinter.announceTaintConfig(taintConfig)
 
   /**
     * Timeout in minutes
@@ -175,10 +176,8 @@ object RunBenchmark {
     taintAnalysisResult match {
       case Some(result) =>
         PrettyPrinter.announceTaintAnalysisResults(result)
-        captureTaintAnalysisResult(
-          job,
-          result
-        )
+        captureTaintAnalysisPerformanceResult(job, result)
+        captureTaintAnalysisSearchResult(job, result)
       case None =>
     }
     b
@@ -458,7 +457,7 @@ object RunBenchmark {
       case _ => None
     }
 
-  def captureTaintAnalysisResult(job: Job, result: TaintAnalysisResult): Unit = {
+  def captureTaintAnalysisPerformanceResult(job: Job, result: TaintAnalysisResult): Unit = {
     val csv = new JFile("../results/taint_results.csv")
     if (!csv.exists()) {
       new JFile("../results/").mkdir()
@@ -471,12 +470,7 @@ object RunBenchmark {
             "PHASE," +
             "TIME," +
             "CACHE_HITS," +
-            "CACHE_MISSES," +
-            "CACHE_HITS," +
-            "NO_SOURCES," +
-            "NO_SINKS," +
-            "NO_SANITIZERS," +
-            "NO_FLOWS" +
+            "CACHE_MISSES" +
             "\n"
         )
       }
@@ -489,12 +483,34 @@ object RunBenchmark {
           s"${result.phase}," +
           s"${result.time}," +
           s"${result.cacheHits}," +
-          s"${result.cacheMisses}," +
-          s"${result.sources}," +
-          s"${result.sinks}," +
-          s"${result.sanitizers}," +
-          s"${result.flows}" +
+          s"${result.cacheMisses}" +
           "\n"
+      )
+    }
+  }
+
+  def captureTaintAnalysisSearchResult(job: Job, result: TaintAnalysisResult): Unit = {
+    val csv = new JFile("../results/taint_search_results.csv")
+    if (!csv.exists()) {
+      new JFile("../results/").mkdir()
+      csv.createNewFile()
+      Using.resource(new BufferedWriter(new FileWriter(csv))) {
+        _.append(
+          "DATE," +
+            "FILE_NAME," +
+            "PATH_TYPE," +
+            "PATH_COUNT" +
+            "\n"
+        )
+      }
+    }
+    Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
+      _.append(
+        s"""${LocalDateTime.now()},${job.program.name},Sources,${result.sources}
+           |${LocalDateTime.now()},${job.program.name},Sinks,${result.sinks}
+           |${LocalDateTime.now()},${job.program.name},Sanitizers,${result.sanitizers}
+           |${LocalDateTime.now()},${job.program.name},Reaching Flows,${result.flows}
+           |""".stripMargin
       )
     }
   }

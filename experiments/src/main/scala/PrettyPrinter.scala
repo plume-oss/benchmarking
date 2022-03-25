@@ -53,6 +53,16 @@ object PrettyPrinter {
     logger.info(s"")
   }
 
+  def announceTaintConfig(taintConfig: TaintConfig): Unit = {
+    logger.info(s"")
+    logger.info(s"Taint analysis configuration")
+    logger.info(s"")
+    logger.info(s"\tNo. Sources..................${taintConfig.sources.size} types")
+    logger.info(s"\tNo. Sinks....................${taintConfig.sinks.size} types")
+    logger.info(s"\tNo. Sanitizers...............${taintConfig.sanitization.size} types")
+    logger.info(s"")
+  }
+
   def readableTime(nanoTime: Long): String = {
     val d = Duration.ofNanos(nanoTime)
     s"${d.toHoursPart}H ${d.toMinutesPart} min ${d.toSecondsPart} s ${d.toMillisPart} ms"
