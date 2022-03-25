@@ -12,7 +12,10 @@ def plot(input_file):
     plt.figure(figsize=(8.27, 10.7))
     df = pd.read_csv(input_file, delimiter=',')
     df['Memory'] = df['Memory'].apply(lambda x: x / 1024e6)[df['Memory'] > 0]
-    df = df.rename(columns={'Memory': 'Memory [Gb]'})
+    df = df.rename(columns={
+        'Memory': 'Memory [Gb]',
+        'Project': 'Library'
+    })
 
     libs = df.drop_duplicates(subset=["Project"])["Project"].values.flatten().tolist()
     dbDf = df[~df['Database'].str.contains("Soot")]
@@ -31,7 +34,6 @@ def plot(input_file):
     yset = yrange / len(libs)
     for i, lib in enumerate(libs):
         curr_y = yset * i + 0.055
-        print("{} [{}, {}]".format(curr_y, curr_y - buffer, curr_y + buffer))
         avg_build = sootDf[sootDf['Project'].str.contains(lib)]['Memory [Gb]'].mean()
         plt.axvline(x=avg_build, ymin=curr_y - buffer, ymax=curr_y+buffer, c="red", linestyle='dashed', zorder=5)
 
