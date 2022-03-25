@@ -155,7 +155,7 @@ object RunBenchmark {
         val fullName = m("FULL_NAME").toString
         isExternal && !fullName.contains("<operator>")
       }
-    val taintAnalysisResult = runTaintAnalysis(job, driver)
+    val taintAnalysisResult = runTaintAnalysis(job, driver, phase)
     if (phase.contains("DISCUPT")) closeConnectionWithExport(job, driver)
     val b = BenchmarkResult(
       fileName = job.program.name,
@@ -424,7 +424,7 @@ object RunBenchmark {
                                  cacheHits: Long,
                                  cacheMisses: Long)
 
-  private def runTaintAnalysis(job: Job, driver: IDriver): Option[TaintAnalysisResult] =
+  private def runTaintAnalysis(job: Job, driver: IDriver, phase: String): Option[TaintAnalysisResult] =
     driver match {
       case d: OverflowDbDriver if experimentConfig.runTaintAnalysis =>
         logger.info("Running taint analysis")
@@ -437,7 +437,7 @@ object RunBenchmark {
         }.toSeq
         val sinksToQuery = taintConfig.sinks.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
 
-        def sink: Traversal[Expression] = d.cpg.call.methodFullName(sinksToQuery: _*)
+        def sink: Traversal[Expression] = d.cpg.call.methodFullName(sinksToQuery: _*).argument
         def sanitizer: Set[String] = d.cpg.call.methodFullName(sanitizersToQuery: _*).methodFullName.toSet
         def source: Traversal[Expression] = d.cpg.call.methodFullName(sourcesToQuery: _*).argument
 
@@ -445,7 +445,7 @@ object RunBenchmark {
 
         val result = TaintAnalysisResult(
           PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_REACHABLE_BY_QUERYING, 0L),
-          job.program.name,
+          phase,
           sink.size,
           source.size,
           sanitizer.size,
@@ -471,16 +471,30 @@ object RunBenchmark {
             "PHASE," +
             "TIME," +
             "CACHE_HITS," +
-            "CACHE_MISSES" +
+            "CACHE_MISSES," +
+            "CACHE_HITS," +
+            "NO_SOURCES," +
+            "NO_SINKS," +
+            "NO_SANITIZERS," +
+            "NO_FLOWS" +
             "\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
-        s"""${LocalDateTime
-             .now()},${job.program.name},${job.driverName},${result.phase},${result.time},${result.cacheHits},${result.cacheMisses}
-           |""".stripMargin
+        s"${LocalDateTime.now()}," +
+          s"${job.program.name}," +
+          s"${job.driverName}," +
+          s"${result.phase}," +
+          s"${result.time}," +
+          s"${result.cacheHits}," +
+          s"${result.cacheMisses}," +
+          s"${result.sources}," +
+          s"${result.sinks}," +
+          s"${result.sanitizers}," +
+          s"${result.flows}" +
+          "\n"
       )
     }
   }
