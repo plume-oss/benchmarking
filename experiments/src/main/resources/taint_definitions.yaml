@@ -30,6 +30,7 @@ sources:
     - getRequestURI
     - getRequestURL
     - getServletPath
+    - getOutputStream
   javax.servlet.http.Cookie:
     - getComment
     - getDomain
@@ -42,6 +43,8 @@ sources:
   javax.servlet.GenericServlet:
     - getInitParameter
     - getInitParameterNames
+  javax.xml.transform.Transformer:
+    - getParameter
   java.sql.ResultSet:
     - getString
     - getObject
@@ -81,6 +84,15 @@ sources:
     - evaluate
   javax.xml.xpath.XPathExpression:
     - evaluate
+  javax.ws.rs.core.FeatureContext:
+    - getConfiguration
+  org.springframework.http.server.ServletServerHttpRequest:
+    - getServletRequest
+    - getBody
+    - getHeaders
+  org.springframework.http.HttpOutputMessage:
+    - getHeaders
+
 sanitization:
   org.owasp.encoder.Encode:
     - forHtml
@@ -117,6 +129,14 @@ sanitization:
     - escapeSql
     - escapeCsv
     - unescapeCsv
+  # fastjson
+  com.alibaba.fastjson.(.*)Validator:
+    - validate
+    - fromUtf8
+    - from
+    - getParameters
+    - getFunction
+
 sinks:
   java.lang.Runtime:
     - exec
@@ -158,6 +178,7 @@ sinks:
     - addIntHeader
     - sendRedirect
     - getRequestDispatcher
+    - setContentLength
   javax.servlet.ServletResponse:
     - setCharacterEncoding
     - setContentType
@@ -242,6 +263,12 @@ sinks:
     - evaluate
   javax.xml.xpath.XPathExpression:
     - evaluate
+  javax.xml.transform.dom.DOMSource:
+    - <init>
+  javax.xml.transform.Transformer:
+    - transform
+    - setParameter
+    - setOutputProperty
   org.apache.xpath.XPath:
     - XPath
   org.apache.commons.jxpath.JXPath:
@@ -250,3 +277,12 @@ sinks:
     - query
   org.xmldb.api.modules.XMLResource:
     - setContent
+  org.joda.time.LocalDateTime:
+    - toDateTime
+  okhttp3.RequestBody:
+    - create
+  org.springframework.web.servlet.view.AbstractView:
+    - setResponseContentType
+  org.springframework.http.HttpHeaders:
+    - setContentType
+    - setContentLength

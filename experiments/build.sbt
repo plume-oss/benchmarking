@@ -4,7 +4,7 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaServerAppPackaging)
 
-val plumeVersion = "1.1.10"
+val plumeVersion = "1.1.12"
 val moultingYamlVersion = "0.4.2"
 val log4jVersion = "2.17.2"
 val apacheCompressVersion = "1.21"
@@ -14,7 +14,7 @@ val javaMailVersion = "1.6.2"
 
 name := "Plume Benchmarking"
 version := plumeVersion
-scalaVersion := "2.13.7"
+scalaVersion := "2.13.8"
 maintainer := "dbe@sun.ac.za"
 
 idePackagePrefix := Some("com.github.plume.oss")
@@ -27,7 +27,7 @@ run := Defaults
   .evaluated
 
 libraryDependencies ++= Seq(
-  "com.github.plume-oss" %% "plume" % plumeVersion,
+  "com.github.plume-oss" % "plume" % plumeVersion,
   "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
   "org.apache.commons" % "commons-compress" % apacheCompressVersion,

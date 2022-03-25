@@ -5,18 +5,18 @@ import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
 import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics
-import io.shiftleft.codepropertygraph.generated.{ Cpg, NodeTypes }
+import io.shiftleft.codepropertygraph.generated.NodeTypes
 import io.shiftleft.codepropertygraph.generated.nodes.Expression
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import overflowdb.traversal.Traversal
 
-import java.io.{ BufferedWriter, FileWriter, File => JFile }
-import java.nio.file.{ Files, Paths }
+import java.io.{BufferedWriter, FileWriter, File => JFile}
+import java.nio.file.{Files, Paths}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.{ Failure, Success, Try, Using }
+import scala.util.{Failure, Success, Try, Using}
 
 object RunBenchmark {
 
@@ -437,18 +437,18 @@ object RunBenchmark {
         }.toSeq
         val sinksToQuery = taintConfig.sinks.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
 
-        def sink(cpg: Cpg): Traversal[Expression] = cpg.call.methodFullName(sinksToQuery: _*)
-        def sanitizer(cpg: Cpg): Set[String] = cpg.call.methodFullName(sanitizersToQuery: _*).methodFullName.toSet
-        def source(cpg: Cpg): Traversal[Expression] = cpg.call.methodFullName(sourcesToQuery: _*).argument
+        def sink: Traversal[Expression] = d.cpg.call.methodFullName(sinksToQuery: _*)
+        def sanitizer: Set[String] = d.cpg.call.methodFullName(sanitizersToQuery: _*).methodFullName.toSet
+        def source: Traversal[Expression] = d.cpg.call.methodFullName(sourcesToQuery: _*).argument
 
-        val flows = d.nodesReachableBy(source(d.cpg), sink(d.cpg), sanitizer(d.cpg))
+        val flows = d.nodesReachableBy(source, sink, sanitizer)
 
         val result = TaintAnalysisResult(
           PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_REACHABLE_BY_QUERYING, 0L),
           job.program.name,
-          sink(d.cpg).size,
-          source(d.cpg).size,
-          sanitizer(d.cpg).size,
+          sink.size,
+          source.size,
+          sanitizer.size,
           flows.size,
           QueryEngineStatistics.results().getOrElse(QueryEngineStatistics.PATH_CACHE_HITS, 0L),
           QueryEngineStatistics.results().getOrElse(QueryEngineStatistics.PATH_CACHE_MISSES, 0L),
