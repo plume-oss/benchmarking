@@ -92,6 +92,56 @@ sources:
     - getHeaders
   org.springframework.http.HttpOutputMessage:
     - getHeaders
+  com.google.common.io.Resources:
+    - readLines
+  com.google.common.io.ByteStreams:
+    - read
+  com.google.common.io.MultiInputStream:
+    - read
+  com.google.common.io.MultiReader:
+    - read
+  com.google.common.io.FileBackedOutputStream\$MemoryOutput:
+    - getBuffer
+  com.google.inject.spi.ExposedBinding:
+    - getKey
+  com.google.inject.Key:
+    - get
+  com.fasterxml.jackson.core.JsonParser:
+    - get
+  com.fasterxml.jackson.core.util.TextBuffer:
+    - getTextBuffer
+  com.fasterxml.jackson.core.base.ParserBase:
+    - get
+  com.fasterxml.jackson.core.JsonToken:
+    - asCharArray
+  com.fasterxml.jackson.core.io.UTF(8|32)Reader:
+    - read
+  com.fasterxml.jackson.core.io.MergedStream:
+    - read
+  org.mockito.internal.util.reflection.FieldInitializer:
+    - acquireFieldInstance
+  com.fasterxml.jackson.core.io.IOContext:
+    - allocReadIOBuffer
+  io.reactivex.rxjava3.internal.operators.single.SingleZipArray$ZipCoordinator:
+    - get
+  com.github.scribejava.core.model.Response:
+    - get
+  com.fasterxml.jackson.databind.JsonNode:
+    - textValue
+    - asText
+  com.github.scribejava.core.extractors.AbstractOAuth1TokenExtractor:
+    - extract
+  com.github.scribejava.core.pkce.PKCE:
+    - get
+  com.github.scribejava.core.(.*).OAuth(.*):
+    - get
+  com.github.scribejava.core.model.Parameter(.*):
+    - get
+  io.reactivex.rxjava3.subjects.(.*)Subject(.*):
+    - add
+    - get
+  io.reactivex.rxjava3.processors.(.*)Processor:
+    - get
 
 sanitization:
   org.owasp.encoder.Encode:
@@ -129,13 +179,18 @@ sanitization:
     - escapeSql
     - escapeCsv
     - unescapeCsv
-  # fastjson
   com.alibaba.fastjson.(.*)Validator:
     - validate
     - fromUtf8
     - from
     - getParameters
     - getFunction
+  org.mockito.internal.util.Timer:
+    - validate
+  org.mockito.internal.stubbing.answers.ReturnsArgumentAt:
+    - validate
+  com.github.scribejava.core.model.OAuthRequest:
+    - resetPayload
 
 sinks:
   java.lang.Runtime:
@@ -286,3 +341,49 @@ sinks:
   org.springframework.http.HttpHeaders:
     - setContentType
     - setContentLength
+  com.google.common.io.ReaderInputStream:
+    - <init>
+  com.google.common.io.AppendableWriter:
+    - append
+  com.google.common.io.FileBackedOutputStream:
+    - write
+  com.google.inject.spi.InjectionPoint\$InjectableMembers:
+    - add
+  com.google.inject.spi.Elements\$RecordingBinder:
+    - bind
+  com.fasterxml.jackson.core.json.UTF8JsonGenerator:
+    - writeRaw
+  com.fasterxml.jackson.core.json.WriterBasedJsonGenerator:
+    - _write
+  com.fasterxml.jackson.core.JsonGenerator:
+    - set
+    - writeString
+  com.fasterxml.jackson.core.util.ByteArrayBuilder:
+    - write
+  com.fasterxml.jackson.core.io.UTF(8|32)Writer:
+    - write
+  com.fasterxml.jackson.core.util.BufferRecycler:
+    - alloc(Char|Byte)Buffer
+  io.reactivex.rxjava3.internal.operators.single.SingleZipArray$ZipCoordinator:
+    - getAndSet
+  io.reactivex.rxjava3.internal.schedulers.(.*):
+    - set
+  io.reactivex.rxjava3.internal.operators.flowable.(.*)Subscriber:
+    - set
+  io.reactivex.rxjava3.internal.operators.observable.(.*):
+    - set
+  com.github.scribejava.core.httpclient.multipart.MultipartPayload:
+    - <init>
+  com.github.scribejava.core.model.Parameter:
+    - set
+  com.github.scribejava.core.model.OAuth2Authorization:
+    - set
+  com.github.scribejava.core.oauth.OAuth20Service:
+    - createDeviceAuthorizationCodesRequest
+  io.reactivex.rxjava3.processors.(.*)Processor(.*):
+    - create
+    - set
+  io.reactivex.rxjava3.plugins.RxJavaPlugins:
+    - set
+  io.reactivex.rxjava3.core.Single(.*):
+    - (.*)subscribe
