@@ -2,22 +2,19 @@ package com.github.plume.oss
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.{BufferedWriter, FileWriter, File => JavaFile}
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
-import java.util.Calendar
 import java.util.concurrent.atomic.AtomicBoolean
-import scala.collection.mutable.ListBuffer
 import scala.util.Using
 
-class MemoryMonitor(job: Job) extends Thread {
+class MemoryMonitor(job: Job, outputFile: String) extends Thread with AutoCloseable {
 
   val db: String = if (!job.experiment.runSootOnlyBuilds) {
     job.driverConfig match {
-      case _: OverflowDbConfig => "OverflowDB"
+      case _: OverflowDbConfig  => "OverflowDB"
       case _: TinkerGraphConfig => "TinkerGraph"
-      case _: NeptuneConfig => "Neptune"
-      case _: Neo4jConfig => "Neo4j"
-      case _: TigerGraphConfig => "TigerGraph"
+      case _: NeptuneConfig     => "Neptune"
+      case _: Neo4jConfig       => "Neo4j"
+      case _: TigerGraphConfig  => "TigerGraph"
     }
   } else "Soot"
 
@@ -33,7 +30,7 @@ class MemoryMonitor(job: Job) extends Thread {
       Thread.sleep(100)
     }
 
-  def close(): Unit = {
+  override def close(): Unit = {
     stopProcess.lazySet(true)
     join()
   }
@@ -41,7 +38,7 @@ class MemoryMonitor(job: Job) extends Thread {
   def writeLine(usedMemory: Long): Unit = {
     val csv = initializeFile()
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(s"${LocalDateTime.now()},$db,$project,$usedMemory\n")//$mean,$stddev,$max,$min\n")
+      _.append(s"${LocalDateTime.now()},$db,$project,$usedMemory\n") //$mean,$stddev,$max,$min\n")
     }
   }
 
@@ -52,16 +49,21 @@ class MemoryMonitor(job: Job) extends Thread {
   }
 
   private def initializeFile(): JavaFile = {
-    val csv = new JavaFile(s"../results/memory_results.csv")
+    val csv = new JavaFile(outputFile)
     if (!csv.exists()) {
       new JavaFile("../results/").mkdir()
       logger.info(s"Creating memory capture file ${csv.getAbsolutePath}")
       csv.createNewFile()
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
-        _.append("StartTime,Database,Project,Memory\n")//Mean,StdDev,Max,Min\n")
+        _.append("StartTime,Database,Project,Memory\n") //Mean,StdDev,Max,Min\n")
       }
     }
     csv
   }
 
+}
+
+object MemoryMonitor {
+  val CPG_BUILDING = "../results/memory_results.csv"
+  val TAINT_ANALYSIS = "../results/memory_taint_results.csv"
 }

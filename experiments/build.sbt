@@ -4,7 +4,7 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaServerAppPackaging)
 
-val plumeVersion = "1.1.13"
+val plumeVersion = "1.1.14"
 val moultingYamlVersion = "0.4.2"
 val log4jVersion = "2.17.2"
 val apacheCompressVersion = "1.21"

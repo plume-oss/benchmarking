@@ -4,7 +4,7 @@ import CompressionUtil._
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
-import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics
+import io.joern.dataflowengineoss.queryengine.{ QueryEngineStatistics, ReachableByResult }
 import io.shiftleft.codepropertygraph.generated.NodeTypes
 import io.shiftleft.codepropertygraph.generated.nodes.Expression
 import org.slf4j.{ Logger, LoggerFactory }
@@ -277,8 +277,7 @@ object RunBenchmark {
   def runInitBuild(job: Job, driver: IDriver, withExport: Boolean = false): BenchmarkResult = {
     val default = generateDefaultResult(job)
     driver.clear()
-    val memoryMonitor = new MemoryMonitor(job)
-    try {
+    Using.resource(new MemoryMonitor(job, MemoryMonitor.CPG_BUILDING)) { memoryMonitor =>
       runWithTimeout(
         timeout,
         default
@@ -288,8 +287,6 @@ object RunBenchmark {
         if (withExport) closeConnectionWithExport(job, driver)
         ret
       })
-    } finally {
-      memoryMonitor.close()
     }
   }
 
@@ -440,7 +437,11 @@ object RunBenchmark {
         def sanitizer: Set[String] = d.cpg.call.methodFullName(sanitizersToQuery: _*).methodFullName.toSet
         def source: Traversal[Expression] = d.cpg.call.methodFullName(sourcesToQuery: _*).argument
 
-        val flows = d.nodesReachableBy(source, sink, sanitizer)
+        var flows = List.empty[ReachableByResult]
+        Using.resource(new MemoryMonitor(job, MemoryMonitor.TAINT_ANALYSIS)) { memoryMonitor =>
+          memoryMonitor.start()
+          flows = d.nodesReachableBy(source, sink, sanitizer)
+        }
 
         val result = TaintAnalysisResult(
           PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_REACHABLE_BY_QUERYING, 0L),
