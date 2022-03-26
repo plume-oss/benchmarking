@@ -10,7 +10,7 @@ configs:
       setOverflow: true
       setHeapPercentageThreshold: 80
       setSerializationStatsEnabled: false
-      dataFlowCacheFile: "savedFlows.json.gzip"
+      dataFlowCacheFile: "savedFlows.json"
   - db: "Neptune"
     enabled: false
     properties:
