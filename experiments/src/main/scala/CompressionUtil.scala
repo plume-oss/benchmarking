@@ -1,5 +1,6 @@
 package com.github.plume.oss
 
+import net.jpountz.lz4.LZ4BlockOutputStream
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveOutputStream}
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream
 import org.apache.commons.compress.compressors.zstandard.ZstdCompressorOutputStream
@@ -21,6 +22,18 @@ object CompressionUtil {
   def zstd(in: Path, out: Path): Long =
     Using.resources(Files.newInputStream(in),
       new ZstdCompressorOutputStream(new BufferedOutputStream(Files.newOutputStream(out)))) {
+      case (fis, lz4Out) =>
+        val buffer = new Array[Byte](1024)
+        Iterator
+          .continually(fis.read(buffer))
+          .takeWhile(_ != -1)
+          .foreach(_ => lz4Out.write(buffer))
+        out.toFile.length()
+    }
+
+  def lz4(in: Path, out: Path): Long =
+    Using.resources(Files.newInputStream(in),
+      new LZ4BlockOutputStream(new BufferedOutputStream(Files.newOutputStream(out)))) {
       case (fis, gzipOut) =>
         val buffer = new Array[Byte](1024)
         Iterator

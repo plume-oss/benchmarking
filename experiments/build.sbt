@@ -4,12 +4,13 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaServerAppPackaging)
 
-val plumeVersion = "1.1.14"
+val plumeVersion = "1.1.15"
 val moultingYamlVersion = "0.4.2"
 val log4jVersion = "2.17.2"
 val apacheCompressVersion = "1.21"
 val zstdCompressVersion = "1.5.2-2"
 val xzVersion = "1.9"
+val lz4Version = "1.8.0"
 val javaMailVersion = "1.6.2"
 
 name := "Plume Benchmarking"
@@ -30,7 +31,8 @@ libraryDependencies ++= Seq(
   "com.github.plume-oss" % "plume" % plumeVersion,
   "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
-  "org.apache.commons" % "commons-compress" % apacheCompressVersion,
+  "org.lz4" % "lz4-java" % lz4Version,
+  "org.apache.commons" % "commons-compress" % apacheCompressVersion exclude ("org.lz4", "lz4-java"),
   "com.github.luben" % "zstd-jni" % zstdCompressVersion,
   "org.tukaani" % "xz" % xzVersion,
   "net.jcazevedo" %% "moultingyaml" % moultingYamlVersion,

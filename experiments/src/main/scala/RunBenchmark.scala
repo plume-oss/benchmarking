@@ -87,6 +87,7 @@ object RunBenchmark {
   private def measureStorage(job: Job): Unit = {
     val zipP = Files.createTempFile("plume-zip-benchmark-", ".zip").toAbsolutePath
     val zstdP = Files.createTempFile("plume-zstd-benchmark-", ".tar.zstd").toAbsolutePath
+    val lz4P = Files.createTempFile("plume-lz4-benchmark-", ".tar.lz4").toAbsolutePath
     val tarP = Files.createTempFile("plume-tar-benchmark-", ".tar").toAbsolutePath
     val xzP = Files.createTempFile("plume-lzma-benchmark-", ".tar.xz").toAbsolutePath
     try {
@@ -99,6 +100,7 @@ object RunBenchmark {
               job.program.jars.last.length,
               input.toFile.length(),
               zip(input, zipP),
+              lz4(tarP, lz4P),
               zstd(tarP, zstdP),
               xz(tarP, xzP)
             )
@@ -111,6 +113,7 @@ object RunBenchmark {
               job.program.jars.last.length,
               input.toFile.length(),
               zip(input, zipP),
+              lz4(tarP, lz4P),
               zstd(tarP, zstdP),
               xz(tarP, xzP)
             )
@@ -123,7 +126,7 @@ object RunBenchmark {
         case None =>
       }
     } finally {
-      Seq(zipP, zstdP, tarP, xzP).foreach(_.toFile.delete())
+      Seq(zipP, zstdP, tarP, xzP, lz4P).foreach(_.toFile.delete())
     }
   }
 
@@ -225,7 +228,7 @@ object RunBenchmark {
     b
   }
 
-  case class StorageResult(jarSize: Long, graphSize: Long, zipSize: Long, zstdSize: Long, xzSize: Long)
+  case class StorageResult(jarSize: Long, graphSize: Long, zipSize: Long, lz4Size: Long, zstdSize: Long, xzSize: Long)
 
   def captureStorageResult(job: Job, result: StorageResult): Unit = {
     val csv = new JFile("../results/storage_results.csv")
@@ -247,6 +250,7 @@ object RunBenchmark {
       _.append(
         s"""${LocalDateTime.now()},${job.program.name},${job.driverName},Project JAR File,${result.jarSize}
            |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph,${result.graphSize}
+           |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph (LZ4),${result.lz4Size}
            |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph (ZIP),${result.zipSize}
            |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph (Zstd),${result.zstdSize}
            |${LocalDateTime.now()},${job.program.name},${job.driverName},Stored Graph (XZ),${result.xzSize}
