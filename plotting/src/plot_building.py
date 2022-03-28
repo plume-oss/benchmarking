@@ -36,7 +36,6 @@ def plot(input_file):
                 y="Library", x="Time [Seconds]", hue="Update Type",
                 orient="h",
                 alpha=.6, height=6,
-                aspect=8.27 / 10.7,
                 order=constants.PLOT_ORDER
                 )
 

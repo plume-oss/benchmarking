@@ -9,31 +9,25 @@ import constants
 
 def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
-    df['TIME'] = df['TIME'].apply(lambda row: row / 1e+9)
-    df = df.drop(df[df['PHASE'].str.contains("INIT")].index)
-    df['PHASE'] = df['PHASE'] \
-        .map(lambda x: "Recycle Cache" if "UP" in x else x) \
-        .map(lambda x: "Discard Cache" if "BUILD" in x else x)
-
+    df['PATH_TYPE'] = df['PATH_TYPE'].map(lambda x: "Reaching Flows" if "Flows" in x else x)
     df = df.rename(columns={
-        'TIME': 'Time [Seconds]',
         'FILE_NAME': 'Library',
-        'DATABASE': 'Database',
-        'PHASE': 'Cache Use Strategy'
+        'PATH_TYPE': 'Query Result Type',
+        'PATH_COUNT': 'Query Result Count'
     })
 
     sns.catplot(data=df, kind="bar",
-                y="Library", x="Time [Seconds]", hue="Cache Use Strategy",
+                y="Library", x='Query Result Count', hue='Query Result Type',
                 orient="h",
                 alpha=.6, height=6,
-                # aspect=8.27 / 10.7,
+                aspect=8.27 / 10.7,
                 order=constants.PLOT_ORDER
                 )
 
     plt.tight_layout()
 
-    plt.savefig("../pdf/taint.pdf")
-    plt.savefig("../png/taint.png")
+    plt.savefig("../pdf/dflow_search.pdf")
+    plt.savefig("../png/dflow_search.png")
     plt.show()
 
 
@@ -42,4 +36,4 @@ if __name__ == '__main__':
         os.makedirs("../pdf")
     if not os.path.exists("../png"):
         os.makedirs("../png")
-    plot(constants.TAINT_PERFORMANCE_FILE)
+    plot(constants.TAINT_SEARCH_FILE)

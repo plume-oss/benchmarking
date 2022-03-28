@@ -30,7 +30,6 @@ def plot(input_file):
                 y="Library", x="Cache Hit Ratio (%)", hue="Cache Use Strategy",
                 orient="h",
                 alpha=.6, height=6,
-                aspect=8.27 / 10.7,
                 order=constants.PLOT_ORDER
                 )
 
@@ -46,4 +45,4 @@ if __name__ == '__main__':
         os.makedirs("../pdf")
     if not os.path.exists("../png"):
         os.makedirs("../png")
-    plot(constants.TAINT_FILE)
+    plot(constants.TAINT_PERFORMANCE_FILE)

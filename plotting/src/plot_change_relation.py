@@ -8,7 +8,7 @@ import constants
 
 
 def plot(input_file):
-    plt.figure(figsize=(12.7, 8.27))
+    plt.figure(figsize=(10.7, 6.27))
     df = pd.read_csv(input_file, delimiter=',')
     df.info()
     df['TIME_SEC'] = df['TIME'].apply(lambda x: x / 1e+9)

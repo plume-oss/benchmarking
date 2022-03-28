@@ -12,16 +12,15 @@ def plot(input_file):
     df['FILE_SIZE_MB'] = df['FILE_SIZE'].apply(lambda x: x / 1024 ** 2)
 
     df = df.rename(columns={
-        'FILE_SIZE_MB': 'File Size [MB]',
+        'FILE_SIZE_MB': 'File Size [Mb]',
         'FILE_TYPE': 'File Type',
         'FILE_NAME': 'Library',
     })
 
     sns.catplot(data=df, kind="bar",
-                y="Library", x="File Size [MB]", hue="File Type",
+                y="Library", x="File Size [Mb]", hue="File Type",
                 orient="h",
                 alpha=.6, height=6,
-                aspect=8.27 / 10.7,
                 order=constants.PLOT_ORDER
                 )
     plt.tight_layout()
