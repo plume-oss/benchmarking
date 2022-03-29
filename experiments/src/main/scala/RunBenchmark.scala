@@ -382,7 +382,7 @@ object RunBenchmark {
     * @return true if one of the jobs timed out, false if otherwise
     */
   def runFullBuilds(job: Job): Boolean = {
-    var driver = DriverUtil.createDriver(job.driverConfig)
+    var driver = DriverUtil.createDriver(job.driverConfig, reuseCache = false)
     Try(runInitBuild(job, driver)) match {
       case Failure(e) =>
         logger.error("Failure while running full build initializer.", e)
@@ -396,7 +396,7 @@ object RunBenchmark {
     try {
       job.program.jars.drop(1).zipWithIndex.foreach {
         case (jar, i) =>
-          driver = DriverUtil.createDriver(job.driverConfig)
+          driver = DriverUtil.createDriver(job.driverConfig, reuseCache = false)
           val x = runWithTimeout(
             timeout,
             generateDefaultResult(job, s"BUILD${i + 1}")

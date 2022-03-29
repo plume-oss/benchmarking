@@ -6,7 +6,7 @@ import scala.reflect.io.Path
 
 object DriverUtil {
 
-  def createDriver(config: DriverConfig): IDriver =
+  def createDriver(config: DriverConfig, reuseCache: Boolean = true): IDriver =
     config match {
       case c: TinkerGraphConfig =>
         val d = new TinkerGraphDriver()
@@ -17,7 +17,7 @@ object DriverUtil {
           if (c.storageLocation.isBlank) None else Some(c.storageLocation),
           c.setHeapPercentageThreshold,
           c.setSerializationStatsEnabled,
-          c.dataFlowCacheFile,
+          if (reuseCache) c.dataFlowCacheFile else None,
           c.compressDataFlowCache
         )
       case c: NeptuneConfig =>
