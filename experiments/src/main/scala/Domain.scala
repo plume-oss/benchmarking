@@ -28,7 +28,8 @@ case class OverflowDbConfig(enabled: Boolean,
                             setOverflow: Boolean,
                             setHeapPercentageThreshold: Int,
                             setSerializationStatsEnabled: Boolean,
-                            dataFlowCacheFile: Option[Path])
+                            dataFlowCacheFile: Option[Path],
+                            compressDataFlowCache: Boolean)
     extends DriverConfig
 case class TinkerGraphConfig(enabled: Boolean, storageLocation: String) extends DriverConfig
 case class NeptuneConfig(enabled: Boolean, hostname: String, port: Int, keyCertChainFile: String) extends DriverConfig
@@ -59,7 +60,8 @@ case class ExperimentConfig(
     runDisconnectedUpdates: Boolean,
     runFullBuilds: Boolean,
     runSootOnlyBuilds: Boolean,
-    runTaintAnalysis: Boolean
+    runTaintAnalysis: Boolean,
+    printTaintPaths: Boolean,
 )
 
 object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
@@ -129,7 +131,10 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                   .asInstanceOf[YamlBoolean]
                   .boolean,
                 if (!cacheFileStr.isBlank) Some(Paths.get(cacheFileStr))
-                else None
+                else None,
+                properties.getOrElse(YamlString("compressDataFlowCache"), false)
+                  .asInstanceOf[YamlBoolean]
+                  .boolean
               )
             case "TinkerGraph" =>
               TinkerGraphConfig(
@@ -208,7 +213,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
     )
   }
 
-  implicit val experimentConfigsFormat = yamlFormat8(ExperimentConfig)
+  implicit val experimentConfigsFormat = yamlFormat9(ExperimentConfig)
   implicit val driverConfigsFormat = yamlFormat1(DriverConfigurations)
   implicit val datasetConfigsFormat = yamlFormat1(DatasetConfigurations)
   implicit val emailConfigsFormat = yamlFormat7(EmailConfig)

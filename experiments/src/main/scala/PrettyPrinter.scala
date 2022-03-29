@@ -1,9 +1,11 @@
 package com.github.plume.oss
 
 import com.github.plume.oss.RunBenchmark.TaintAnalysisResult
-import org.slf4j.{Logger, LoggerFactory}
+import io.joern.dataflowengineoss.queryengine.ReachableByResult
+import org.slf4j.{ Logger, LoggerFactory }
 
 import java.time.Duration
+import java.util.Optional
 
 object PrettyPrinter {
 
@@ -61,6 +63,59 @@ object PrettyPrinter {
     logger.info(s"\tNo. Sinks....................${taintConfig.sinks.size} types")
     logger.info(s"\tNo. Sanitizers...............${taintConfig.sanitization.size} types")
     logger.info(s"")
+  }
+
+  case class PathLine(parentMethod: String,
+                      code: String,
+                      typeName: Optional[Object] = Optional.empty(),
+                      nodeLine: Optional[Object] = Optional.empty(),
+                      argIndex: Optional[Object] = Optional.empty())
+
+  def showReachablePaths(results: List[ReachableByResult]): Unit = {
+    import io.shiftleft.semanticcpg.language._
+
+    if (results.isEmpty) logger.info("=== No paths to display ===")
+    else logger.info("=== The following data flow paths were found to be reachable ===")
+
+    results
+      .map { result =>
+        result.path.map(
+          x =>
+            PathLine(
+              x.node.method.fullName.substring(0, x.node.method.fullName.lastIndexOf(':')),
+              x.node.code,
+              x.node.propertyOption("TYPE_FULL_NAME"),
+              x.node.propertyOption("LINE_NUMBER"),
+              x.node.propertyOption("ARGUMENT_INDEX")
+          )
+        )
+      }
+      .distinct
+      .map { n: Vector[PathLine] =>
+        n.map {
+          case PathLine(methodName, code, typeName, lineNumber, argIndex) =>
+            val sb = new StringBuilder()
+            sb.append(s"\t[$methodName:")
+            if (lineNumber.isPresent) {
+              sb.append(lineNumber.get())
+            }
+            if (argIndex.isPresent) {
+              sb.append(s" - arg ${argIndex.get()}")
+            }
+            sb.append("]")
+            if (typeName.isPresent) {
+              sb.append(s"(${typeName.get()})")
+            }
+            sb.append(s" $code")
+            sb.toString()
+        }
+      }
+      .zipWithIndex
+      .foreach {
+        case (path, i) =>
+          logger.info(s"PATH $i:")
+          path.foreach(logger.info)
+      }
   }
 
   def readableTime(nanoTime: Long): String = {

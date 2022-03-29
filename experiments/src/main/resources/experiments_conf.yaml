@@ -2,14 +2,16 @@ iterations: 20
 timeout: 300 # in minutes. This is 5 hours
 
 # Mainly used for memory/storage testing
-runBuildAndStore: true
+runBuildAndStore: false
 # Will do an initial build and keep cache and not clear graph
-runLiveUpdates: false
+runLiveUpdates: true
 # Will do an initial build and remove cache/export graph/reconnect etc.
-runDisconnectedUpdates: false
+runDisconnectedUpdates: true
 # Will do an initial build and discard cache and clear graph between builds
-runFullBuilds: false
+runFullBuilds: true
 # Will do a database-less build loading programs only into soot to measure soot impact
 runSootOnlyBuilds: false
 # After each extraction will run through the taint definitions config and look for reachability
-runTaintAnalysis: false
+runTaintAnalysis: true
+# When taint analysis is run, print the paths in a readable way
+printTaintPaths: true

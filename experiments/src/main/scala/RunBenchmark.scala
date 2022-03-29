@@ -430,22 +430,27 @@ object RunBenchmark {
         logger.info("Running taint analysis")
         import io.shiftleft.semanticcpg.language._
         val sourcesToQuery = taintConfig.sources.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*")
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.*\\)")
         }.toSeq
         val sanitizersToQuery = taintConfig.sanitization.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*")
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.*\\)")
         }.toSeq
-        val sinksToQuery = taintConfig.sinks.flatMap { case (t: String, ms: List[String]) => ms.map(m => s"$t.$m.*") }.toSeq
+        val sinksToQuery = taintConfig.sinks.flatMap {
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.*\\)")
+        }.toSeq
 
         def sink: Traversal[Expression] = d.cpg.call.methodFullName(sinksToQuery: _*).argument
         def sanitizer: Set[String] = d.cpg.call.methodFullName(sanitizersToQuery: _*).methodFullName.toSet
-        def source: Traversal[Expression] = d.cpg.call.methodFullName(sourcesToQuery: _*).argument
+        def source: Traversal[Expression] = d.cpg.call.methodFullName(sourcesToQuery: _*).argument.whereNot(_.isLiteral)
 
         var flows = List.empty[ReachableByResult]
         Using.resource(new MemoryMonitor(job, MemoryMonitor.TAINT_ANALYSIS)) { memoryMonitor =>
           memoryMonitor.start()
-          flows = d.nodesReachableBy(source, sink, sanitizer)
+          flows = d
+            .nodesReachableBy(source, sink, sanitizer)
         }
+        if (experimentConfig.printTaintPaths)
+          PrettyPrinter.showReachablePaths(flows)
 
         val result = TaintAnalysisResult(
           PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_REACHABLE_BY_QUERYING, 0L),

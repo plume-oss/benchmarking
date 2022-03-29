@@ -13,10 +13,13 @@ object DriverUtil {
         if (!c.storageLocation.isBlank && Path.apply(c.storageLocation).exists) d.importGraph(c.storageLocation)
         d
       case c: OverflowDbConfig =>
-        new OverflowDbDriver(if (c.storageLocation.isBlank) None else Some(c.storageLocation),
-                             c.setHeapPercentageThreshold,
-                             c.setSerializationStatsEnabled,
-                             c.dataFlowCacheFile)
+        new OverflowDbDriver(
+          if (c.storageLocation.isBlank) None else Some(c.storageLocation),
+          c.setHeapPercentageThreshold,
+          c.setSerializationStatsEnabled,
+          c.dataFlowCacheFile,
+          c.compressDataFlowCache
+        )
       case c: NeptuneConfig =>
         new NeptuneDriver(c.hostname, c.port, c.keyCertChainFile)
       case c: Neo4jConfig =>
