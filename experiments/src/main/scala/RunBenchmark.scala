@@ -430,13 +430,34 @@ object RunBenchmark {
         logger.info("Running taint analysis")
         import io.shiftleft.semanticcpg.language._
         val sourcesToQuery = taintConfig.sources.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.*\\)")
+          case (t: String, ms: List[String]) =>
+            ms.map(
+              m =>
+                if (m.contains("<init>"))
+                  s"$t.$m:.*\\(.+\\)"
+                else
+                  s"$t.$m:.*\\(.*\\)"
+            )
         }.toSeq
         val sanitizersToQuery = taintConfig.sanitization.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.*\\)")
+          case (t: String, ms: List[String]) =>
+            ms.map(
+              m =>
+                if (m.contains("<init>"))
+                  s"$t.$m:.*\\(.+\\)"
+                else
+                  s"$t.$m:.*\\(.*\\)"
+            )
         }.toSeq
         val sinksToQuery = taintConfig.sinks.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.*\\)")
+          case (t: String, ms: List[String]) =>
+            ms.map(
+              m =>
+                if (m.contains("<init>"))
+                  s"$t.$m:.*\\(.+\\)"
+                else
+                  s"$t.$m:.*\\(.*\\)"
+            )
         }.toSeq
 
         def sink: Traversal[Expression] = d.cpg.call.methodFullName(sinksToQuery: _*).argument

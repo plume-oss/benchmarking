@@ -89,9 +89,6 @@ sources:
   org.springframework.http.server.ServletServerHttpRequest:
     - getServletRequest
     - getBody
-    - getHeaders
-  org.springframework.http.HttpOutputMessage:
-    - getHeaders
   com.google.common.io.Resources:
     - readLines
   com.google.common.io.ByteStreams:
@@ -105,13 +102,17 @@ sources:
   com.google.inject.spi.ExposedBinding:
     - getKey
   com.google.inject.Key:
-    - get
+    - getKey
+    - getAnnotation
   com.fasterxml.jackson.core.JsonParser:
-    - get
+    - getTextCharacters
+    - getText
   com.fasterxml.jackson.core.util.TextBuffer:
     - getTextBuffer
   com.fasterxml.jackson.core.base.ParserBase:
-    - get
+    - getCurrentName
+    - get(.*)Value
+    - getNumberValueExact
   com.fasterxml.jackson.core.JsonToken:
     - asCharArray
   com.fasterxml.jackson.core.io.UTF(8|32)Reader:
@@ -120,28 +121,25 @@ sources:
     - read
   org.mockito.internal.util.reflection.FieldInitializer:
     - acquireFieldInstance
-  com.fasterxml.jackson.core.io.IOContext:
-    - allocReadIOBuffer
-  io.reactivex.rxjava3.internal.operators.single.SingleZipArray$ZipCoordinator:
-    - get
   com.github.scribejava.core.model.Response:
-    - get
+    - getBody
+    - getStream
+    - getHeaders
+    - getHeader
   com.fasterxml.jackson.databind.JsonNode:
     - textValue
     - asText
-  com.github.scribejava.core.extractors.AbstractOAuth1TokenExtractor:
+  com.github.scribejava.core.extractors.AbstractOAuth1(.*)TokenExtractor:
     - extract
-  com.github.scribejava.core.pkce.PKCE:
-    - get
-  com.github.scribejava.core.(.*).OAuth(.*):
-    - get
+#  com.github.scribejava.core.(.*).OAuth(.*):
+#    - getToken
   com.github.scribejava.core.model.Parameter(.*):
-    - get
+    - getValue
   io.reactivex.rxjava3.subjects.(.*)Subject(.*):
     - add
-    - get
+    - getValue
   io.reactivex.rxjava3.processors.(.*)Processor:
-    - get
+    - getValue
 
 sanitization:
   org.owasp.encoder.Encode:
@@ -193,6 +191,7 @@ sanitization:
     - resetPayload
 
 sinks:
+  # Command Injection
   java.lang.Runtime:
     - exec
   java.lang.Thread:
@@ -204,12 +203,14 @@ sinks:
     - XmlRpcClient
     - execute
     - executeAsync
+  # Cookie Poisoning
   javax.servlet.http.Cookie:
     - Cookie
     - setComment
     - setDomain
     - setPath
     - setValue
+  # Cross Site Scripting
   java.io.PrintWriter:
     - print
     - println
@@ -231,6 +232,7 @@ sinks:
     - addHeader
     - setIntHeader
     - addIntHeader
+  # HTTP Response Splitting
     - sendRedirect
     - getRequestDispatcher
     - setContentLength
@@ -240,6 +242,7 @@ sinks:
   javax.servlet.http.HttpSession:
     - setAttribute
     - putValue
+  # LDAP Injection
   javax.naming.directory.InitialDirContext:
     - InitialDirContext
     - search
@@ -250,6 +253,7 @@ sinks:
   java.io.PrintStream:
     - print
     - println
+  # Log Forging
   java.util.logging.Logger:
     - config
     - fine
@@ -273,16 +277,27 @@ sinks:
     - log
   javax.servlet.GenericServlet:
     - log
-  java.io:
-    - File
-    - RandomAccessFile
-    - FileReader
-    - FileInputStream
-    - FileWriter
-    - FileOutputStream
+  com.github.scribejava.core.oauth.OAuth(.*)Service:
+    - log
+  # Path Traversal
+  java.io.File:
+    - <init>
+  java.io.RandomAccessFile:
+    - <init>
+  java.io.FileReader:
+    - <init>
+  java.io.FileInputStream:
+    - <init>
+  java.io.FileWriter:
+    - <init>
+    - write
+  java.io.FileOutputStream:
+    - <init>
+    - write
   javax.mail.internet.InternetAddress:
-    - InternetAddress
+    - <init>
     - parse
+  # Reflection Injection
   java.lang.Class:
     - forName
     - getField
@@ -291,8 +306,10 @@ sinks:
     - getDeclaredMethod
     - getResource
     - getResourceAsStream
+  # Security Misconfiguration
   java.sql.DriverManager:
     - getConnection
+  # SQL Injection
   java.sql.(Prepared|Callable)?Statement:
     - addBatch
     - execute
@@ -313,6 +330,7 @@ sinks:
     - saveOrUpdate
     - update
     - load
+  # XPath Injection
   javax.xml.xpath.XPath:
     - compile
     - evaluate
@@ -325,7 +343,7 @@ sinks:
     - setParameter
     - setOutputProperty
   org.apache.xpath.XPath:
-    - XPath
+    - <init>
   org.apache.commons.jxpath.JXPath:
     - getValue
   org.xmldb.api.modules.XPathQueryService:
@@ -347,6 +365,7 @@ sinks:
     - append
   com.google.common.io.FileBackedOutputStream:
     - write
+    - update
   com.google.inject.spi.InjectionPoint\$InjectableMembers:
     - add
   com.google.inject.spi.Elements\$RecordingBinder:
@@ -366,24 +385,21 @@ sinks:
     - alloc(Char|Byte)Buffer
   io.reactivex.rxjava3.internal.operators.single.SingleZipArray$ZipCoordinator:
     - getAndSet
-  io.reactivex.rxjava3.internal.schedulers.(.*):
-    - set
-  io.reactivex.rxjava3.internal.operators.flowable.(.*)Subscriber:
-    - set
-  io.reactivex.rxjava3.internal.operators.observable.(.*):
-    - set
   com.github.scribejava.core.httpclient.multipart.MultipartPayload:
     - <init>
+    - composeHeaders
+    - addBodyPart
+    - setPreamble
   com.github.scribejava.core.model.Parameter:
-    - set
+    - <init>
   com.github.scribejava.core.model.OAuth2Authorization:
-    - set
-  com.github.scribejava.core.oauth.OAuth20Service:
-    - createDeviceAuthorizationCodesRequest
+    - setCode
+  com.github.scribejava.core.pkce.PKCE:
+    - setCodeVerifier
   io.reactivex.rxjava3.processors.(.*)Processor(.*):
-    - create
-    - set
+    - create(.*)
+    - set(.*)
   io.reactivex.rxjava3.plugins.RxJavaPlugins:
-    - set
+    - set(.*)
   io.reactivex.rxjava3.core.Single(.*):
     - (.*)subscribe
