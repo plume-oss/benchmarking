@@ -20,8 +20,8 @@ def plot(input_file):
     df['TIME'] = df.apply(lambda row: add_serialization_time(row), axis=1)
     df = df.drop(df[df['PHASE'].str.contains("INIT")].index)
     df['PHASE'] = df['PHASE'] \
-        .map(lambda x: "Online Update" if "UPDATE" in x else x) \
-        .map(lambda x: "Disconnected Update" if "DISCUPT" in x else x) \
+        .map(lambda x: "Hot Update" if "UPDATE" in x else x) \
+        .map(lambda x: "Cold Update" if "DISCUPT" in x else x) \
         .map(lambda x: "Full Build" if "BUILD" in x else x)
 
     df = df.rename(columns={

@@ -16,8 +16,8 @@ def plot(input_file):
     update_df = df[df['PHASE'].str.contains('UPDATE') | df['PHASE'].str.contains('DISCUP')]
     build_df = df[df['PHASE'].str.contains('BUILD')]
     update_df['PHASE'] = update_df['PHASE'] \
-        .map(lambda x: "Online Update" if "UPDATE" in x else x) \
-        .map(lambda x: "Disconnected Update" if "DISCUPT" in x else x)
+        .map(lambda x: "Hot Update" if "UPDATE" in x else x) \
+        .map(lambda x: "Cold Update" if "DISCUPT" in x else x)
     update_df = update_df.rename(columns={
         'TIME_SEC': 'Time [Seconds]',
         'FILE_NAME': 'Library',
