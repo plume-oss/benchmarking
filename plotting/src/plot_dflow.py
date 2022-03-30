@@ -11,8 +11,9 @@ def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
     df['TIME'] = df['TIME'].apply(lambda row: row / 1e+9)
     df = df.drop(df[df['PHASE'].str.contains("INIT")].index)
+    df = df.drop(df[df['PHASE'].str.contains("UPDATE")].index)
     df['PHASE'] = df['PHASE'] \
-        .map(lambda x: "Recycle Cache" if "UP" in x else x) \
+        .map(lambda x: "Recycle Cache" if "DISCUPT" in x else x) \
         .map(lambda x: "Discard Cache" if "BUILD" in x else x)
 
     df = df.rename(columns={
@@ -26,7 +27,6 @@ def plot(input_file):
                 y="Library", x="Time [Seconds]", hue="Cache Use Strategy",
                 orient="h",
                 alpha=.6, height=6,
-                # aspect=8.27 / 10.7,
                 order=constants.PLOT_ORDER
                 )
 
