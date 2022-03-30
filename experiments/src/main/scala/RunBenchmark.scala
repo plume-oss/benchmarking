@@ -1,22 +1,24 @@
 package com.github.plume.oss
 
 import CompressionUtil._
+import PlumeStatistics._
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
-import io.joern.dataflowengineoss.queryengine.{ QueryEngineStatistics, ReachableByResult }
+import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics.{PATH_CACHE_HITS, PATH_CACHE_MISSES}
+import io.joern.dataflowengineoss.queryengine.{QueryEngineStatistics, ReachableByResult}
 import io.shiftleft.codepropertygraph.generated.NodeTypes
 import io.shiftleft.codepropertygraph.generated.nodes.Expression
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import overflowdb.traversal.Traversal
 
-import java.io.{ BufferedWriter, FileWriter, File => JFile }
-import java.nio.file.{ Files, Paths }
+import java.io.{BufferedWriter, FileWriter, File => JFile}
+import java.nio.file.{Files, Paths}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.{ Failure, Success, Try, Using }
+import scala.util.{Failure, Success, Try, Using}
 
 object RunBenchmark {
 
@@ -165,17 +167,17 @@ object RunBenchmark {
       fileName = job.program.name,
       phase = phase,
       database = if (!job.experiment.runSootOnlyBuilds) job.driverName else "Soot",
-      time = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_EXTRACTION, -1L),
-      connectDeserialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_OPEN_DRIVER, -1L),
-      disconnectSerialize = PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_CLOSE_DRIVER, -1L),
-      programClasses = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_CLASSES, 0L),
-      programMethods = PlumeStatistics.results().getOrElse(PlumeStatistics.PROGRAM_METHODS, 0L),
+      time = PlumeStatistics.results().getOrElse(TIME_EXTRACTION, -1L),
+      connectDeserialize = PlumeStatistics.results().getOrElse(TIME_OPEN_DRIVER, -1L),
+      disconnectSerialize = PlumeStatistics.results().getOrElse(TIME_CLOSE_DRIVER, -1L),
+      programClasses = PlumeStatistics.results().getOrElse(PROGRAM_CLASSES, 0L),
+      programMethods = PlumeStatistics.results().getOrElse(PROGRAM_METHODS, 0L),
       externalMethods = externalMethods,
       nodeCount = nodeCount,
       edgeCount = edgeCount
     )
     PrettyPrinter.announceResults(b)
-    PlumeStatistics.reset()
+
     taintAnalysisResult match {
       case Some(result) =>
         PrettyPrinter.announceTaintAnalysisResults(result)
@@ -183,7 +185,39 @@ object RunBenchmark {
         captureTaintAnalysisSearchResult(job, result)
       case None =>
     }
+
+    captureIncrementalCosts(job, phase)
+    PlumeStatistics.reset()
     b
+  }
+
+  def captureIncrementalCosts(job: Job, phase: String): Unit = {
+    val csv = new JFile("../results/update_cost.csv")
+    if (!csv.exists()) {
+      new JFile("../results/").mkdir()
+      csv.createNewFile()
+      Using.resource(new BufferedWriter(new FileWriter(csv))) {
+        _.append(
+          "DATE," +
+            "FILE_NAME," +
+            "PHASE," +
+            "DATABASE," +
+            "TIME," +
+            "TYPE," +
+            "\n"
+        )
+      }
+    }
+    Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
+      _.append(
+        s"""${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_OPEN_DRIVER, 0L)},Fetching Graph
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_CLOSE_DRIVER, 0L)},Storing Graph
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_REMOVING_OUTDATED_GRAPH, 0L)},Removing Expired Sub-Graphs
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_REMOVING_OUTDATED_CACHE, 0L)},Removing Expired Cache Entries
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_RETRIEVING_CACHE, 0L)},Fetching Cache
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_STORING_CACHE, 0L)},Storing Cache
+           |""".stripMargin)
+    }
   }
 
   def captureBenchmarkResult(b: BenchmarkResult): BenchmarkResult = {
@@ -474,14 +508,14 @@ object RunBenchmark {
           PrettyPrinter.showReachablePaths(flows)
 
         val result = TaintAnalysisResult(
-          PlumeStatistics.results().getOrElse(PlumeStatistics.TIME_REACHABLE_BY_QUERYING, 0L),
+          PlumeStatistics.results().getOrElse(TIME_REACHABLE_BY_QUERYING, 0L),
           phase,
           sink.size,
           source.size,
           sanitizer.size,
           flows.size,
-          QueryEngineStatistics.results().getOrElse(QueryEngineStatistics.PATH_CACHE_HITS, 0L),
-          QueryEngineStatistics.results().getOrElse(QueryEngineStatistics.PATH_CACHE_MISSES, 0L),
+          QueryEngineStatistics.results().getOrElse(PATH_CACHE_HITS, 0L),
+          QueryEngineStatistics.results().getOrElse(PATH_CACHE_MISSES, 0L),
         )
         QueryEngineStatistics.reset()
         Some(result)
