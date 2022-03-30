@@ -24,7 +24,8 @@ def plot(input_file):
     })
 
     sns.catplot(data=df, kind="bar",
-                y="Library", x="Time [Seconds]", hue="Cache Use Strategy",
+                y="Library", x="Time [Seconds]",
+                hue="Cache Use Strategy", hue_order=['Recycle Cache', 'Discard Cache'],
                 orient="h",
                 alpha=.6, height=6,
                 order=constants.PLOT_ORDER
