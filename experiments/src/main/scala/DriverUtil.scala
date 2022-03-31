@@ -2,6 +2,8 @@ package com.github.plume.oss
 
 import drivers._
 
+import com.github.plume.oss.domain.DataFlowCacheConfig
+
 import scala.reflect.io.Path
 
 object DriverUtil {
@@ -17,8 +19,11 @@ object DriverUtil {
           if (c.storageLocation.isBlank) None else Some(c.storageLocation),
           c.setHeapPercentageThreshold,
           c.setSerializationStatsEnabled,
-          if (reuseCache) c.dataFlowCacheFile else None,
-          c.compressDataFlowCache
+          DataFlowCacheConfig(
+            if (reuseCache) c.dataFlowCacheFile else None,
+            c.compressDataFlowCache,
+            maxCachedPaths = c.maxCachedPaths
+          )
         )
       case c: NeptuneConfig =>
         new NeptuneDriver(c.hostname, c.port, c.keyCertChainFile)

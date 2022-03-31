@@ -17,8 +17,8 @@ object Main extends App {
 
   PrettyPrinter.setLogger(logger)
 
-  logger.info(s"Running ${experimentConfig.iterations} iterations of each benchmark")
-  logger.info(s"Found ${datasetConfigs.size} programs to benchmark against ${driverConfigs.size} drivers.")
+  logger.info(s"Running ${experimentConfig.iterations} iteration(s) of each benchmark")
+  logger.info(s"Found ${datasetConfigs.count(_.enabled)} program(s) to benchmark against ${driverConfigs.count(_.enabled)} driver(s).")
   logger.debug(s"The files are: ${datasetConfigs.map(_.name).mkString(",")}")
 
   driverConfigs.filter(_.enabled).foreach { driverConf =>

@@ -4,7 +4,7 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaServerAppPackaging)
 
-val plumeVersion = "1.1.19"
+val plumeVersion = "1.2.0"
 val moultingYamlVersion = "0.4.2"
 val log4jVersion = "2.17.2"
 val apacheCompressVersion = "1.21"
@@ -43,7 +43,8 @@ ThisBuild / resolvers ++= Seq(
   Resolver.mavenLocal,
   Resolver.mavenCentral,
   Resolver.jcenterRepo,
-  "jitpack" at "https://jitpack.io"
+  "jitpack" at "https://jitpack.io",
+  "Gradle Tooling" at "https://repo.gradle.org/gradle/libs-releases-local/"
 )
 
 assembly / mainClass := Some("com.github.plume.oss.Main")

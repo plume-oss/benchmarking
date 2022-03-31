@@ -23,9 +23,9 @@ object PrettyPrinter {
     logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
   }
 
-  def announceBenchmark(name: String, commit: String, i: Int = 0): Unit = {
+  def announceBenchmark(name: String, commit: String, i: Int = 0, prefix: Char = 'I'): Unit = {
     logger.info(s"---------------------------------------------------------------------------")
-    logger.info(s"[$currentIteration:$i] $name @ $commit")
+    logger.info(s"[$currentIteration:$prefix$i] $name @ $commit")
     logger.info(s"---------------------------------------------------------------------------")
   }
 

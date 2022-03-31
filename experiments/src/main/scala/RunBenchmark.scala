@@ -145,7 +145,7 @@ object RunBenchmark {
   }
 
   def runBenchmark(f: JFile, job: Job, driver: IDriver, phase: String, i: Int = 0): BenchmarkResult = {
-    PrettyPrinter.announceBenchmark(job.program.name, f.getName.stripSuffix(".jar"), i)
+    PrettyPrinter.announceBenchmark(job.program.name, f.getName.stripSuffix(".jar"), i, phase(0))
     new Jimple2Cpg()
       .createCpg(f.getAbsolutePath, driver = driver, sootOnlyBuild = job.experiment.runSootOnlyBuilds)
       .close() // close reference graph
@@ -501,8 +501,7 @@ object RunBenchmark {
         var flows = List.empty[ReachableByResult]
         Using.resource(new MemoryMonitor(job, MemoryMonitor.TAINT_ANALYSIS)) { memoryMonitor =>
           memoryMonitor.start()
-          flows = d
-            .nodesReachableBy(source, sink, sanitizer)
+          flows = d.flowsBetween(() => source, () => sink, sanitizer)
         }
         if (experimentConfig.printTaintPaths)
           PrettyPrinter.showReachablePaths(flows)

@@ -12,6 +12,7 @@ configs:
       setSerializationStatsEnabled: false
       dataFlowCacheFile: "savedFlows.cbor"
       compressDataFlowCache: false
+      maxCachedPaths: 10_000
   - db: "Neptune"
     enabled: false
     properties:

@@ -29,7 +29,8 @@ case class OverflowDbConfig(enabled: Boolean,
                             setHeapPercentageThreshold: Int,
                             setSerializationStatsEnabled: Boolean,
                             dataFlowCacheFile: Option[Path],
-                            compressDataFlowCache: Boolean)
+                            compressDataFlowCache: Boolean,
+                            maxCachedPaths: Int)
     extends DriverConfig
 case class TinkerGraphConfig(enabled: Boolean, storageLocation: String) extends DriverConfig
 case class NeptuneConfig(enabled: Boolean, hostname: String, port: Int, keyCertChainFile: String) extends DriverConfig
@@ -134,7 +135,8 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                 else None,
                 properties.getOrElse(YamlString("compressDataFlowCache"), false)
                   .asInstanceOf[YamlBoolean]
-                  .boolean
+                  .boolean,
+                properties.getOrElse(YamlString("maxCachedPaths"), 1_000).asInstanceOf[YamlNumber].value.toInt
               )
             case "TinkerGraph" =>
               TinkerGraphConfig(
