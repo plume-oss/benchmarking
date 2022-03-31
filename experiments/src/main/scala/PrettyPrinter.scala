@@ -10,10 +10,12 @@ import java.util.Optional
 object PrettyPrinter {
 
   var logger: Logger = LoggerFactory.getLogger(PrettyPrinter.getClass)
+  var currentIteration: Int = 0
 
   def setLogger(logger: Logger): Unit = this.logger = logger
 
   def announceIteration(i: Int, d: String): Unit = {
+    currentIteration = i
     logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     logger.info(
       s"$i${if (i % 10 == 1) "st" else if (i % 10 == 2) "nd" else if (i % 10 == 3) "rd" else "th"} iteration on driver $d"
@@ -21,9 +23,9 @@ object PrettyPrinter {
     logger.info(s"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
   }
 
-  def announceBenchmark(name: String, commit: String): Unit = {
+  def announceBenchmark(name: String, commit: String, i: Int = 0): Unit = {
     logger.info(s"---------------------------------------------------------------------------")
-    logger.info(s"$name @ $commit")
+    logger.info(s"[$currentIteration:$i] $name @ $commit")
     logger.info(s"---------------------------------------------------------------------------")
   }
 

@@ -144,8 +144,8 @@ object RunBenchmark {
     clearSerializedFiles(job.driverConfig)
   }
 
-  def runBenchmark(f: JFile, job: Job, driver: IDriver, phase: String): BenchmarkResult = {
-    PrettyPrinter.announceBenchmark(job.program.name, f.getName.stripSuffix(".jar"))
+  def runBenchmark(f: JFile, job: Job, driver: IDriver, phase: String, i: Int = 0): BenchmarkResult = {
+    PrettyPrinter.announceBenchmark(job.program.name, f.getName.stripSuffix(".jar"), i)
     new Jimple2Cpg()
       .createCpg(f.getAbsolutePath, driver = driver, sootOnlyBuild = job.experiment.runSootOnlyBuilds)
       .close() // close reference graph
@@ -355,7 +355,7 @@ object RunBenchmark {
             timeout,
             generateDefaultResult(job, s"UPDATE${i + 1}")
           )({
-            runBenchmark(jar, job, driver, s"UPDATE${i + 1}")
+            runBenchmark(jar, job, driver, s"UPDATE${i + 1}", i + 1)
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true
@@ -397,7 +397,7 @@ object RunBenchmark {
             timeout,
             generateDefaultResult(job, s"DISCUPT${i + 1}")
           )({
-            runBenchmark(jar, job, driver, s"DISCUPT${i + 1}")
+            runBenchmark(jar, job, driver, s"DISCUPT${i + 1}", i + 1)
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true
@@ -435,7 +435,7 @@ object RunBenchmark {
             timeout,
             generateDefaultResult(job, s"BUILD${i + 1}")
           )({
-            runBenchmark(jar, job, driver, s"BUILD${i + 1}")
+            runBenchmark(jar, job, driver, s"BUILD${i + 1}", i + 1)
           })
           captureBenchmarkResult(x)
           if (x.timedOut) return true

@@ -1,5 +1,5 @@
 iterations: 20
-timeout: 300 # in minutes. This is 5 hours
+timeout: 15 # in minutes
 
 # Mainly used for memory/storage testing
 runBuildAndStore: false
@@ -14,4 +14,4 @@ runSootOnlyBuilds: false
 # After each extraction will run through the taint definitions config and look for reachability
 runTaintAnalysis: true
 # When taint analysis is run, print the paths in a readable way
-printTaintPaths: true
+printTaintPaths: false
