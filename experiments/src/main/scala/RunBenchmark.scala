@@ -5,20 +5,20 @@ import PlumeStatistics._
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
-import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics.{PATH_CACHE_HITS, PATH_CACHE_MISSES}
-import io.joern.dataflowengineoss.queryengine.{QueryEngineStatistics, ReachableByResult}
+import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics.{ PATH_CACHE_HITS, PATH_CACHE_MISSES }
+import io.joern.dataflowengineoss.queryengine.{ QueryEngineStatistics, ReachableByResult }
 import io.shiftleft.codepropertygraph.generated.NodeTypes
 import io.shiftleft.codepropertygraph.generated.nodes.Expression
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import overflowdb.traversal.Traversal
 
-import java.io.{BufferedWriter, FileWriter, File => JFile}
-import java.nio.file.{Files, Paths}
+import java.io.{ BufferedWriter, FileWriter, File => JFile }
+import java.nio.file.{ Files, Paths }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.{ Failure, Success, Try, Using }
 
 object RunBenchmark {
 
@@ -209,13 +209,24 @@ object RunBenchmark {
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
-      _.append(
-        s"""${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_OPEN_DRIVER, 0L)},Fetching Graph
-           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_CLOSE_DRIVER, 0L)},Storing Graph
-           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_REMOVING_OUTDATED_GRAPH, 0L)},Removing Expired Sub-Graphs
-           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_REMOVING_OUTDATED_CACHE, 0L)},Removing Expired Cache Entries
-           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_RETRIEVING_CACHE, 0L)},Fetching Cache
-           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics.results().getOrElse(TIME_STORING_CACHE, 0L)},Storing Cache
+      _.append(s"""${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
+                    .results()
+                    .getOrElse(TIME_OPEN_DRIVER, 0L)},Fetching Graph
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
+                    .results()
+                    .getOrElse(TIME_CLOSE_DRIVER, 0L)},Storing Graph
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
+                    .results()
+                    .getOrElse(TIME_REMOVING_OUTDATED_GRAPH, 0L)},Removing Expired Sub-Graphs
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
+                    .results()
+                    .getOrElse(TIME_REMOVING_OUTDATED_CACHE, 0L)},Removing Expired Cache Entries
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
+                    .results()
+                    .getOrElse(TIME_RETRIEVING_CACHE, 0L)},Fetching Cache
+           |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
+                    .results()
+                    .getOrElse(TIME_STORING_CACHE, 0L)},Storing Cache
            |""".stripMargin)
     }
   }
@@ -501,7 +512,7 @@ object RunBenchmark {
         var flows = List.empty[ReachableByResult]
         Using.resource(new MemoryMonitor(job, MemoryMonitor.TAINT_ANALYSIS)) { memoryMonitor =>
           memoryMonitor.start()
-          flows = d.flowsBetween(() => source, () => sink, sanitizer)
+          flows = d.flowsBetween(source, sink, sanitizer)
         }
         if (experimentConfig.printTaintPaths)
           PrettyPrinter.showReachablePaths(flows)
