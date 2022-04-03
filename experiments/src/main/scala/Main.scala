@@ -3,7 +3,7 @@ package com.github.plume.oss
 import RunBenchmark.clearSerializedFiles
 import drivers.ISchemaSafeDriver
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.language.postfixOps
 
@@ -18,7 +18,9 @@ object Main extends App {
   PrettyPrinter.setLogger(logger)
 
   logger.info(s"Running ${experimentConfig.iterations} iteration(s) of each benchmark")
-  logger.info(s"Found ${datasetConfigs.count(_.enabled)} program(s) to benchmark against ${driverConfigs.count(_.enabled)} driver(s).")
+  logger.info(
+    s"Found ${datasetConfigs.count(_.enabled)} program(s) to benchmark against ${driverConfigs.count(_.enabled)} driver(s)."
+  )
   logger.debug(s"The files are: ${datasetConfigs.map(_.name).mkString(",")}")
 
   driverConfigs.filter(_.enabled).foreach { driverConf =>
@@ -52,10 +54,10 @@ object Main extends App {
     s"""
     |Benchmark measuring:
     |${driverConfigs
-         .filter(_.enabled)
-         .map(_.getClass.toString.stripPrefix("class com.github.plume.oss.").stripSuffix("Config"))
-         .map(x => s"\t* $x")
-         .mkString("\n")}
+      .filter(_.enabled)
+      .map(_.getClass.toString.stripPrefix("class com.github.plume.oss.").stripSuffix("Config"))
+      .map(x => s"\t* $x")
+      .mkString("\n")}
     |With config:
     |__________________________________________________________
     |\titerations             | ${experimentConfig.iterations}
@@ -78,25 +80,20 @@ object Main extends App {
   def runExperiment(job: Job): Boolean =
     try {
       // Run build and export
-      if (job.experiment.runBuildAndStore) {
+      if (job.experiment.runBuildAndStore)
         if (RunBenchmark.runBuildAndStore(job)) return true
-      }
       // Run live updates
-      if (job.experiment.runLiveUpdates) {
+      if (job.experiment.runLiveUpdates)
         if (RunBenchmark.runLiveUpdates(job)) return true
-      }
       // Run disconnected updates
-      if (job.experiment.runDisconnectedUpdates) {
+      if (job.experiment.runDisconnectedUpdates)
         if (RunBenchmark.runDisconnectedUpdates(job)) return true
-      }
       // Run full builds
-      if (job.experiment.runFullBuilds) {
+      if (job.experiment.runFullBuilds)
         if (RunBenchmark.runFullBuilds(job)) return true
-      }
       // Run Soot only builds
-      if (job.experiment.runSootOnlyBuilds) {
+      if (job.experiment.runSootOnlyBuilds)
         if (RunBenchmark.runBuildAndStore(job)) return true
-      }
       false
     } catch {
       case e: Exception =>

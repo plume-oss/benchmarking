@@ -23,27 +23,30 @@ abstract class DriverConfig {
 
 case class DriverConfigurations(configs: List[DriverConfig])
 
-case class OverflowDbConfig(enabled: Boolean,
-                            storageLocation: String,
-                            setOverflow: Boolean,
-                            setHeapPercentageThreshold: Int,
-                            setSerializationStatsEnabled: Boolean,
-                            dataFlowCacheFile: Option[Path],
-                            compressDataFlowCache: Boolean,
-                            maxCachedPaths: Int)
-    extends DriverConfig
+case class OverflowDbConfig(
+    enabled: Boolean,
+    storageLocation: String,
+    setOverflow: Boolean,
+    setHeapPercentageThreshold: Int,
+    setSerializationStatsEnabled: Boolean,
+    dataFlowCacheFile: Option[Path],
+    compressDataFlowCache: Boolean,
+    maxCachedPaths: Int,
+    disableCache: Boolean
+) extends DriverConfig
 case class TinkerGraphConfig(enabled: Boolean, storageLocation: String) extends DriverConfig
 case class NeptuneConfig(enabled: Boolean, hostname: String, port: Int, keyCertChainFile: String) extends DriverConfig
 case class Neo4jConfig(enabled: Boolean, hostname: String, port: Int, username: String, password: String)
     extends DriverConfig
-case class TigerGraphConfig(enabled: Boolean,
-                            username: String,
-                            password: String,
-                            hostname: String,
-                            restPpPort: Int,
-                            gsqlPort: Int,
-                            secure: Boolean)
-    extends DriverConfig
+case class TigerGraphConfig(
+    enabled: Boolean,
+    username: String,
+    password: String,
+    hostname: String,
+    restPpPort: Int,
+    gsqlPort: Int,
+    secure: Boolean
+) extends DriverConfig
 
 case class DatasetConfig(
     enabled: Boolean,
@@ -62,7 +65,7 @@ case class ExperimentConfig(
     runFullBuilds: Boolean,
     runSootOnlyBuilds: Boolean,
     runTaintAnalysis: Boolean,
-    printTaintPaths: Boolean,
+    printTaintPaths: Boolean
 )
 
 object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
@@ -76,12 +79,12 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
       yaml.asYamlObject.getFields(
         YamlString("enabled"),
         YamlString("name"),
-        YamlString("jars"),
+        YamlString("jars")
       ) match {
         case Seq(
-            YamlBoolean(enabled),
-            YamlString(name),
-            YamlArray(jars),
+              YamlBoolean(enabled),
+              YamlString(name),
+              YamlArray(jars)
             ) =>
           DatasetConfig(
             enabled,
@@ -109,12 +112,12 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
       yaml.asYamlObject.getFields(
         YamlString("db"),
         YamlString("enabled"),
-        YamlString("properties"),
+        YamlString("properties")
       ) match {
         case Seq(
-            YamlString(db),
-            YamlBoolean(enabled),
-            YamlObject(properties),
+              YamlString(db),
+              YamlBoolean(enabled),
+              YamlObject(properties)
             ) =>
           db match {
             case "OverflowDB" =>
@@ -133,10 +136,15 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                   .boolean,
                 if (!cacheFileStr.isBlank) Some(Paths.get(cacheFileStr))
                 else None,
-                properties.getOrElse(YamlString("compressDataFlowCache"), false)
+                properties
+                  .getOrElse(YamlString("compressDataFlowCache"), false)
                   .asInstanceOf[YamlBoolean]
                   .boolean,
-                properties.getOrElse(YamlString("maxCachedPaths"), 1_000).asInstanceOf[YamlNumber].value.toInt
+                properties.getOrElse(YamlString("maxCachedPaths"), 1_000).asInstanceOf[YamlNumber].value.toInt,
+                properties
+                  .getOrElse(YamlString("disableCache"), false)
+                  .asInstanceOf[YamlBoolean]
+                  .boolean
               )
             case "TinkerGraph" =>
               TinkerGraphConfig(
@@ -151,7 +159,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                 properties
                   .getOrElse(YamlString("keyCertChainFile"), "src/main/resources/conf/SFSRootCAG2.pem")
                   .asInstanceOf[YamlString]
-                  .value,
+                  .value
               )
             case "Neo4j" =>
               Neo4jConfig(
@@ -159,7 +167,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                 properties.getOrElse(YamlString("hostname"), "127.0.0.1").asInstanceOf[YamlString].value,
                 properties.getOrElse(YamlString("port"), 7687).asInstanceOf[YamlNumber].value.toInt,
                 properties.getOrElse(YamlString("username"), "neo4j").asInstanceOf[YamlString].value,
-                properties.getOrElse(YamlString("password"), "neo4j").asInstanceOf[YamlString].value,
+                properties.getOrElse(YamlString("password"), "neo4j").asInstanceOf[YamlString].value
               )
             case "TigerGraph" =>
               TigerGraphConfig(
@@ -169,7 +177,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
                 properties.getOrElse(YamlString("hostname"), "127.0.0.1").asInstanceOf[YamlString].value,
                 properties.getOrElse(YamlString("restPpPort"), 9000).asInstanceOf[YamlNumber].value.toInt,
                 properties.getOrElse(YamlString("gsqlPort"), 14240).asInstanceOf[YamlNumber].value.toInt,
-                properties.getOrElse(YamlString("secure"), false).asInstanceOf[YamlBoolean].boolean,
+                properties.getOrElse(YamlString("secure"), false).asInstanceOf[YamlBoolean].boolean
               )
             case _ => deserializationError("OverflowDB, TinkerGraph, Neptune, Neo4j, or TigerGraph expected")
           }
@@ -189,30 +197,31 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
         YamlString("password"),
         YamlString("port"),
         YamlString("recipient"),
-        YamlString("machineId"),
+        YamlString("machineId")
       ) match {
         case Seq(
-            YamlBoolean(enabled),
-            YamlString(host),
-            YamlString(user),
-            YamlString(password),
-            YamlNumber(port),
-            YamlString(recipient),
-            YamlString(machineId),
+              YamlBoolean(enabled),
+              YamlString(host),
+              YamlString(user),
+              YamlString(password),
+              YamlNumber(port),
+              YamlString(recipient),
+              YamlString(machineId)
             ) =>
           EmailConfig(enabled, host, user, password, port.toInt, recipient, machineId)
         case _ => deserializationError("EmailConfig expected")
       }
 
-    override def write(o: EmailConfig): YamlValue = YamlObject(
-      YamlString("enabled") -> YamlBoolean(o.enabled),
-      YamlString("host") -> YamlString(o.host),
-      YamlString("user") -> YamlString(o.user),
-      YamlString("password") -> YamlString(o.password),
-      YamlString("port") -> YamlNumber(o.port),
-      YamlString("recipient") -> YamlString(o.recipient),
-      YamlString("machineId") -> YamlString(o.machineId),
-    )
+    override def write(o: EmailConfig): YamlValue =
+      YamlObject(
+        YamlString("enabled") -> YamlBoolean(o.enabled),
+        YamlString("host") -> YamlString(o.host),
+        YamlString("user") -> YamlString(o.user),
+        YamlString("password") -> YamlString(o.password),
+        YamlString("port") -> YamlNumber(o.port),
+        YamlString("recipient") -> YamlString(o.recipient),
+        YamlString("machineId") -> YamlString(o.machineId)
+      )
   }
 
   implicit val experimentConfigsFormat = yamlFormat9(ExperimentConfig)
@@ -222,13 +231,15 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
   implicit val taintFormat = yamlFormat3(TaintConfig)
 }
 
-case class EmailConfig(enabled: Boolean = false,
-                       host: String,
-                       user: String,
-                       password: String,
-                       port: Int,
-                       recipient: String,
-                       machineId: String)
+case class EmailConfig(
+    enabled: Boolean = false,
+    host: String,
+    user: String,
+    password: String,
+    port: Int,
+    recipient: String,
+    machineId: String
+)
 
 case class TaintConfig(
     sources: Map[String, List[String]],
@@ -256,10 +267,10 @@ case class BenchmarkResult(
 
   override def toString: String =
     s"BenchmarkResult { " +
-      s"fileName=$fileName, " +
-      s"database=$database, " +
-      s"compilingAndUnpacking=${time * Math.pow(10, -9)}s, " +
-      s"connectDeserialize=${connectDeserialize}s, " +
-      s"disconnectSerialize=${disconnectSerialize}s " +
-      "}"
+        s"fileName=$fileName, " +
+        s"database=$database, " +
+        s"compilingAndUnpacking=${time * Math.pow(10, -9)}s, " +
+        s"connectDeserialize=${connectDeserialize}s, " +
+        s"disconnectSerialize=${disconnectSerialize}s " +
+        "}"
 }

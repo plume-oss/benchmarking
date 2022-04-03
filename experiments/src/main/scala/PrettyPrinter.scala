@@ -67,11 +67,13 @@ object PrettyPrinter {
     logger.info(s"")
   }
 
-  case class PathLine(parentMethod: String,
-                      code: String,
-                      typeName: Optional[Object] = Optional.empty(),
-                      nodeLine: Optional[Object] = Optional.empty(),
-                      argIndex: Optional[Object] = Optional.empty())
+  case class PathLine(
+      parentMethod: String,
+      code: String,
+      typeName: Optional[Object] = Optional.empty(),
+      nodeLine: Optional[Object] = Optional.empty(),
+      argIndex: Optional[Object] = Optional.empty()
+  )
 
   def showReachablePaths(results: List[ReachableByResult]): Unit = {
     import io.shiftleft.semanticcpg.language._
@@ -81,14 +83,13 @@ object PrettyPrinter {
 
     results
       .map { result =>
-        result.path.map(
-          x =>
-            PathLine(
-              x.node.method.fullName.substring(0, x.node.method.fullName.lastIndexOf(':')),
-              x.node.code,
-              x.node.propertyOption("TYPE_FULL_NAME"),
-              x.node.propertyOption("LINE_NUMBER"),
-              x.node.propertyOption("ARGUMENT_INDEX")
+        result.path.map(x =>
+          PathLine(
+            x.node.method.fullName.substring(0, x.node.method.fullName.lastIndexOf(':')),
+            x.node.code,
+            x.node.propertyOption("TYPE_FULL_NAME"),
+            x.node.propertyOption("LINE_NUMBER"),
+            x.node.propertyOption("ARGUMENT_INDEX")
           )
         )
       }
@@ -98,16 +99,13 @@ object PrettyPrinter {
           case PathLine(methodName, code, typeName, lineNumber, argIndex) =>
             val sb = new StringBuilder()
             sb.append(s"\t[$methodName:")
-            if (lineNumber.isPresent) {
+            if (lineNumber.isPresent)
               sb.append(lineNumber.get())
-            }
-            if (argIndex.isPresent) {
+            if (argIndex.isPresent)
               sb.append(s" - arg ${argIndex.get()}")
-            }
             sb.append("]")
-            if (typeName.isPresent) {
+            if (typeName.isPresent)
               sb.append(s"(${typeName.get()})")
-            }
             sb.append(s" $code")
             sb.toString()
         }
