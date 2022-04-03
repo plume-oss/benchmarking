@@ -4,5 +4,5 @@ To run scalability benchmarks, first unpack the `src/main/resources/programs.tar
 a `src/main/resources/programs` directory then run `RUN.sh`. These have configurable
 parameters under `src/main/resources/*.yaml`.
 
-To run ISPEC taint analysis benchmarks run `RUN_ISPEC.sh` that runs the tests defined under
+To run IFSPEC taint analysis benchmarks run `RUN_IFSPEC.sh` that runs the tests defined under
 `src/test`.

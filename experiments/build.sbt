@@ -12,6 +12,7 @@ val zstdCompressVersion = "1.5.2-2"
 val xzVersion = "1.9"
 val lz4Version = "1.8.0"
 val javaMailVersion = "1.6.2"
+val joernVersion = "1.1.684"
 
 name := "Plume Benchmarking"
 version := plumeVersion
@@ -36,7 +37,9 @@ libraryDependencies ++= Seq(
   "com.github.luben" % "zstd-jni" % zstdCompressVersion,
   "org.tukaani" % "xz" % xzVersion,
   "net.jcazevedo" %% "moultingyaml" % moultingYamlVersion,
-  "com.sun.mail" % "javax.mail" % javaMailVersion
+  "com.sun.mail" % "javax.mail" % javaMailVersion,
+  "io.joern" %% "x2cpg" % joernVersion % Test classifier "tests",
+  "org.scalatest" %% "scalatest" % "3.2.11" % Test
 )
 
 ThisBuild / resolvers ++= Seq(
@@ -48,3 +51,6 @@ ThisBuild / resolvers ++= Seq(
 )
 
 assembly / mainClass := Some("com.github.plume.oss.Main")
+
+trapExit    := false
+Test / fork := true
