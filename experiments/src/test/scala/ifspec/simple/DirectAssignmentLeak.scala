@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.simple
 
+import ifspec.{ExplicitFlows, Simple}
 import textfixtures.JimpleDataflowFixture
 
 class DirectAssignmentLeak extends JimpleDataflowFixture {
@@ -30,7 +31,7 @@ class DirectAssignmentLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The first parameter of method 'f'" should "flow into the return value of method 'f'." in {
+  "[Insecure] The first parameter of method 'f'" should "flow into the return value of method 'f'" taggedAs (Simple, ExplicitFlows) in {
     assertIsInsecure(specFInput1LeakedToReturn)
   }
 

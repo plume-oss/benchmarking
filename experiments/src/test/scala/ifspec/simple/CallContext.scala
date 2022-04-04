@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.simple
 
+import ifspec.{ExplicitFlows, Simple}
 import textfixtures.JimpleDataflowFixture
 
 class CallContext extends JimpleDataflowFixture {
@@ -40,7 +41,7 @@ class CallContext extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The parameter of the method 'foo'" should "not flow to the return value of the method 'foo'" in {
+  "[Secure] The parameter of the method 'foo'" should "not flow to the return value of the method 'foo'" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(specFooInputLeakedToReturn)
   }
 

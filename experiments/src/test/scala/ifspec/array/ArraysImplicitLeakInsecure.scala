@@ -1,5 +1,5 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.array
 
 import textfixtures.JimpleDataflowFixture
 

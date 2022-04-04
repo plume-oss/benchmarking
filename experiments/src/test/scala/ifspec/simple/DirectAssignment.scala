@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.simple
 
+import ifspec.{ExplicitFlows, Simple}
 import textfixtures.JimpleDataflowFixture
 
 class DirectAssignment extends JimpleDataflowFixture {
@@ -28,7 +29,7 @@ class DirectAssignment extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The parameter of 'leakyMethod'" should "flow to its return value" in {
+  "[Insecure] The parameter of 'leakyMethod'" should "flow to its return value"  taggedAs (Simple, ExplicitFlows) in {
     assertIsInsecure(specLeakyMethodInputToReturn)
   }
 

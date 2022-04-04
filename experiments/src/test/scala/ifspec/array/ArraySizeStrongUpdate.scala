@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.array
 
+import ifspec.{Arrays, ExplicitFlows}
 import textfixtures.JimpleDataflowFixture
 
 class ArraySizeStrongUpdate extends JimpleDataflowFixture {
@@ -25,7 +26,7 @@ class ArraySizeStrongUpdate extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" in {
+  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" taggedAs (Arrays, ExplicitFlows) in {
     assertIsSecure(specMainSecretLeakedToPrintln)
   }
 

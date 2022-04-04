@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.array
 
+import ifspec.{Arrays, ExplicitFlows}
 import textfixtures.JimpleDataflowFixture
 
 class ArrayCopyDirectLeak extends JimpleDataflowFixture {
@@ -47,7 +48,7 @@ class ArrayCopyDirectLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The first parameter of 'f'" should "flow to the return value of 'f'" in {
+  "[Insecure] The first parameter of 'f'" should "flow to the return value of 'f'" taggedAs (Arrays, ExplicitFlows) in {
     assertIsInsecure(specFInput1LeakedToInput3)
   }
 

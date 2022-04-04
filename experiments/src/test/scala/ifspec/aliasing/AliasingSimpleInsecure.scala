@@ -1,7 +1,9 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.aliasing
 
 import textfixtures.JimpleDataflowFixture
+
+import com.github.plume.oss.ifspec.{Aliasing, ExplicitFlows}
 
 class AliasingSimpleInsecure extends JimpleDataflowFixture {
 
@@ -39,7 +41,7 @@ class AliasingSimpleInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The user input is considered high and" should "be leaked to public output." in {
+  "[Insecure] The user input is considered high and" should "be leaked to public output" taggedAs (Aliasing, ExplicitFlows) in {
     assertIsInsecure(specMainSecretLeakedToPrintln)
   }
 

@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.aliasing
 
+import ifspec.{Aliasing, ExplicitFlows}
 import textfixtures.JimpleDataflowFixture
 
 class AliasingStrongUpdateSecure extends JimpleDataflowFixture {
@@ -38,7 +39,7 @@ class AliasingStrongUpdateSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" in {
+  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" taggedAs (Aliasing, ExplicitFlows) in {
     assertIsSecure(specMainSecretLeakedToPrintln)
   }
 

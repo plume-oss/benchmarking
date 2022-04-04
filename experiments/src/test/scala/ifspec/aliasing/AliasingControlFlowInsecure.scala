@@ -1,9 +1,9 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.aliasing
 
 import textfixtures.JimpleDataflowFixture
 
-import io.shiftleft.semanticcpg.language._
+import com.github.plume.oss.ifspec.{ Aliasing, ImplicitFlows }
 
 class AliasingControlFlowInsecure extends JimpleDataflowFixture {
 
@@ -41,7 +41,7 @@ class AliasingControlFlowInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The value stored in the field \"secret\" of class \"Main\"" should "be leaked via System.out.println()" in {
+  "[Insecure] The value stored in the field \"secret\" of class \"Main\"" should "be leaked via System.out.println()" taggedAs (Aliasing, ImplicitFlows) in {
     assertIsInsecure(specMainSecretLeakedToPrintln)
   }
 

@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.simple
 
+import ifspec.{ExplicitFlows, Simple}
 import textfixtures.JimpleDataflowFixture
 
 class BooleanOperationsInsecure extends JimpleDataflowFixture {
@@ -25,7 +26,7 @@ class BooleanOperationsInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "There " should "be any flow from the parameter to the return value of the method" in {
+  "There " should "be any flow from the parameter to the return value of the method" taggedAs (Simple, ExplicitFlows) in {
     assertIsInsecure(specLeakyMethodInputToReturn)
   }
 

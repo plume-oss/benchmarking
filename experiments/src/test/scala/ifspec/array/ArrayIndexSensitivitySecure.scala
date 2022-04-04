@@ -1,6 +1,7 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.array
 
+import ifspec.{Arrays, ImplicitFlows}
 import textfixtures.JimpleDataflowFixture
 
 class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
@@ -25,7 +26,7 @@ class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The parameter value" should "not flow to the return value" in {
+  "[Secure] The parameter value" should "not flow to the return value" taggedAs (Arrays, ImplicitFlows) in {
     assertIsSecure(specFooInputLeakedToReturn)
   }
 

@@ -1,14 +1,17 @@
 package com.github.plume.oss
-package ifspec
+package ifspec.array
 
 import textfixtures.JimpleDataflowFixture
 
-class ArrayIndexExceptionInsecure extends JimpleDataflowFixture {
+import com.github.plume.oss.ifspec.{Arrays, Exceptions, ExplicitFlows, ImplicitFlows}
+
+class ArrayIndexExceptionSecure extends JimpleDataflowFixture {
 
   behavior of
     """The program loops over an array that has the length of the secret value.
-      |If an array index exception occurs, the value of the accessed index is printed.
-      |This leaks the secret value.
+      |If an array index exception occurs, the program is terminated.
+      |This does not leak the secret value under our security model, but the timing
+      |of the program might be dependent on the secret value.
       |""".stripMargin
 
   override val code: String =
@@ -23,7 +26,6 @@ class ArrayIndexExceptionInsecure extends JimpleDataflowFixture {
       |            try {
       |                int j=arr[i];
       |            } catch (Exception e) {
-      |                System.out.println(i);
       |                System.exit(0);
       |            }
       |        }
@@ -32,8 +34,8 @@ class ArrayIndexExceptionInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The value stored in the field \"secret\" of class \"Main\"" should "be leaked via System.out.println()" in {
-    assertIsInsecure(specMainSecretLeakedToPrintln)
+  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" taggedAs (Arrays, ImplicitFlows, Exceptions)in {
+    assertIsSecure(specMainSecretLeakedToPrintln)
   }
 
 }
