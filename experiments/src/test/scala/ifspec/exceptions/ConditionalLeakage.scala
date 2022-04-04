@@ -36,7 +36,8 @@ class ConditionalLeakage extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The second parameter of the method 'divide'" should "flow to public output (i.e. System.out.println)" taggedAs (Exceptions, ImplicitFlows) in {
+  "[Insecure] The second parameter of the method 'divide'" should
+    "flow to public output (i.e. System.out.println)" taggedAs (Exceptions, ImplicitFlows) in {
     assertIsInsecure(specDivideLeakToPrintln)
   }
 
