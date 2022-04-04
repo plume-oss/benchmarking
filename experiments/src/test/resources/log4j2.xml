@@ -5,11 +5,8 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Root level="WARN">
             <AppenderRef ref="Console"/>
         </Root>
-        <logger name="io.shiftleft.passes.CpgPass" level="WARN" />
-        <logger name="com.github.plume.oss.drivers.IDriver$" level="WARN" />
-        <logger name="io.joern.dataflowengineoss.passes.reachingdef.ReachingDefPass" level="WARN" />
     </Loggers>
 </Configuration>

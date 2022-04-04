@@ -5,13 +5,13 @@ import textfixtures.JimpleDataflowFixture
 
 import io.shiftleft.semanticcpg.language._
 
-class AliasingControlFlowInsecure extends JimpleDataflowFixture {
+class AliasingInterProceduralInsecure extends JimpleDataflowFixture {
 
   behavior of
-    """The program creates two internal objects a and b that alias.
-      |If the secret is equal to 42, the value of an internal field of a is set to 2 (otherwise it is 1).
-      |Finally, the value of the same internal field of b is printed.
-      |This leaks the fact whether the secret is 42 or not.
+    """The program creates three internal objects a,b and c that alias.
+      |The value of an internal field of a is set to the secret.
+      |Then, the same field of c is printed.
+      |This leaks the value of the secret.
       |""".stripMargin
 
   override val code: String =
@@ -23,19 +23,25 @@ class AliasingControlFlowInsecure extends JimpleDataflowFixture {
       |        A(int val) {
       |            this.val = val;
       |        }
+      |
+      |        void update(int val) {
+      |            this.val = val;
+      |        }
       |    }
       |
-      |    static private int secret = 42;
+      |    static int secret = 42;
       |
       |    public static void main(String[] args) {
       |        A a = new A(1);
       |        A b = a;
+      |        A c = b;
       |
-      |        if (secret == 42) {
-      |            a.val = 2;
-      |        }
+      |        doUpdate(a, secret);
+      |        System.out.println(c.val);
+      |    }
       |
-      |        System.out.println(b.val);
+      |    static void doUpdate(A a, int val) {
+      |        a.update(val);
       |    }
       |}
       |
