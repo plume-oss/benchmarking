@@ -6,7 +6,9 @@ import textfixtures.JimpleDataflowFixture
 class AliasingSimpleSecure extends JimpleDataflowFixture {
 
   behavior of
-    """This program creates two objects v1, v2 of the same type. Then, it takes input from the user, assigns it to v1.i and lets v2 point to v1. Finally, v2.i is printed, which is the user input v1.i since v1 and v2 are aliased.
+    """This program creates two objects v1, v2 of the same type.
+      |Then, it takes input from the user, assigns it to v1.i and lets v2 point to v1.
+      |Finally, v2.i is printed, which is the user input v1.i since v1 and v2 are aliased.
       |""".stripMargin
 
   override val code: String =

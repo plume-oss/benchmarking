@@ -30,6 +30,7 @@ class JimpleDataflowFixture extends AnyFlatSpec with Matchers {
   }
 
   def assertIsSecure(spec: RiflSpec): Assertion = {
+    if (spec.source().size <= 0 || spec.sink().size <= 0) return succeed
     val (source, sink) = getSourceSinkPair(spec.source, spec.sink)
     assertIsSecure(source, sink)
   }
@@ -65,6 +66,16 @@ class JimpleDataflowFixture extends AnyFlatSpec with Matchers {
       () => cpg.method("main").call(".*println.*").argument(1),
     )
   val specTestInputLeakedToReturn: RiflSpec =
+    RiflSpec(
+      () => cpg.method("main").call(".*test.*").argument(1),
+      () => cpg.method("main").cfgLast
+    )
+  val specFInput1LeakedToInput3: RiflSpec =
+    RiflSpec(
+      () => cpg.method("main").call(".*f.*").argument(1),
+      () => cpg.method("main").call(".*f.*").argument(3)
+    )
+  val specFooInputLeakedToReturn: RiflSpec =
     RiflSpec(
       () => cpg.method("main").call(".*test.*").argument(1),
       () => cpg.method("main").cfgLast
