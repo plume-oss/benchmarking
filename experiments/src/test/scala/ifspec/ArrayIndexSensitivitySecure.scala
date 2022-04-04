@@ -25,7 +25,7 @@ class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "The parameter value" should "not flow to the return value" in {
+  "[Secure] The parameter value" should "not flow to the return value" in {
     assertIsSecure(specFooInputLeakedToReturn)
   }
 

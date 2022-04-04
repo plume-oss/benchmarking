@@ -44,7 +44,7 @@ class AliasingNestedSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" in {
+  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" in {
     assertIsSecure(specMainSecretLeakedToPrintln)
   }
 

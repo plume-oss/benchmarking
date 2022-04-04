@@ -47,7 +47,7 @@ class ArrayCopyDirectLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "The first parameter of 'f'" should "flow to the return value of 'f'" in {
+  "[Insecure] The first parameter of 'f'" should "flow to the return value of 'f'" in {
     assertIsInsecure(specFInput1LeakedToInput3)
   }
 
