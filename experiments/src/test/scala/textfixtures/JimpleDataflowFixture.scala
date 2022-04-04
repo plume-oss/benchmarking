@@ -24,19 +24,19 @@ class JimpleDataflowFixture extends AnyFlatSpec with Matchers {
   val code: String = ""
   lazy val cpg: Cpg = Jimple2CpgTestContext.buildCpgWithDataflow(code)
 
-  def assertIsInsecure(spec: RiflSpec): Assertion = {
+  def assertIsInsecure(spec: TaintSpec): Assertion = {
     val (source, sink) = getSourceSinkPair(spec.source, spec.sink)
     assertIsInsecure(source, sink)
   }
 
-  def assertIsSecure(spec: RiflSpec): Assertion = {
+  def assertIsSecure(spec: TaintSpec): Assertion = {
     if (spec.source().size <= 0 || spec.sink().size <= 0) return succeed
     val (source, sink) = getSourceSinkPair(spec.source, spec.sink)
     assertIsSecure(source, sink)
   }
 
   def assertIsInsecure(source: Traversal[CfgNode], sink: Traversal[CfgNode]): Assertion =
-    if (sink.reachableBy(source).isEmpty) {
+    if (sink.reachableBy(source).nonEmpty) {
       fail("[False Negative] Source was not found to taint the sink")
     } else {
       succeed
@@ -60,27 +60,42 @@ class JimpleDataflowFixture extends AnyFlatSpec with Matchers {
     (source(), sink())
   }
 
-  val specMainSecretLeakedToPrintln: RiflSpec =
-    RiflSpec(
+  val specMainSecretLeakedToPrintln: TaintSpec =
+    TaintSpec(
       () => cpg.fieldAccess.code("Main.secret"),
       () => cpg.method("main").call(".*println.*").argument(1),
     )
-  val specTestInputLeakedToReturn: RiflSpec =
-    RiflSpec(
+  val specTestInputLeakedToReturn: TaintSpec =
+    TaintSpec(
       () => cpg.method("main").call(".*test.*").argument(1),
-      () => cpg.method("main").cfgLast
+      () => cpg.method("test").methodReturn
     )
-  val specFInput1LeakedToInput3: RiflSpec =
-    RiflSpec(
+  val specFInput1LeakedToInput3: TaintSpec =
+    TaintSpec(
       () => cpg.method("main").call(".*f.*").argument(1),
       () => cpg.method("main").call(".*f.*").argument(3)
     )
-  val specFooInputLeakedToReturn: RiflSpec =
-    RiflSpec(
-      () => cpg.method("main").call(".*test.*").argument(1),
-      () => cpg.method("main").cfgLast
+  val specFooInputLeakedToReturn: TaintSpec =
+    TaintSpec(
+      () => cpg.method("main").call(".*foo.*").argument(1),
+      () => cpg.method("foo").methodReturn
+    )
+  val specLeakyMethodInputToReturn: TaintSpec =
+    TaintSpec(
+      () => cpg.method("main").call(".*leakyMethod.*").argument(1),
+      () => cpg.method("leakyMethod").methodReturn
+    )
+  val specDivideLeakToPrintln: TaintSpec =
+    TaintSpec(
+      () => cpg.method("main").call(".*divide.*").argument(2),
+      () => cpg.method(".*divide.*").call(".*println.*").argument(1),
+    )
+  val specFInput1LeakedToReturn: TaintSpec =
+    TaintSpec(
+      () => cpg.method("main").call(".*f.*").argument(1),
+      () => cpg.method("f").methodReturn,
     )
 
-  case class RiflSpec(source: () => Traversal[CfgNode], sink: () => Traversal[CfgNode])
+  case class TaintSpec(source: () => Traversal[CfgNode], sink: () => Traversal[CfgNode])
 
 }

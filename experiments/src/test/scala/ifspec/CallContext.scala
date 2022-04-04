@@ -40,7 +40,7 @@ class CallContext extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The parameter of the method 'foo'" should "not flow to the return value of the method 'foo'." in {
+  "[Secure] The parameter of the method 'foo'" should "not flow to the return value of the method 'foo'" in {
     assertIsSecure(specFooInputLeakedToReturn)
   }
 

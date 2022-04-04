@@ -25,7 +25,7 @@ class BooleanOperationsInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "There " should "be any flow from the parameter to the return value of the method." in {
+  "There " should "be any flow from the parameter to the return value of the method" in {
     assertIsInsecure(specLeakyMethodInputToReturn)
   }
 
