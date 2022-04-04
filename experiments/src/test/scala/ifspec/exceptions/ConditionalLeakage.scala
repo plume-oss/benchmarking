@@ -1,7 +1,7 @@
 package com.github.plume.oss
 package ifspec.exceptions
 
-import ifspec.{Exceptions, ImplicitFlows}
+import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 
 class ConditionalLeakage extends JimpleDataflowFixture {

@@ -1,7 +1,7 @@
 package com.github.plume.oss
 package ifspec.aliasing
 
-import ifspec.{Aliasing, ExplicitFlows}
+import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 
 class AliasingInterProceduralInsecure extends JimpleDataflowFixture {

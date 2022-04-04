@@ -3,7 +3,7 @@ package ifspec.aliasing
 
 import textfixtures.JimpleDataflowFixture
 
-import com.github.plume.oss.ifspec.{Aliasing, ExplicitFlows}
+import ifspec.IFSpecTags._
 
 class AliasingSimpleInsecure extends JimpleDataflowFixture {
 

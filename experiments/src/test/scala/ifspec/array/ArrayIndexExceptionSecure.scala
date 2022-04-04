@@ -3,7 +3,7 @@ package ifspec.array
 
 import textfixtures.JimpleDataflowFixture
 
-import com.github.plume.oss.ifspec.{Arrays, Exceptions, ExplicitFlows, ImplicitFlows}
+import ifspec.IFSpecTags._
 
 class ArrayIndexExceptionSecure extends JimpleDataflowFixture {
 
@@ -34,7 +34,7 @@ class ArrayIndexExceptionSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" taggedAs (Arrays, ImplicitFlows, Exceptions)in {
+  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" taggedAs (Arrays, ImplicitFlows, Exceptions) in {
     assertIsSecure(specMainSecretLeakedToPrintln)
   }
 

@@ -1,7 +1,7 @@
 package com.github.plume.oss
 package ifspec.array
 
-import ifspec.{Arrays, Exceptions, ImplicitFlows}
+import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 
 class ArrayIndexExceptionInsecure extends JimpleDataflowFixture {

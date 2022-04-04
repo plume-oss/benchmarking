@@ -1,7 +1,7 @@
 package com.github.plume.oss
 package ifspec.array
 
-import ifspec.{Arrays, ExplicitFlows}
+import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 
 class ArraySizeStrongUpdate extends JimpleDataflowFixture {

@@ -1,7 +1,7 @@
 package com.github.plume.oss
 package ifspec.simple
 
-import ifspec.{ExplicitFlows, Simple}
+import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 
 class DirectAssignmentSecure extends JimpleDataflowFixture {
