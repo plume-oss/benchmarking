@@ -5,7 +5,7 @@ import PlumeBenchmarkProtocol._
 import net.jcazevedo.moultingyaml._
 
 import scala.io.Source
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object YamlDeserializer {
 

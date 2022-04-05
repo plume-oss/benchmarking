@@ -1,14 +1,13 @@
 package com.github.plume.oss
 
 import drivers._
-
-import com.github.plume.oss.domain.DataFlowCacheConfig
+import util.DataFlowCacheConfig
 
 import scala.reflect.io.Path
 
 object DriverUtil {
 
-  def createDriver(config: DriverConfig, reuseCache: Boolean = true): IDriver =
+  def createDriver(config: DriverConfig, reuseCache: Boolean = true, shareCache: Boolean = true): IDriver =
     config match {
       case c: TinkerGraphConfig =>
         val d = new TinkerGraphDriver()
@@ -20,9 +19,10 @@ object DriverUtil {
           c.setHeapPercentageThreshold,
           c.setSerializationStatsEnabled,
           DataFlowCacheConfig(
-            if (reuseCache) c.dataFlowCacheFile else None,
-            c.compressDataFlowCache,
-            maxCachedPaths = c.maxCachedPaths
+            dataFlowCacheFile = if (reuseCache) c.dataFlowCacheFile else None,
+            compressDataFlowCache = c.compressDataFlowCache,
+            maxCachedPaths = c.maxCachedPaths,
+            shareCacheBetweenTasks = shareCache
           )
         )
       case c: NeptuneConfig =>

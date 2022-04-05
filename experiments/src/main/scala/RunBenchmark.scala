@@ -56,9 +56,8 @@ object RunBenchmark {
       case _ => Seq()
     }
     storage.foreach { filePath =>
-      try {
-        new JFile(filePath).delete()
-      } catch {
+      try new JFile(filePath).delete()
+      catch {
         case e: Exception =>
           logger.error(s"Exception while deleting serialized file $filePath.", e)
       }
@@ -78,12 +77,9 @@ object RunBenchmark {
       if (!job.experiment.runSootOnlyBuilds) {
         measureStorage(job)
         captureBenchmarkResult(x).timedOut
-      } else {
+      } else
         false
-      }
-    } finally {
-      cleanUp(job, driver)
-    }
+    } finally cleanUp(job, driver)
   }
 
   private def measureStorage(job: Job): Unit = {
@@ -127,9 +123,7 @@ object RunBenchmark {
           captureStorageResult(job, result)
         case None =>
       }
-    } finally {
-      Seq(zipP, zstdP, tarP, xzP, lz4P).foreach(_.toFile.delete())
-    }
+    } finally Seq(zipP, zstdP, tarP, xzP, lz4P).foreach(_.toFile.delete())
   }
 
   def cleanUp(job: Job, driver: IDriver): Unit = {
@@ -161,7 +155,14 @@ object RunBenchmark {
         val fullName = m("FULL_NAME").toString
         isExternal && !fullName.contains("<operator>")
       }
-    val taintAnalysisResult = runTaintAnalysis(job, driver, phase)
+
+    val taintAnalysis = List(
+      runTaintAnalysis(job, driver, phase),
+      if (experimentConfig.includeNoCacheSharing)
+        runTaintAnalysis(job, driver, phase, experimentConfig.includeNoCacheSharing)
+      else None
+    )
+
     if (phase.contains("DISCUPT")) closeConnectionWithExport(job, driver)
     val b = BenchmarkResult(
       fileName = job.program.name,
@@ -178,12 +179,10 @@ object RunBenchmark {
     )
     PrettyPrinter.announceResults(b)
 
-    taintAnalysisResult match {
-      case Some(result) =>
-        PrettyPrinter.announceTaintAnalysisResults(result)
-        captureTaintAnalysisPerformanceResult(job, result)
-        captureTaintAnalysisSearchResult(job, result)
-      case None =>
+    taintAnalysis.flatten.foreach { result =>
+      PrettyPrinter.announceTaintAnalysisResults(result)
+      captureTaintAnalysisPerformanceResult(job, result)
+      captureTaintAnalysisSearchResult(job, result)
     }
 
     captureIncrementalCosts(job, phase)
@@ -199,34 +198,34 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-            "FILE_NAME," +
-            "PHASE," +
-            "DATABASE," +
-            "TIME," +
-            "TYPE," +
-            "\n"
+              "FILE_NAME," +
+              "PHASE," +
+              "DATABASE," +
+              "TIME," +
+              "TYPE," +
+              "\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(s"""${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-                    .results()
-                    .getOrElse(TIME_OPEN_DRIVER, 0L)},Fetching Graph
+        .results()
+        .getOrElse(TIME_OPEN_DRIVER, 0L)},Fetching Graph
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-                    .results()
-                    .getOrElse(TIME_CLOSE_DRIVER, 0L)},Storing Graph
+        .results()
+        .getOrElse(TIME_CLOSE_DRIVER, 0L)},Storing Graph
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-                    .results()
-                    .getOrElse(TIME_REMOVING_OUTDATED_GRAPH, 0L)},Removing Expired Sub-Graphs
+        .results()
+        .getOrElse(TIME_REMOVING_OUTDATED_GRAPH, 0L)},Removing Expired Sub-Graphs
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-                    .results()
-                    .getOrElse(TIME_REMOVING_OUTDATED_CACHE, 0L)},Removing Expired Cache Entries
+        .results()
+        .getOrElse(TIME_REMOVING_OUTDATED_CACHE, 0L)},Removing Expired Cache Entries
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-                    .results()
-                    .getOrElse(TIME_RETRIEVING_CACHE, 0L)},Fetching Cache
+        .results()
+        .getOrElse(TIME_RETRIEVING_CACHE, 0L)},Fetching Cache
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-                    .results()
-                    .getOrElse(TIME_STORING_CACHE, 0L)},Storing Cache
+        .results()
+        .getOrElse(TIME_STORING_CACHE, 0L)},Storing Cache
            |""".stripMargin)
     }
   }
@@ -239,35 +238,35 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-            "FILE_NAME," +
-            "PHASE," +
-            "DATABASE," +
-            "TIME," +
-            "CONNECT_DESERIALIZE," +
-            "DISCONNECT_SERIALIZE," +
-            "PROGRAM_CLASSES," +
-            "PROGRAM_METHODS," +
-            "EXTERNAL_METHODS," +
-            "NODE_COUNT," +
-            "EDGE_COUNT" +
-            "\n"
+              "FILE_NAME," +
+              "PHASE," +
+              "DATABASE," +
+              "TIME," +
+              "CONNECT_DESERIALIZE," +
+              "DISCONNECT_SERIALIZE," +
+              "PROGRAM_CLASSES," +
+              "PROGRAM_METHODS," +
+              "EXTERNAL_METHODS," +
+              "NODE_COUNT," +
+              "EDGE_COUNT" +
+              "\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
         s"${LocalDateTime.now()}," +
-          s"${b.fileName}," +
-          s"${b.phase}," +
-          s"${b.database}," +
-          s"${b.time}," +
-          s"${b.connectDeserialize}," +
-          s"${b.disconnectSerialize}," +
-          s"${b.programClasses}," +
-          s"${b.programMethods}," +
-          s"${b.externalMethods}," +
-          s"${b.nodeCount}," +
-          s"${b.edgeCount}\n"
+            s"${b.fileName}," +
+            s"${b.phase}," +
+            s"${b.database}," +
+            s"${b.time}," +
+            s"${b.connectDeserialize}," +
+            s"${b.disconnectSerialize}," +
+            s"${b.programClasses}," +
+            s"${b.programMethods}," +
+            s"${b.externalMethods}," +
+            s"${b.nodeCount}," +
+            s"${b.edgeCount}\n"
       )
     }
     b
@@ -283,11 +282,11 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-            "FILE_NAME," +
-            "DATABASE," +
-            "FILE_TYPE," +
-            "FILE_SIZE" +
-            "\n"
+              "FILE_NAME," +
+              "DATABASE," +
+              "FILE_TYPE," +
+              "FILE_SIZE" +
+              "\n"
         )
       }
     }
@@ -307,13 +306,10 @@ object RunBenchmark {
   def closeConnectionWithExport(job: Job, driver: IDriver): Unit =
     driver match {
       case w: TinkerGraphDriver =>
-        try {
-          w.exportGraph(job.driverConfig.asInstanceOf[TinkerGraphConfig].storageLocation)
-        } catch {
+        try w.exportGraph(job.driverConfig.asInstanceOf[TinkerGraphConfig].storageLocation)
+        catch {
           case _: Exception => logger.debug("TinkerGraph export does not exist yet.")
-        } finally {
-          w.close()
-        }
+        } finally w.close()
       case x: GremlinDriver    => x.close()
       case y: OverflowDbDriver => y.close()
       case z: Neo4jDriver      => z.close()
@@ -359,18 +355,16 @@ object RunBenchmark {
         }
     }
 
-    try {
-      job.program.jars.drop(1).zipWithIndex.foreach {
-        case (jar, i) =>
-          val x = runWithTimeout(
-            timeout,
-            generateDefaultResult(job, s"UPDATE${i + 1}")
-          )({
-            runBenchmark(jar, job, driver, s"UPDATE${i + 1}", i + 1)
-          })
-          captureBenchmarkResult(x)
-          if (x.timedOut) return true
-      }
+    try job.program.jars.drop(1).zipWithIndex.foreach {
+      case (jar, i) =>
+        val x = runWithTimeout(
+          timeout,
+          generateDefaultResult(job, s"UPDATE${i + 1}")
+        )({
+          runBenchmark(jar, job, driver, s"UPDATE${i + 1}", i + 1)
+        })
+        captureBenchmarkResult(x)
+        if (x.timedOut) return true
     } finally {
       logger.info("Live update experiments done, cleaning up...")
       cleanUp(job, driver)
@@ -400,19 +394,17 @@ object RunBenchmark {
         }
     }
 
-    try {
-      job.program.jars.drop(1).zipWithIndex.foreach {
-        case (jar, i) =>
-          driver = DriverUtil.createDriver(job.driverConfig)
-          val x = runWithTimeout(
-            timeout,
-            generateDefaultResult(job, s"DISCUPT${i + 1}")
-          )({
-            runBenchmark(jar, job, driver, s"DISCUPT${i + 1}", i + 1)
-          })
-          captureBenchmarkResult(x)
-          if (x.timedOut) return true
-      }
+    try job.program.jars.drop(1).zipWithIndex.foreach {
+      case (jar, i) =>
+        driver = DriverUtil.createDriver(job.driverConfig)
+        val x = runWithTimeout(
+          timeout,
+          generateDefaultResult(job, s"DISCUPT${i + 1}")
+        )({
+          runBenchmark(jar, job, driver, s"DISCUPT${i + 1}", i + 1)
+        })
+        captureBenchmarkResult(x)
+        if (x.timedOut) return true
     } finally {
       logger.info("Disconnected update experiments done, cleaning up...")
       cleanUp(job, driver)
@@ -438,20 +430,18 @@ object RunBenchmark {
         if (initResult.timedOut) return true
     }
 
-    try {
-      job.program.jars.drop(1).zipWithIndex.foreach {
-        case (jar, i) =>
-          driver = DriverUtil.createDriver(job.driverConfig, reuseCache = false)
-          val x = runWithTimeout(
-            timeout,
-            generateDefaultResult(job, s"BUILD${i + 1}")
-          )({
-            runBenchmark(jar, job, driver, s"BUILD${i + 1}", i + 1)
-          })
-          captureBenchmarkResult(x)
-          if (x.timedOut) return true
-          cleanUp(job, driver)
-      }
+    try job.program.jars.drop(1).zipWithIndex.foreach {
+      case (jar, i) =>
+        driver = DriverUtil.createDriver(job.driverConfig, reuseCache = false)
+        val x = runWithTimeout(
+          timeout,
+          generateDefaultResult(job, s"BUILD${i + 1}")
+        )({
+          runBenchmark(jar, job, driver, s"BUILD${i + 1}", i + 1)
+        })
+        captureBenchmarkResult(x)
+        if (x.timedOut) return true
+        cleanUp(job, driver)
     } finally {
       logger.info("Full build experiments done, cleaning up...")
       cleanUp(job, driver)
@@ -460,49 +450,35 @@ object RunBenchmark {
     false
   }
 
-  case class TaintAnalysisResult(time: Long,
-                                 phase: String,
-                                 sinks: Long,
-                                 sources: Long,
-                                 sanitizers: Long,
-                                 flows: Long,
-                                 cacheHits: Long,
-                                 cacheMisses: Long)
+  case class TaintAnalysisResult(
+      time: Long,
+      phase: String,
+      sinks: Long,
+      sources: Long,
+      sanitizers: Long,
+      flows: Long,
+      cacheHits: Long,
+      cacheMisses: Long
+  )
 
-  private def runTaintAnalysis(job: Job, driver: IDriver, phase: String): Option[TaintAnalysisResult] =
+  private def runTaintAnalysis(
+      job: Job,
+      driver: IDriver,
+      phase: String,
+      noCacheSharing: Boolean = false
+  ): Option[TaintAnalysisResult] =
     driver match {
       case d: OverflowDbDriver if experimentConfig.runTaintAnalysis =>
         logger.info("Running taint analysis")
         import io.shiftleft.semanticcpg.language._
         val sourcesToQuery = taintConfig.sources.flatMap {
-          case (t: String, ms: List[String]) =>
-            ms.map(
-              m =>
-                if (m.contains("<init>"))
-                  s"$t.$m:.*\\(.+\\)"
-                else
-                  s"$t.$m:.*\\(.*\\)"
-            )
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.+\\)")
         }.toSeq
         val sanitizersToQuery = taintConfig.sanitization.flatMap {
-          case (t: String, ms: List[String]) =>
-            ms.map(
-              m =>
-                if (m.contains("<init>"))
-                  s"$t.$m:.*\\(.+\\)"
-                else
-                  s"$t.$m:.*\\(.*\\)"
-            )
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.+\\)")
         }.toSeq
         val sinksToQuery = taintConfig.sinks.flatMap {
-          case (t: String, ms: List[String]) =>
-            ms.map(
-              m =>
-                if (m.contains("<init>"))
-                  s"$t.$m:.*\\(.+\\)"
-                else
-                  s"$t.$m:.*\\(.*\\)"
-            )
+          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.+\\)")
         }.toSeq
 
         def sink: Traversal[Expression] = d.cpg.call.methodFullName(sinksToQuery: _*).argument
@@ -512,20 +488,32 @@ object RunBenchmark {
         var flows = List.empty[ReachableByResult]
         Using.resource(new MemoryMonitor(job, MemoryMonitor.TAINT_ANALYSIS)) { memoryMonitor =>
           memoryMonitor.start()
-          flows = d.flowsBetween(source, sink, sanitizer)
+          flows = d.flowsBetween(source, sink, sanitizer, noCacheSharing)
         }
         if (experimentConfig.printTaintPaths)
           PrettyPrinter.showReachablePaths(flows)
 
+        val cachePhase =
+          if (noCacheSharing && (phase.contains("UPDATE") || phase.contains("DISCUPT")))
+            "Recycle with no sharing of cache with local search"
+          else if (noCacheSharing)
+            "Do not share cache with local search"
+          else if (phase.contains("UPDATE") || phase.contains("DISCUPT"))
+            "Recycle and share cache with local search"
+          else if (phase.contains("INIT"))
+            "Initial build"
+          else
+            "Share cache on local search"
+
         val result = TaintAnalysisResult(
           PlumeStatistics.results().getOrElse(TIME_REACHABLE_BY_QUERYING, 0L),
-          phase,
+          cachePhase,
           sink.size,
           source.size,
           sanitizer.size,
           flows.size,
           QueryEngineStatistics.results().getOrElse(PATH_CACHE_HITS, 0L),
-          QueryEngineStatistics.results().getOrElse(PATH_CACHE_MISSES, 0L),
+          QueryEngineStatistics.results().getOrElse(PATH_CACHE_MISSES, 0L)
         )
         QueryEngineStatistics.reset()
         Some(result)
@@ -540,26 +528,26 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-            "FILE_NAME," +
-            "DATABASE," +
-            "PHASE," +
-            "TIME," +
-            "CACHE_HITS," +
-            "CACHE_MISSES" +
-            "\n"
+              "FILE_NAME," +
+              "DATABASE," +
+              "PHASE," +
+              "TIME," +
+              "CACHE_HITS," +
+              "CACHE_MISSES" +
+              "\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
         s"${LocalDateTime.now()}," +
-          s"${job.program.name}," +
-          s"${job.driverName}," +
-          s"${result.phase}," +
-          s"${result.time}," +
-          s"${result.cacheHits}," +
-          s"${result.cacheMisses}" +
-          "\n"
+            s"${job.program.name}," +
+            s"${job.driverName}," +
+            s"${result.phase}," +
+            s"${result.time}," +
+            s"${result.cacheHits}," +
+            s"${result.cacheMisses}" +
+            "\n"
       )
     }
   }
@@ -572,10 +560,10 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-            "FILE_NAME," +
-            "PATH_TYPE," +
-            "PATH_COUNT" +
-            "\n"
+              "FILE_NAME," +
+              "PATH_TYPE," +
+              "PATH_COUNT" +
+              "\n"
         )
       }
     }

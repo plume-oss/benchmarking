@@ -4,7 +4,7 @@ enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 enablePlugins(JavaServerAppPackaging)
 
-val plumeVersion = "1.2.1"
+val plumeVersion = "1.2.3"
 val moultingYamlVersion = "0.4.2"
 val log4jVersion = "2.17.2"
 val apacheCompressVersion = "1.21"
@@ -29,7 +29,7 @@ run := Defaults
   .evaluated
 
 libraryDependencies ++= Seq(
-  "com.github.plume-oss" % "plume" % plumeVersion,
+  "com.github.plume-oss" %% "plume" % plumeVersion,
   "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
   "org.lz4" % "lz4-java" % lz4Version,

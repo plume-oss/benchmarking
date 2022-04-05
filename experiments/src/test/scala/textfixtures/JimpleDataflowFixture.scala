@@ -95,6 +95,11 @@ class JimpleDataflowFixture extends AnyFlatSpec with Matchers {
       () => cpg.method("main").call(".*f.*").argument(1),
       () => cpg.method("f").methodReturn,
     )
+  val specScannerLeakToWriteToDisk: TaintSpec =
+    TaintSpec(
+      () => cpg.call(".*nextInt.*").astParent.astChildren.isIdentifier,
+      () => cpg.call.methodFullName(".*writeToDisk.*", ".*writeToDB.*").argument(1),
+    )
 
   case class TaintSpec(source: () => Traversal[CfgNode], sink: () => Traversal[CfgNode])
 

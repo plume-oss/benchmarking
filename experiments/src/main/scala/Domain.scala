@@ -65,7 +65,8 @@ case class ExperimentConfig(
     runFullBuilds: Boolean,
     runSootOnlyBuilds: Boolean,
     runTaintAnalysis: Boolean,
-    printTaintPaths: Boolean
+    printTaintPaths: Boolean,
+    includeNoCacheSharing: Boolean
 )
 
 object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
@@ -224,7 +225,7 @@ object PlumeBenchmarkProtocol extends DefaultYamlProtocol {
       )
   }
 
-  implicit val experimentConfigsFormat = yamlFormat9(ExperimentConfig)
+  implicit val experimentConfigsFormat = yamlFormat10(ExperimentConfig)
   implicit val driverConfigsFormat = yamlFormat1(DriverConfigurations)
   implicit val datasetConfigsFormat = yamlFormat1(DatasetConfigurations)
   implicit val emailConfigsFormat = yamlFormat7(EmailConfig)
