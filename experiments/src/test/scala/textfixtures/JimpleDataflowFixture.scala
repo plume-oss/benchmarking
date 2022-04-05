@@ -92,7 +92,7 @@ class JimpleDataflowFixture extends AnyFlatSpec with Matchers {
     )
   def specFInput1And2LeakedToReturn: TaintSpec =
     TaintSpec(
-      cpg.method("main").call(".*f.*").argumentIndex(1, 2),
+      cpg.method("main").call(".*f.*").argument,
       cpg.method("f").methodReturn,
     )
   def specSecureIFLInput1LeakedToReturn: TaintSpec =
