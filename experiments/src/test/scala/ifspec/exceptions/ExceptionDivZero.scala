@@ -3,6 +3,7 @@ package ifspec.exceptions
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ExceptionDivZero extends JimpleDataflowFixture {
 
@@ -59,7 +60,12 @@ class ExceptionDivZero extends JimpleDataflowFixture {
   "[Insecure] The integers input by the users" should "not be saved on the disk. " +
     "This means that no flow of information from the return value of Scanner.nextInt() " +
     "to the parameter of the method writeToDisk() should occur" taggedAs (Exceptions, ImplicitFlows) in {
-    assertIsInsecure(specScannerLeakToWriteToDisk)
+    assertIsInsecure(
+      TaintSpec(
+        cpg.call(".*nextInt.*").astParent.astChildren.isIdentifier,
+        cpg.call.methodFullName(".*writeToDisk.*", ".*writeToDB.*").argument(1),
+      )
+    )
   }
 
 }

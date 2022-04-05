@@ -3,6 +3,7 @@ package ifspec.exceptions
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ExceptionalControlFlow1Secure extends JimpleDataflowFixture {
 
@@ -49,7 +50,12 @@ class ExceptionalControlFlow1Secure extends JimpleDataflowFixture {
   "[Secure] The desired security requirement is that an attacker that can only observe the return value " +
     "of the method 'foo' cannot determine the random boolean value. This means that no information" should
     "flow from the method's input to its return value" taggedAs (Exceptions, ImplicitFlows) in {
-    assertIsSecure(specFooInputLeakedToReturn)
+    assertIsSecure(
+      TaintSpec(
+        cpg.method("main").call(".*foo.*").argument(1),
+        cpg.method("foo").methodReturn
+      )
+    )
   }
 
 }

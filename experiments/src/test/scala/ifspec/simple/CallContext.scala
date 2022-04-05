@@ -3,6 +3,7 @@ package ifspec.simple
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class CallContext extends JimpleDataflowFixture {
 
@@ -42,7 +43,12 @@ class CallContext extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Secure] The parameter of the method 'foo'" should "not flow to the return value of the method 'foo'" taggedAs (Simple, ExplicitFlows) in {
-    assertIsSecure(specFooInputLeakedToReturn)
+    assertIsSecure(
+      TaintSpec(
+        cpg.method("main").call(".*foo.*").argument(1),
+        cpg.method("foo").methodReturn
+      )
+    )
   }
 
 }

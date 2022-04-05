@@ -3,6 +3,7 @@ package ifspec.simple
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class IFMethodContract extends JimpleDataflowFixture {
 
@@ -43,7 +44,12 @@ class IFMethodContract extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Secure] There" should "not be any flow of information from the field high to the field low" taggedAs (Simple, ExplicitFlows) in {
-    assertIsSecure(specFieldHighLow)
+    assertIsSecure(
+      TaintSpec(
+        cpg.fieldAccess.code(".*high.*"),
+        cpg.fieldAccess.code(".*low.*"),
+      )
+    )
   }
 
 }

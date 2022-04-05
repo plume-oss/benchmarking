@@ -3,6 +3,7 @@ package ifspec.array
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ArrayCopyDirectLeak extends JimpleDataflowFixture {
 
@@ -49,7 +50,12 @@ class ArrayCopyDirectLeak extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Insecure] The first parameter of 'f'" should "flow to the return value of 'f'" taggedAs (Arrays, ExplicitFlows) in {
-    assertIsInsecure(specFInput1LeakedToInput3)
+    assertIsInsecure(
+      TaintSpec(
+        cpg.method("main").call(".*f.*").argument(1),
+        cpg.method("main").call(".*f.*").argument(3)
+      )
+    )
   }
 
 }

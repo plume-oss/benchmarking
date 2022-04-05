@@ -1,9 +1,9 @@
 package com.github.plume.oss
 package ifspec.aliasing
 
-import textfixtures.JimpleDataflowFixture
-
 import ifspec.IFSpecTags._
+import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class AliasingSimpleSecure extends JimpleDataflowFixture {
 
@@ -41,7 +41,12 @@ class AliasingSimpleSecure extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Secure] The user input is considered high and" should "not be not leaked to public output" taggedAs (Aliasing, ExplicitFlows) in {
-    assertIsSecure(specTestInputLeakedToReturn)
+    assertIsSecure(
+      TaintSpec(
+        cpg.method("main").call(".*test.*").argument(1),
+        cpg.method("test").methodReturn
+      )
+    )
   }
 
 }

@@ -3,6 +3,7 @@ package ifspec.exceptions
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ExceptionHandling extends JimpleDataflowFixture {
 
@@ -38,7 +39,12 @@ class ExceptionHandling extends JimpleDataflowFixture {
   "[Insecure] The program" should "not leak any information about the value read from the console to System.out. " +
     "This means that no flow of information from the return value of readLine() to the parameter of println() is " +
     "allowed." taggedAs (Exceptions, ImplicitFlows) in {
-    assertIsInsecure(specFInput1LeakedToReturn)
+    assertIsInsecure(
+      TaintSpec(
+        cpg.method("main").call(".*f.*").argument(1),
+        cpg.method("f").methodReturn,
+      )
+    )
   }
 
 }

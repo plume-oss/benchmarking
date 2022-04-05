@@ -3,6 +3,7 @@ package ifspec.simple
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class BooleanOperationsInsecure extends JimpleDataflowFixture {
 
@@ -26,8 +27,13 @@ class BooleanOperationsInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "There " should "be any flow from the parameter to the return value of the method" taggedAs (Simple, ExplicitFlows) in {
-    assertIsInsecure(specLeakyMethodInputToReturn)
+  "[Insecure] There " should "be any flow from the parameter to the return value of the method" taggedAs (Simple, ExplicitFlows) in {
+    assertIsInsecure(
+      TaintSpec(
+        cpg.method("main").call(".*leakyMethod.*").argument(1),
+        cpg.method("leakyMethod").methodReturn
+      )
+    )
   }
 
 }

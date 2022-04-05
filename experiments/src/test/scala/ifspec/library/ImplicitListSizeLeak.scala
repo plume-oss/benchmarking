@@ -3,6 +3,7 @@ package ifspec.library
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ImplicitListSizeLeak extends JimpleDataflowFixture {
 
@@ -44,7 +45,12 @@ class ImplicitListSizeLeak extends JimpleDataflowFixture {
   "[Insecure] The input provided to the method listSizeLeak(int h)" should "not be leaked by the return value of " +
     "this method. That is, the input provided to the method listSizeLeak(int h) is the confidential information " +
     "and the return value of this method is visible to the attacker" taggedAs (Library, ImplicitFlows) in {
-    assertIsInsecure(specListSizeInputLeakedToReturn)
+    assertIsInsecure(
+      TaintSpec(
+        cpg.method("main").call(".*listSizeLeak.*").argument(1),
+        cpg.method("listSizeLeak").methodReturn,
+      )
+    )
   }
 
 }

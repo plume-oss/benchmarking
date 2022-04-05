@@ -3,6 +3,7 @@ package ifspec.array
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
 
@@ -27,7 +28,12 @@ class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Secure] The parameter value" should "not flow to the return value" taggedAs (Arrays, ImplicitFlows) in {
-    assertIsSecure(specFooInputLeakedToReturn)
+    assertIsSecure(
+      TaintSpec(
+        cpg.method("main").call(".*foo.*").argument(1),
+        cpg.method("foo").methodReturn
+      )
+    )
   }
 
 }

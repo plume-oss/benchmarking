@@ -3,6 +3,7 @@ package ifspec.exceptions
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ConditionalLeakage extends JimpleDataflowFixture {
 
@@ -38,7 +39,12 @@ class ConditionalLeakage extends JimpleDataflowFixture {
 
   "[Insecure] The second parameter of the method 'divide'" should
     "flow to public output (i.e. System.out.println)" taggedAs (Exceptions, ImplicitFlows) in {
-    assertIsInsecure(specDivideLeakToPrintln)
+    assertIsInsecure(
+      TaintSpec(
+        cpg.method("main").call(".*divide.*").argument(2),
+        cpg.method(".*divide.*").call(".*println.*").argument(1),
+      )
+    )
   }
 
 }

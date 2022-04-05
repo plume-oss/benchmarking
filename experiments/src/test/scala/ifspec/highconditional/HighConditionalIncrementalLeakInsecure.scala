@@ -3,6 +3,7 @@ package ifspec.highconditional
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class HighConditionalIncrementalLeakInsecure extends JimpleDataflowFixture {
 
@@ -37,7 +38,12 @@ class HighConditionalIncrementalLeakInsecure extends JimpleDataflowFixture {
     "is assumed to be observable by the attacker. Moreover, it assumed that the input l of the method m is known to " +
     "the attacker, i.e., provided by the attacker or visible to the " +
     "attacker when provided as input to the method" taggedAs (HighConditional, ImplicitFlows) in {
-    assertIsInsecure(specFInput1And2LeakedToReturn)
+    assertIsInsecure(
+      TaintSpec(
+        cpg.method("main").call(".*f.*").argument,
+        cpg.method("f").methodReturn,
+      )
+    )
   }
 
 }

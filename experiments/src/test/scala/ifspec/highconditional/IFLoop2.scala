@@ -3,6 +3,7 @@ package ifspec.highconditional
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class IFLoop2 extends JimpleDataflowFixture {
 
@@ -42,8 +43,13 @@ class IFLoop2 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] There" should "not be any flow of information from the field high to the field low." taggedAs(HighConditional, ExplicitFlows) in {
-    assertIsInsecure(specFieldHighLow)
+  "[Insecure] There" should "not be any flow of information from the field high to the field low." taggedAs (HighConditional, ExplicitFlows) in {
+    assertIsInsecure(
+      TaintSpec(
+        cpg.fieldAccess.code(".*high.*"),
+        cpg.fieldAccess.code(".*low.*"),
+      )
+    )
   }
 
 }

@@ -3,6 +3,7 @@ package ifspec.simple
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class DirectAssignmentSecure extends JimpleDataflowFixture {
 
@@ -30,7 +31,12 @@ class DirectAssignmentSecure extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Secure] The parameter of 'leakyMethod'" should "not flow to its return value" taggedAs (Simple, ExplicitFlows) in {
-    assertIsSecure(specLeakyMethodInputToReturn)
+    assertIsSecure(
+      TaintSpec(
+        cpg.method("main").call(".*leakyMethod.*").argument(1),
+        cpg.method("leakyMethod").methodReturn
+      )
+    )
   }
 
 }

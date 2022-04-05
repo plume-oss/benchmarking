@@ -3,6 +3,7 @@ package ifspec.exceptions
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ExceptionalControlFlow1Insecure extends JimpleDataflowFixture {
 
@@ -44,8 +45,13 @@ class ExceptionalControlFlow1Insecure extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Insecure] No information about the value of the parameter of the method foo()" should
-    "flow to the return value of foo()" taggedAs(Exceptions, ImplicitFlows) in {
-    assertIsInsecure(specFooInputLeakedToReturn)
+    "flow to the return value of foo()" taggedAs (Exceptions, ImplicitFlows) in {
+    assertIsInsecure(
+      TaintSpec(
+        cpg.method("main").call(".*foo.*").argument(1),
+        cpg.method("foo").methodReturn
+      )
+    )
   }
 
 }

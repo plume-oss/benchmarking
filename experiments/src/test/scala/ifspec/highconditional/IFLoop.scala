@@ -3,6 +3,7 @@ package ifspec.highconditional
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class IFLoop extends JimpleDataflowFixture {
 
@@ -45,8 +46,13 @@ class IFLoop extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Secure] There" should "not be any flow of information from the parameter of 'secure_ifl' to its" +
-    " return value" taggedAs(HighConditional, ExplicitFlows) in {
-    assertIsSecure(specSecureIFLInput1LeakedToReturn)
+    " return value" taggedAs (HighConditional, ExplicitFlows) in {
+    assertIsSecure(
+      TaintSpec(
+        cpg.method("main").call(".*secure_ifl.*").argument(1),
+        cpg.method("secure_ifl").methodReturn,
+      )
+    )
   }
 
 }

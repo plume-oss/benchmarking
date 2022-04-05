@@ -3,6 +3,7 @@ package ifspec.array
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+import io.shiftleft.semanticcpg.language._
 
 class ArraysImplicitLeakInsecure extends JimpleDataflowFixture {
 
@@ -33,7 +34,12 @@ class ArraysImplicitLeakInsecure extends JimpleDataflowFixture {
       |""".stripMargin
 
   "[Insecure] The value stored in the field \"secret\" of class \"Main\"" should "be leaked via System.out.println()" taggedAs (Arrays, ImplicitFlows) in {
-    assertIsInsecure(specMainSecretLeakedToPrintln)
+    assertIsInsecure(
+      TaintSpec(
+        cpg.fieldAccess.code("Main.secret"),
+        cpg.method("main").call(".*println.*").argument(1),
+      )
+    )
   }
 
 }
