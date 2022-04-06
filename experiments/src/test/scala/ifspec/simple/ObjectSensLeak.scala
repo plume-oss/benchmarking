@@ -50,7 +50,7 @@ class ObjectSensLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The program" should "not leak the high value stored in ObjectSensLeak.high to System.out via A.out." +
+  "[True Negative] The program" should "not leak the high value stored in ObjectSensLeak.high to System.out via A.out." +
     "It is however a valid operation to print the low value" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(

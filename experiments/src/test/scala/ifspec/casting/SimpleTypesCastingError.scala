@@ -1,8 +1,9 @@
 package com.github.plume.oss
-package ifspec.exceptions
+package ifspec.casting
 
 import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
+
 import io.shiftleft.semanticcpg.language._
 
 class SimpleTypesCastingError extends JimpleDataflowFixture {
@@ -59,9 +60,9 @@ class SimpleTypesCastingError extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The value of the field secret of the class simpleTypes" should "not leak to standard output. That is," +
+  "[True Positive] The value of the field secret of the class simpleTypes" should "not leak to standard output. That is," +
     " the value of the field secret of the class simpleTypes is the confidential information of the program and the " +
-    "attacker is able to observe standard output." taggedAs (Exceptions, ImplicitFlows) in {
+    "attacker is able to observe standard output." taggedAs (Exceptions, Casting, ImplicitFlows) in {
     assertIsInsecure(TaintSpec(
       cpg.fieldAccess.code(".*secret.*"),
       cpg.method("test").methodReturn

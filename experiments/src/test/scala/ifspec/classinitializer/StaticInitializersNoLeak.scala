@@ -51,7 +51,7 @@ class StaticInitializersNoLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] No information from the static field h" should "flow to the static " +
+  "[True Negative] No information from the static field h" should "flow to the static " +
     "field l." taggedAs(ClassInitializer, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
       cpg.fieldAccess.code(".*h.*"),

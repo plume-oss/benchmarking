@@ -43,7 +43,7 @@ class StaticDispatching extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The value of field h is" should "not be written to the field lsink." taggedAs(Simple, ExplicitFlows) in {
+  "[True Positive] The value of field h is" should "not be written to the field lsink." taggedAs(Simple, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(
       cpg.fieldAccess.code(".*[h|l].*"),
       cpg.fieldAccess.code(".*[hsink|lsink].*")

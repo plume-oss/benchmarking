@@ -36,7 +36,7 @@ class SimpleArraySize extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The program" should "not leak any information provided as input to the method" +
+  "[True Positive] The program" should "not leak any information provided as input to the method" +
     "arraySizeLeak(int h) to the return value of this method which is assumed to be " +
     "observable by the attacker." taggedAs (Arrays, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(

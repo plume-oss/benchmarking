@@ -36,7 +36,7 @@ class StaticInitializersHighAccessInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via " +
+  "[True Positive] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via " +
     "System.out.println()." taggedAs(ClassInitializer, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(
       cpg.fieldAccess.code(".*secret.*"),

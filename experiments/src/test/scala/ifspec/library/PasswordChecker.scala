@@ -5,6 +5,7 @@ import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 
 import io.shiftleft.semanticcpg.language._
+
 class PasswordChecker extends JimpleDataflowFixture {
 
   behavior of
@@ -60,7 +61,7 @@ class PasswordChecker extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] No information about the provided password" should "leak to the program output" taggedAs (Library, ImplicitFlows) in {
+  "[True Positive] No information about the provided password" should "leak to the program output" taggedAs (Library, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
         cpg.method("main").call(".*nextLine.*").cfgPrev,

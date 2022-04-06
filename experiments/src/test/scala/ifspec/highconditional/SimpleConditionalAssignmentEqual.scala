@@ -39,7 +39,7 @@ class SimpleConditionalAssignmentEqual extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The secret in simpleConditionalAssignmentEqual" should "not be passed to " +
+  "[True Negative] The secret in simpleConditionalAssignmentEqual" should "not be passed to " +
     "the command line." taggedAs(HighConditional, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(

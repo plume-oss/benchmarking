@@ -45,7 +45,7 @@ class AliasingControlFlowSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via " +
+  "[True Negative] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via " +
     "System.out.println()" taggedAs (Aliasing, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(

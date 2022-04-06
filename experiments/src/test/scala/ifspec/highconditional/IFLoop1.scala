@@ -45,11 +45,11 @@ class IFLoop1 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] There" should "not be any flow of information from the parameter of 'secure_ifl' to its" +
+  "[True Negative] There" should "not be any flow of information from the parameter of 'secure_ifl' to its" +
     " return value" taggedAs (HighConditional, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*secure_ifl.*").argument(1),
+        cpg.method("secure_ifl").call(".*secure_ifl.*").argument(1),
         cpg.method("secure_ifl").methodReturn,
       )
     )

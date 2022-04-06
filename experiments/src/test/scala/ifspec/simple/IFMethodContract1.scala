@@ -43,7 +43,7 @@ class IFMethodContract1 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] There" should "not be any flow of information from the field high to the field low" taggedAs (Simple, ExplicitFlows) in {
+  "[True Negative] There" should "not be any flow of information from the field high to the field low" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
         cpg.fieldAccess.code(".*high.*"),

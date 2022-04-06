@@ -50,7 +50,7 @@ class ArrayCopyDirectLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The first parameter of 'f'" should "flow to the return value " +
+  "[True Positive] The first parameter of 'f'" should "flow to the return value " +
     "of 'f'" taggedAs (Arrays, ExplicitFlows) in {
     assertIsInsecure(
       TaintSpec(

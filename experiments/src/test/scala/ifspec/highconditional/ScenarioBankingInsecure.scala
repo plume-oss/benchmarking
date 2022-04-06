@@ -109,7 +109,7 @@ class ScenarioBankingInsecure extends JimpleDataflowFixture {
       |}
       |""".stripMargin
 
-  "[Insecure] The requirement is to be disallow information flows from Account.balance to ErrorLog.logError. " +
+  "[True Positive] The requirement is to be disallow information flows from Account.balance to ErrorLog.logError. " +
     "That is, no information about account " +
     "balances" should "be stored in the error log." taggedAs(HighConditional, ImplicitFlows) in {
     assertIsInsecure(

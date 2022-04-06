@@ -40053,7 +40053,7 @@ class program {
 }
       |""".stripMargin
 
-  "[Insecure] The parameter of the method 'foo'" should "not flow to the return value of the " +
+  "[True Positive] The parameter of the method 'foo'" should "not flow to the return value of the " +
     "method 'foo'" taggedAs (Simple, ExplicitFlows) in {
     assertIsInsecure(
       TaintSpec(

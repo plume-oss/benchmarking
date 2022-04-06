@@ -49,7 +49,7 @@ class StringIntern extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] No information flow" should "occur between the input parameter h and the return value of the" +
+  "[True Positive] No information flow" should "occur between the input parameter h and the return value of the" +
     " method h." taggedAs(Library, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(
       cpg.method("main").call(".*foo.*").argument,

@@ -30,7 +30,7 @@ class DirectAssignmentSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The parameter of 'leakyMethod'" should "not flow to its return value" taggedAs (Simple, ExplicitFlows) in {
+  "[True Negative] The parameter of 'leakyMethod'" should "not flow to its return value" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
         cpg.method("main").call(".*leakyMethod.*").argument(1),

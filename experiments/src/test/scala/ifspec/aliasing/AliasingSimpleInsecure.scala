@@ -43,7 +43,7 @@ class AliasingSimpleInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The user input is considered high and" should "be leaked to public " +
+  "[True Positive] The user input is considered high and" should "be leaked to public " +
     "output" taggedAs (Aliasing, ExplicitFlows) in {
     assertIsInsecure(
       TaintSpec(

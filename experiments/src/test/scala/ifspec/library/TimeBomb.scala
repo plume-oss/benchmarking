@@ -32,7 +32,7 @@ class TimeBomb extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The requirement is, that the number passed to the 'noLeak' method" should
+  "[True Negative] The requirement is, that the number passed to the 'noLeak' method" should
     " not be leaked." taggedAs(Library, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
       cpg.method("main").call(".*noLeak.*").argument,

@@ -47,7 +47,7 @@ class Polynomial extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The requirement is that the high value h passed to the 'MyClass.compute' method" should "not be " +
+  "[True Negative] The requirement is that the high value h passed to the 'MyClass.compute' method" should "not be " +
     "leaked by returning it" taggedAs (Simple, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(

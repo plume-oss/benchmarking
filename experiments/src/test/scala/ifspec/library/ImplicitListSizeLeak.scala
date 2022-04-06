@@ -43,7 +43,7 @@ class ImplicitListSizeLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The input provided to the method listSizeLeak(int h)" should "not be leaked by the return value of " +
+  "[True Positive] The input provided to the method listSizeLeak(int h)" should "not be leaked by the return value of " +
     "this method. That is, the input provided to the method listSizeLeak(int h) is the confidential information " +
     "and the return value of this method is visible to the attacker" taggedAs (Library, ImplicitFlows) in {
     assertIsInsecure(

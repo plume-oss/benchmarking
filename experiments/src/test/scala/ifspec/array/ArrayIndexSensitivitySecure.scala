@@ -23,7 +23,7 @@ class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The parameter value" should "not flow to the return value" taggedAs (Arrays, ExplicitFlows) in {
+  "[True Negative] The parameter value" should "not flow to the return value" taggedAs (Arrays, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
         cpg.method("foo").parameter,

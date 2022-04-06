@@ -48,7 +48,7 @@ class LostInCast extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The number passed to the method doIt()" should "not be leaked to its return value. " +
+  "[True Negative] The number passed to the method doIt()" should "not be leaked to its return value. " +
     "(basically, the output should be independent of the input)" taggedAs(Casting, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
       cpg.method("main").call(".*doIt.*").argument(1),

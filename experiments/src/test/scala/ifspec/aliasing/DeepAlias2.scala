@@ -5597,7 +5597,7 @@ class DeepAlias2 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The parameter of method 'foo'" should "not flow to its return value." taggedAs (Aliasing, ExplicitFlows) in {
+  "[True Negative] The parameter of method 'foo'" should "not flow to its return value." taggedAs (Aliasing, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
         cpg.method("main").call(".*foo.*").argument(1),

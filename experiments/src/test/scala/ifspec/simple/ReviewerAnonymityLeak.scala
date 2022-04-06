@@ -78,7 +78,7 @@ class ReviewerAnonymityLeak extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The reviewer identities" should "be kept secret. The observer is assumed to be an author, " +
+  "[True Positive] The reviewer identities" should "be kept secret. The observer is assumed to be an author, " +
     "receiving the reviews via the standard output of the program. Hence, this observable output must not depend on " +
     "the reviewer identities." taggedAs(Simple, ExplicitFlows) in {
     assertIsInsecure(

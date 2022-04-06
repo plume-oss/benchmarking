@@ -73,7 +73,7 @@ class Webstore4 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] There" should "be no information flow from the vPrime field of the videoset class to the output of the" +
+  "[True Negative] There" should "be no information flow from the vPrime field of the videoset class to the output of the" +
     "seePreview method." taggedAs(HighConditional, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(

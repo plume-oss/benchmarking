@@ -32,7 +32,7 @@ class HighConditionalIncrementalLeakSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The method f in the class Eg2" should "not leak any information from its parameter " +
+  "[True Negative] The method f in the class Eg2" should "not leak any information from its parameter " +
     "h to the return value of f. That is, the value h provided as input to the method f is " +
     "confidential and the return value of f is assumed to be observable by the attacker." +
     " Moreover, it assumed that the input l of the method m is known to the attacker," +
@@ -40,8 +40,14 @@ class HighConditionalIncrementalLeakSecure extends JimpleDataflowFixture {
     " attacker when provided as input to the method" taggedAs (HighConditional, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*f.*").argument,
-        cpg.method("f").methodReturn,
+        cpg.method("f").parameter.code(".*h.*"),
+        cpg.method("f").methodReturn
+      )
+    )
+    assertIsSecure(
+      TaintSpec(
+        cpg.method("f").parameter.code(".*l.*"),
+        cpg.method("f").parameter.code(".*h.*")
       )
     )
   }

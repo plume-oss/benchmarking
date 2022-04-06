@@ -59,7 +59,7 @@ class Webstore2 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] There" should "be no flow from the field vPrime to the return value of " +
+  "[True Negative] There" should "be no flow from the field vPrime to the return value of " +
     "seePreview." taggedAs(Arrays, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
       cpg.fieldAccess.code(".*vPrime.*"),

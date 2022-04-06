@@ -33,7 +33,7 @@ class ArraysImplicitLeakInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The value stored in the field \"secret\" of class \"Main\"" should "be leaked via " +
+  "[True Positive] The value stored in the field \"secret\" of class \"Main\"" should "be leaked via " +
     "System.out.println()" taggedAs (Arrays, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(

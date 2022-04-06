@@ -33,7 +33,7 @@ class HighConditionalIncrementalLeakInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The method f in the class Eg2" should "not leak any information from its parameter h to the return " +
+  "[True Positive] The method f in the class Eg2" should "not leak any information from its parameter h to the return " +
     "value of f. That is, the value h provided as input to the method f is confidential and the return value of f " +
     "is assumed to be observable by the attacker. Moreover, it assumed that the input l of the method m is known to " +
     "the attacker, i.e., provided by the attacker or visible to the " +

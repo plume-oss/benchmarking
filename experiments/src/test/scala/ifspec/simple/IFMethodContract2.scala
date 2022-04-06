@@ -46,7 +46,7 @@ class IFMethodContract2 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] There" should "not be any flow of information from the parameter to the return value" taggedAs (Simple, ExplicitFlows) in {
+  "[True Negative] There" should "not be any flow of information from the parameter to the return value" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
         cpg.method("main").call(".*insecure_if_high_n1.*").argument(1),

@@ -49,7 +49,7 @@ class SimpleTypes extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The value of the field secret of the class simpleTypes" should "not leak to standard output. That is, " +
+  "[True Positive] The value of the field secret of the class simpleTypes" should "not leak to standard output. That is, " +
     "the value of the field secret of the class simpleTypes is the confidential information of the program and the " +
     "attacker is able to observe standard output." taggedAs(HighConditional, ImplicitFlows) in {
     assertIsInsecure(

@@ -69,7 +69,7 @@ class Webstore3 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The high parameters which are given to the setDeliveryAddress method" should "not flow to the " +
+  "[True Negative] The high parameters which are given to the setDeliveryAddress method" should "not flow to the " +
     "billing address." taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(

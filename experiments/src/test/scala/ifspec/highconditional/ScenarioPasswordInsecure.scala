@@ -68,7 +68,7 @@ class ScenarioPasswordInsecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The program" should "leak no information about the password to the user." taggedAs(HighConditional, ImplicitFlows) in {
+  "[True Positive] The program" should "leak no information about the password to the user." taggedAs(HighConditional, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
         cpg.fieldAccess.code(".*[password|loggedIn|invalidTries].*"),

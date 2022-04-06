@@ -23,7 +23,7 @@ class BooleanOperationsSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] There " should "not be any flow from the parameter to the return value of the " +
+  "[True Negative] There " should "not be any flow from the parameter to the return value of the " +
     "method" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(

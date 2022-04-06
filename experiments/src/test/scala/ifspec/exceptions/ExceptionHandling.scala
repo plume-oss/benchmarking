@@ -37,7 +37,7 @@ class ExceptionHandling extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The program" should "not leak any information about the value read from the console to System.out. " +
+  "[True Positive] The program" should "not leak any information about the value read from the console to System.out. " +
     "This means that no flow of information from the return value of readLine() to the parameter of println() is " +
     "allowed." taggedAs (Exceptions, ImplicitFlows) in {
     assertIsInsecure(

@@ -48,7 +48,7 @@ class ExceptionalControlFlow1Insecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] No information about the value of the parameter of the method foo()" should
+  "[True Positive] No information about the value of the parameter of the method foo()" should
     "flow to the return value of foo()" taggedAs (Exceptions, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(

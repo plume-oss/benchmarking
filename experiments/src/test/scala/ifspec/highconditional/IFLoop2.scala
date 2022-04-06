@@ -43,7 +43,8 @@ class IFLoop2 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] There" should "not be any flow of information from the field high to the field low." taggedAs (HighConditional, ExplicitFlows) in {
+  "[True Positive] There" should "not be any flow of information from the field high to the" +
+    " field low." taggedAs (HighConditional, ExplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
         cpg.fieldAccess.code(".*high.*"),

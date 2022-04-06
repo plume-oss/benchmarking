@@ -37,7 +37,7 @@ class SimpleRandomErasure1 extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The field secret in the class simpleRandomErasure" should "not be printed to standard output. " +
+  "[True Positive] The field secret in the class simpleRandomErasure" should "not be printed to standard output. " +
     "That is, the field secret is the confidential information of the program and the attacker is able to " +
     "observe the standard output." taggedAs(Simple, ImplicitFlows) in {
     assertIsInsecure(

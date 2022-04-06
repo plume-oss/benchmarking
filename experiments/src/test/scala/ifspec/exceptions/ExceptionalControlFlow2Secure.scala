@@ -53,7 +53,7 @@ class ExceptionalControlFlow2Secure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The desired security requirement is that an attacker that can only observe the return value " +
+  "[True Negative] The desired security requirement is that an attacker that can only observe the return value " +
     "of the method 'foo' cannot determine the random boolean value. This means that no information" should
     "flow from the method's input to its return value" taggedAs (Exceptions, ImplicitFlows) in {
     assertIsSecure(

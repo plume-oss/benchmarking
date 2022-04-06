@@ -58,7 +58,7 @@ class ExceptionDivZero extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Insecure] The integers input by the users" should "not be saved on the disk. " +
+  "[True Positive] The integers input by the users" should "not be saved on the disk. " +
     "This means that no flow of information from the return value of Scanner.nextInt() " +
     "to the parameter of the method writeToDisk() should occur" taggedAs (Exceptions, ImplicitFlows) in {
     assertIsInsecure(
