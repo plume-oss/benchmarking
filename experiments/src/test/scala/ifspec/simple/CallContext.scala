@@ -22,10 +22,10 @@ class CallContext extends JimpleDataflowFixture {
       |    }
       |
       |    static int id(int x) {
-      |      return x;
+      |        return x;
       |    }
       |
-      |    public static void main (String [] args) {
+      |    public static void main(String[] args) {
       |        foo(randInt());
       |    }
       |
@@ -33,6 +33,7 @@ class CallContext extends JimpleDataflowFixture {
       |    static boolean randBool() {
       |        return true;
       |    }
+      |
       |    /** Helper method to obtain a random integer */
       |    static int randInt() {
       |        return 42;
@@ -42,7 +43,8 @@ class CallContext extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The parameter of the method 'foo'" should "not flow to the return value of the method 'foo'" taggedAs (Simple, ExplicitFlows) in {
+  "[Secure] The parameter of the method 'foo'" should "not flow to the return value of the " +
+    "method 'foo'" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
         cpg.method("main").call(".*foo.*").argument(1),

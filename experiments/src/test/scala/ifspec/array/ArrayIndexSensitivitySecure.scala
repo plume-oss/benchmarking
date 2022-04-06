@@ -15,22 +15,18 @@ class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
   override val code: String =
     """class program {
       |    public static int foo(int h) {
-      |        int [] a = new int [2];
+      |        int[] a = new int[2];
       |        a[0] = h;
       |        return a[1];
-      |    }
-      |
-      |    public static void main(String[] args){
-      |    	program.foo(1);
       |    }
       |}
       |
       |""".stripMargin
 
-  "[Secure] The parameter value" should "not flow to the return value" taggedAs (Arrays, ImplicitFlows) in {
+  "[Secure] The parameter value" should "not flow to the return value" taggedAs (Arrays, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*foo.*").argument(1),
+        cpg.method("foo").parameter,
         cpg.method("foo").methodReturn
       )
     )

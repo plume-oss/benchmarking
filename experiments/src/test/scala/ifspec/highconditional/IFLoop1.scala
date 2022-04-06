@@ -5,7 +5,7 @@ import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 import io.shiftleft.semanticcpg.language._
 
-class IFLoop extends JimpleDataflowFixture {
+class IFLoop1 extends JimpleDataflowFixture {
 
   behavior of
     """In the program, a loop is executed and the local variables x and y are incremented (starting from zero) until

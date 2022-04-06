@@ -23,7 +23,7 @@ class AliasingStrongUpdateSecure extends JimpleDataflowFixture {
       |        }
       |    }
       |
-      |    static int secret=42;
+      |    static int secret = 42;
       |
       |    public static void main(String[] arg) {
       |        A a = new A(secret);
@@ -40,7 +40,8 @@ class AliasingStrongUpdateSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" taggedAs (Aliasing, ExplicitFlows) in {
+  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via " +
+    "System.out.println()" taggedAs (Aliasing, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(
         cpg.fieldAccess.code("Main.secret"),

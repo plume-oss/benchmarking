@@ -19,18 +19,15 @@ class BooleanOperationsSecure extends JimpleDataflowFixture {
       |		ret = (high || true) || (high || false);
       |		return ret;
       |	}
-      |
-      |    public static void main(String[] args){
-      |	    BooleanOperations.leakyMethod(false);
-      |	}
       |}
       |
       |""".stripMargin
 
-  "[Secure] There " should "not be any flow from the parameter to the return value of the method" taggedAs (Simple, ExplicitFlows) in {
+  "[Secure] There " should "not be any flow from the parameter to the return value of the " +
+    "method" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*leakyMethod.*").argument(1),
+        cpg.method("leakyMethod").parameter,
         cpg.method("leakyMethod").methodReturn
       )
     )

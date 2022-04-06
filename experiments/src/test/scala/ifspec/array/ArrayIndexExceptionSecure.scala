@@ -18,14 +18,14 @@ class ArrayIndexExceptionSecure extends JimpleDataflowFixture {
   override val code: String =
     """class Main {
       |
-      |    static int secret=42;
+      |    static int secret = 42;
       |
       |    public static void main(String[] args) {
       |        int[] arr = new int[secret];
       |
-      |        for (int i=0; i<Integer.MAX_VALUE; i++) {
+      |        for (int i = 0; i < Integer.MAX_VALUE; i++) {
       |            try {
-      |                int j=arr[i];
+      |                int j = arr[i];
       |            } catch (Exception e) {
       |                System.exit(0);
       |            }
@@ -35,7 +35,8 @@ class ArrayIndexExceptionSecure extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be leaked via System.out.println()" taggedAs (Arrays, ImplicitFlows, Exceptions) in {
+  "[Secure] The value stored in the field \"secret\" of class \"Main\"" should "not be " +
+    "leaked via System.out.println()" taggedAs (Arrays, ImplicitFlows, Exceptions) in {
     assertIsSecure(
       TaintSpec(
         cpg.fieldAccess.code("Main.secret"),

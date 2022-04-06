@@ -14,13 +14,13 @@ class DirectAssignment extends JimpleDataflowFixture {
   override val code: String =
     """class DirectAssignment {
       |
-      |    public static void main (String [] args) {
+      |    public static void main(String[] args) {
       |        leakyMethod(randInt());
       |    }
       |
-      |	public static int leakyMethod(int high) {
-      |		return high;
-      |	}
+      |    public static int leakyMethod(int high) {
+      |        return high;
+      |    }
       |
       |    /** Helper method to obtain a random integer */
       |    static int randInt() {

@@ -6,7 +6,7 @@ import textfixtures.JimpleDataflowFixture
 
 import io.shiftleft.semanticcpg.language._
 
-class Webstore extends JimpleDataflowFixture {
+class Webstore1 extends JimpleDataflowFixture {
 
   behavior of
     """The class Webstore offers possibilities to buy products and similar functionality.

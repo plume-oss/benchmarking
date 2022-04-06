@@ -12,7 +12,8 @@ class ImplicitListSizeLeak extends JimpleDataflowFixture {
       |""".stripMargin
 
   override val code: String =
-    """import java.util.ArrayList;
+    """
+      |import java.util.ArrayList;
       |
       |class simpleListSize {
       |

@@ -16,32 +16,36 @@ class ExceptionalControlFlow1Secure extends JimpleDataflowFixture {
   override val code: String =
     """class program {
       |
-      |    private static class T extends Exception {}
+      |  private static class T extends Exception {
+      |  }
       |
-      |    /** Main test method parameter is the secret, return value is public */
-      |    static boolean foo(boolean h) {
-      |      boolean x = false;
-      |      try {
-      |        if (h) {throw new T();}
-      |      } catch (T t){
-      |        //Nothing happening here
+      |  /** Main test method parameter is the secret, return value is public */
+      |  static boolean foo(boolean h) {
+      |    boolean x = false;
+      |    try {
+      |      if (h) {
+      |        throw new T();
       |      }
-      |      x = true;
-      |      return x;
+      |    } catch (T t) {
+      |      // Nothing happening here
       |    }
+      |    x = true;
+      |    return x;
+      |  }
       |
-      |    public static void main (String [] args) {
-      |        foo(randBool());
-      |    }
+      |  public static void main(String[] args) {
+      |    foo(randBool());
+      |  }
       |
-      |    /** Helper method to obtain a random boolean */
-      |    static boolean randBool() {
-      |        return true;
-      |    }
-      |    /** Helper method to obtain a random integer */
-      |    static int randInt() {
-      |        return 42;
-      |    }
+      |  /** Helper method to obtain a random boolean */
+      |  static boolean randBool() {
+      |    return true;
+      |  }
+      |
+      |  /** Helper method to obtain a random integer */
+      |  static int randInt() {
+      |    return 42;
+      |  }
       |
       |}
       |

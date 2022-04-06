@@ -46,13 +46,13 @@ class SimpleErasureByConditionalChecks extends JimpleDataflowFixture {
       |
       |""".stripMargin
 
-  "[Secure] The requirement is that the input provided to the method computeSecretely(int)" should "not be" +
+  "[Secure] The requirement is that the input provided to the method computeSecretly(int)" should "not be" +
     " leaked by the return value of the method. That is, the input to the method computeSecretly(int) is the" +
     " confidential information and the return value of the method is visible " +
     "to an attacker." taggedAs(HighConditional, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*computeSecretly.*").argument,
+        cpg.method("main").call(".*computeSecretly.*").argument(1),
         cpg.method("computeSecretly").methodReturn
       )
     )

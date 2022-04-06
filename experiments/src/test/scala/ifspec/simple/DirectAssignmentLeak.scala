@@ -13,20 +13,19 @@ class DirectAssignmentLeak extends JimpleDataflowFixture {
 
   override val code: String =
     """class Eg1 {
-      |	public static void main(String args[]){
+      |	public static void main(String args[]) {
       |		f(randInt(), randInt());
       |	}
       |
-      |	public static int f(int h, int l)
-      |	{
+      |	public static int f(int h, int l) {
       |		l = h;
       |		return l;
       |	}
       |
-      |    /** Helper method to obtain a random integer */
-      |    static int randInt() {
-      |        return 42;
-      |    }
+      |	/** Helper methot to obtain a random integer */
+      |	static int randInt() {
+      |		return 42;
+      |	}
       |
       |}
       |

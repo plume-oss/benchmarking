@@ -18,21 +18,22 @@ class ExceptionHandling extends JimpleDataflowFixture {
       |            throw new Exception();
       |        return 1;
       |    }
+      |
       |    static int f(int a) {
       |        int x;
       |        try {
       |            x = g(a);
       |            x++;
-      |        }
-      |        catch(Exception e) {
+      |        } catch (Exception e) {
       |            x = 0;
       |        }
       |        return x;
       |    }
+      |
       |    public static void main(String args[]) throws Exception {
       |        f(42);
       |    }
-      |}
+      |};
       |
       |""".stripMargin
 

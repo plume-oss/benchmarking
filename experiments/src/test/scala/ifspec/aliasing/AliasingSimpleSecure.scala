@@ -24,27 +24,30 @@ class AliasingSimpleSecure extends JimpleDataflowFixture {
       |        v1.i = h;
       |    }
       |
-      |    static int getNumber() {return 42;}
+      |    static int getNumber() {
+      |        return 42;
+      |    }
       |
-      |    static int test(int i){
-      |    	A v1 = new A();
+      |    static int test(int i) {
+      |        A v1 = new A();
       |        A v2 = new A();
-      |        set (v1, v2, i);
+      |        set(v1, v2, i);
       |        return v2.i;
       |    }
       |
-      |    public static void main (String args[]) throws Exception {
+      |    public static void main(String args[]) throws Exception {
       |        test(getNumber());
       |    }
       |}
       |
       |""".stripMargin
 
-  "[Secure] The user input is considered high and" should "not be not leaked to public output" taggedAs (Aliasing, ExplicitFlows) in {
+  "[Secure] The user input is considered high and" should "not be not leaked to public " +
+    "output" taggedAs (Aliasing, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*test.*").argument(1),
-        cpg.method("test").methodReturn
+        cpg.method.call(".*test.*").argument(1),
+        cpg.method("test").methodReturn,
       )
     )
   }

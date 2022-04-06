@@ -24,9 +24,9 @@ class ExceptionDivZero extends JimpleDataflowFixture {
       |		System.out.println("We will return a/b in integer precision");
       |		System.out.print("Enter one private integer: ");
       |		int i1 = sc.nextInt();
-      |		System.out.print("Enter an other private integer: ");
+      |		System.out.print("Enter an other private interger: ");
       |		int i2 = sc.nextInt();
-      |		int r = i1/i2;
+      |		int r = i1 / i2;
       |		String result = i1 + " / " + i2 + " = " + r;
       |		System.out.println(" " + result);
       |		System.out.println("Your query was saved in our secure database,"
@@ -42,12 +42,13 @@ class ExceptionDivZero extends JimpleDataflowFixture {
       |	}
       |
       |	public static void writeToDisk(String err) {
-      |		// saves the error into a public log file, such that technicians can solve the problem.
+      |		// saves the error into a public log file, such that technicians can solve the
+      |		// problem.
       |		System.out.println("writeToDisk:" + err);
       |	}
       |
       |	public static void main(String... args) {
-      |		try	{
+      |		try {
       |			new ExceptionDivZero();
       |		} catch (Exception e) {
       |			writeToDisk(e.toString());

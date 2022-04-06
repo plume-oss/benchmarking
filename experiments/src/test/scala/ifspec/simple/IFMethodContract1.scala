@@ -5,7 +5,7 @@ import ifspec.IFSpecTags._
 import textfixtures.JimpleDataflowFixture
 import io.shiftleft.semanticcpg.language._
 
-class IFMethodContract extends JimpleDataflowFixture {
+class IFMethodContract1 extends JimpleDataflowFixture {
 
   behavior of
     """The program branches on whether the value of the field high is positive and either a) calls the method
