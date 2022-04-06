@@ -30,6 +30,7 @@ sources:
     - getRequestURI
     - getRequestURL
     - getServletPath
+    - getServletRequest
     - getOutputStream
   javax.servlet.http.Cookie:
     - getComment
@@ -89,6 +90,7 @@ sources:
   org.springframework.http.server.ServletServerHttpRequest:
     - getServletRequest
     - getBody
+    - getHeaders
   com.google.common.io.Resources:
     - readLines
   com.google.common.io.ByteStreams:
@@ -131,8 +133,6 @@ sources:
     - asText
   com.github.scribejava.core.extractors.AbstractOAuth1(.*)TokenExtractor:
     - extract
-#  com.github.scribejava.core.(.*).OAuth(.*):
-#    - getToken
   com.github.scribejava.core.model.Parameter(.*):
     - getValue
   io.reactivex.rxjava3.subjects.(.*)Subject(.*):

@@ -5,20 +5,20 @@ import PlumeStatistics._
 import drivers._
 
 import com.github.nscala_time.time.Imports.LocalDateTime
-import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics.{ PATH_CACHE_HITS, PATH_CACHE_MISSES }
-import io.joern.dataflowengineoss.queryengine.{ QueryEngineStatistics, ReachableByResult }
+import io.joern.dataflowengineoss.queryengine.QueryEngineStatistics.{PATH_CACHE_HITS, PATH_CACHE_MISSES}
+import io.joern.dataflowengineoss.queryengine.{QueryEngineStatistics, ReachableByResult}
 import io.shiftleft.codepropertygraph.generated.NodeTypes
 import io.shiftleft.codepropertygraph.generated.nodes.Expression
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 import overflowdb.traversal.Traversal
 
-import java.io.{ BufferedWriter, FileWriter, File => JFile }
-import java.nio.file.{ Files, Paths }
+import java.io.{BufferedWriter, FileWriter, File => JFile}
+import java.nio.file.{Files, Paths}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.{ Failure, Success, Try, Using }
+import scala.util.{Failure, Success, Try, Using}
 
 object RunBenchmark {
 
@@ -198,34 +198,34 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-              "FILE_NAME," +
-              "PHASE," +
-              "DATABASE," +
-              "TIME," +
-              "TYPE," +
-              "\n"
+            "FILE_NAME," +
+            "PHASE," +
+            "DATABASE," +
+            "TIME," +
+            "TYPE," +
+            "\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(s"""${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-        .results()
-        .getOrElse(TIME_OPEN_DRIVER, 0L)},Fetching Graph
+                    .results()
+                    .getOrElse(TIME_OPEN_DRIVER, 0L)},Fetching Graph
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-        .results()
-        .getOrElse(TIME_CLOSE_DRIVER, 0L)},Storing Graph
+                    .results()
+                    .getOrElse(TIME_CLOSE_DRIVER, 0L)},Storing Graph
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-        .results()
-        .getOrElse(TIME_REMOVING_OUTDATED_GRAPH, 0L)},Removing Expired Sub-Graphs
+                    .results()
+                    .getOrElse(TIME_REMOVING_OUTDATED_GRAPH, 0L)},Removing Expired Sub-Graphs
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-        .results()
-        .getOrElse(TIME_REMOVING_OUTDATED_CACHE, 0L)},Removing Expired Cache Entries
+                    .results()
+                    .getOrElse(TIME_REMOVING_OUTDATED_CACHE, 0L)},Removing Expired Cache Entries
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-        .results()
-        .getOrElse(TIME_RETRIEVING_CACHE, 0L)},Fetching Cache
+                    .results()
+                    .getOrElse(TIME_RETRIEVING_CACHE, 0L)},Fetching Cache
            |${LocalDateTime.now()},${job.program.name},$phase,${job.driverName},${PlumeStatistics
-        .results()
-        .getOrElse(TIME_STORING_CACHE, 0L)},Storing Cache
+                    .results()
+                    .getOrElse(TIME_STORING_CACHE, 0L)},Storing Cache
            |""".stripMargin)
     }
   }
@@ -238,35 +238,35 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-              "FILE_NAME," +
-              "PHASE," +
-              "DATABASE," +
-              "TIME," +
-              "CONNECT_DESERIALIZE," +
-              "DISCONNECT_SERIALIZE," +
-              "PROGRAM_CLASSES," +
-              "PROGRAM_METHODS," +
-              "EXTERNAL_METHODS," +
-              "NODE_COUNT," +
-              "EDGE_COUNT" +
-              "\n"
+            "FILE_NAME," +
+            "PHASE," +
+            "DATABASE," +
+            "TIME," +
+            "CONNECT_DESERIALIZE," +
+            "DISCONNECT_SERIALIZE," +
+            "PROGRAM_CLASSES," +
+            "PROGRAM_METHODS," +
+            "EXTERNAL_METHODS," +
+            "NODE_COUNT," +
+            "EDGE_COUNT" +
+            "\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
         s"${LocalDateTime.now()}," +
-            s"${b.fileName}," +
-            s"${b.phase}," +
-            s"${b.database}," +
-            s"${b.time}," +
-            s"${b.connectDeserialize}," +
-            s"${b.disconnectSerialize}," +
-            s"${b.programClasses}," +
-            s"${b.programMethods}," +
-            s"${b.externalMethods}," +
-            s"${b.nodeCount}," +
-            s"${b.edgeCount}\n"
+          s"${b.fileName}," +
+          s"${b.phase}," +
+          s"${b.database}," +
+          s"${b.time}," +
+          s"${b.connectDeserialize}," +
+          s"${b.disconnectSerialize}," +
+          s"${b.programClasses}," +
+          s"${b.programMethods}," +
+          s"${b.externalMethods}," +
+          s"${b.nodeCount}," +
+          s"${b.edgeCount}\n"
       )
     }
     b
@@ -282,11 +282,11 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-              "FILE_NAME," +
-              "DATABASE," +
-              "FILE_TYPE," +
-              "FILE_SIZE" +
-              "\n"
+            "FILE_NAME," +
+            "DATABASE," +
+            "FILE_TYPE," +
+            "FILE_SIZE" +
+            "\n"
         )
       }
     }
@@ -466,19 +466,26 @@ object RunBenchmark {
       driver: IDriver,
       phase: String,
       noCacheSharing: Boolean = false
-  ): Option[TaintAnalysisResult] =
+  ): Option[TaintAnalysisResult] = {
+
+    def mapToMatchingPattern(t: String, m: String): String =
+      if (m.contains("<init>"))
+        s"$t.$m:.*\\(.+\\)"
+      else
+        s"$t.$m:.*\\(.*\\)"
+
     driver match {
       case d: OverflowDbDriver if experimentConfig.runTaintAnalysis =>
         logger.info("Running taint analysis")
         import io.shiftleft.semanticcpg.language._
         val sourcesToQuery = taintConfig.sources.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.+\\)")
+          case (t: String, ms: List[String]) => ms.map(mapToMatchingPattern(t, _))
         }.toSeq
         val sanitizersToQuery = taintConfig.sanitization.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.+\\)")
+          case (t: String, ms: List[String]) => ms.map(mapToMatchingPattern(t, _))
         }.toSeq
         val sinksToQuery = taintConfig.sinks.flatMap {
-          case (t: String, ms: List[String]) => ms.map(m => s"$t.$m:.*\\(.+\\)")
+          case (t: String, ms: List[String]) => ms.map(mapToMatchingPattern(t, _))
         }.toSeq
 
         def sink: Traversal[Expression] = d.cpg.call.methodFullName(sinksToQuery: _*).argument
@@ -519,6 +526,7 @@ object RunBenchmark {
         Some(result)
       case _ => None
     }
+  }
 
   def captureTaintAnalysisPerformanceResult(job: Job, result: TaintAnalysisResult): Unit = {
     val csv = new JFile("../results/taint_results.csv")
@@ -528,26 +536,26 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-              "FILE_NAME," +
-              "DATABASE," +
-              "PHASE," +
-              "TIME," +
-              "CACHE_HITS," +
-              "CACHE_MISSES" +
-              "\n"
+            "FILE_NAME," +
+            "DATABASE," +
+            "PHASE," +
+            "TIME," +
+            "CACHE_HITS," +
+            "CACHE_MISSES" +
+            "\n"
         )
       }
     }
     Using.resource(new BufferedWriter(new FileWriter(csv, true))) {
       _.append(
         s"${LocalDateTime.now()}," +
-            s"${job.program.name}," +
-            s"${job.driverName}," +
-            s"${result.phase}," +
-            s"${result.time}," +
-            s"${result.cacheHits}," +
-            s"${result.cacheMisses}" +
-            "\n"
+          s"${job.program.name}," +
+          s"${job.driverName}," +
+          s"${result.phase}," +
+          s"${result.time}," +
+          s"${result.cacheHits}," +
+          s"${result.cacheMisses}" +
+          "\n"
       )
     }
   }
@@ -560,10 +568,10 @@ object RunBenchmark {
       Using.resource(new BufferedWriter(new FileWriter(csv))) {
         _.append(
           "DATE," +
-              "FILE_NAME," +
-              "PATH_TYPE," +
-              "PATH_COUNT" +
-              "\n"
+            "FILE_NAME," +
+            "PATH_TYPE," +
+            "PATH_COUNT" +
+            "\n"
         )
       }
     }

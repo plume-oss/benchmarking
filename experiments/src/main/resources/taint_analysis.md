@@ -89,7 +89,7 @@ com.github.scribejava.core.oauth.OAuth20Service.getAccessTokenDeviceAuthorizatio
 com.github.scribejava.core.oauth.OAuth20Service.getAccessTokenDeviceAuthorizationGrant:620
 ```
 # spring-boot
-### 10 flows
+### 12 flows
 
 - False positive where output of a System.getProperty caused exception thought to influence what is printed later (4 flows)
 ```
@@ -97,7 +97,7 @@ org.springframework.boot.system.SystemProperties.get:33
 org.springframework.boot.system.SystemProperties.get:40
 ```
 
-- Value of a system-defined variable given to File constructor (6 flows)
+- Value of a system-defined variable given to File constructor (8 flows)
 ```
 org.springframework.boot.system.SystemProperties.get:34
 org.springframework.boot.web.context.WebServerPortFileWriter.<init>:78
