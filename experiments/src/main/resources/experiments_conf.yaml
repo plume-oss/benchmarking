@@ -16,4 +16,4 @@ runTaintAnalysis: true
 # When taint analysis is run, print the paths in a readable way
 printTaintPaths: false
 # Includes runs where cache is not shared
-includeNotCacheSharing: true
+includeNoCacheSharing: true
