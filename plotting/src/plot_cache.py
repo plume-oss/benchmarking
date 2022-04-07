@@ -8,16 +8,12 @@ import constants
 
 
 def cache_hit_ratio(row):
-    return float(row["CACHE_HITS"]) / (float(row["CACHE_HITS"]) + float(row["CACHE_MISSES"])) * 100.0
+    return float(row["CACHE_HITS"]) / (float(row["CACHE_HITS"]) + float(row["CACHE_MISSES"]) + 0.000000001) * 100.0
 
 
 def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
-    df = df.drop(df[df['PHASE'].str.contains("INIT")].index)
-    df = df.drop(df[df['PHASE'].str.contains("UPDATE")].index)
-    df['PHASE'] = df['PHASE'] \
-        .map(lambda x: "Recycle Cache" if "DISCUPT" in x else x) \
-        .map(lambda x: "Discard Cache" if "BUILD" in x else x)
+    df = df.drop(df[df['PHASE'].str.contains("Initial")].index)
     df['CACHE_RATIO'] = df.apply(lambda x: cache_hit_ratio(x), axis=1)
 
     df = df.rename(columns={

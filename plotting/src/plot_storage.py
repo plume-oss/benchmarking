@@ -9,16 +9,16 @@ import constants
 def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
     df.info()
-    df['FILE_SIZE_MB'] = df['FILE_SIZE'].apply(lambda x: x / 1024 ** 2)
+    df['FILE_SIZE_MB'] = df['FILE_SIZE'].apply(lambda x: x / 1000 ** 2)
 
     df = df.rename(columns={
-        'FILE_SIZE_MB': 'File Size [Mb]',
+        'FILE_SIZE_MB': 'File Size [MB]',
         'FILE_TYPE': 'File Type',
         'FILE_NAME': 'Library',
     })
 
     sns.catplot(data=df, kind="bar",
-                y="Library", x="File Size [Mb]", hue="File Type",
+                y="Library", x="File Size [MB]", hue="File Type",
                 orient="h",
                 alpha=.6, height=6,
                 order=constants.PLOT_ORDER

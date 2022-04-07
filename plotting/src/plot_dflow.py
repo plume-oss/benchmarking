@@ -10,11 +10,7 @@ import constants
 def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
     df['TIME'] = df['TIME'].apply(lambda row: row / 1e+9)
-    df = df.drop(df[df['PHASE'].str.contains("INIT")].index)
-    df = df.drop(df[df['PHASE'].str.contains("UPDATE")].index)
-    df['PHASE'] = df['PHASE'] \
-        .map(lambda x: "Recycle Cache" if "DISCUPT" in x else x) \
-        .map(lambda x: "Discard Cache" if "BUILD" in x else x)
+    df = df.drop(df[df['PHASE'].str.contains("Initial")].index)
 
     df = df.rename(columns={
         'TIME': 'Time [Seconds]',
@@ -25,7 +21,7 @@ def plot(input_file):
 
     sns.catplot(data=df, kind="bar",
                 y="Library", x="Time [Seconds]",
-                hue="Cache Use Strategy", hue_order=['Recycle Cache', 'Discard Cache'],
+                hue="Cache Use Strategy",
                 orient="h",
                 alpha=.6, height=6,
                 order=constants.PLOT_ORDER
