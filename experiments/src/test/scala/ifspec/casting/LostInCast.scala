@@ -52,7 +52,7 @@ class LostInCast extends JimpleDataflowFixture {
     "(basically, the output should be independent of the input)" taggedAs(Casting, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
       cpg.method("main").call(".*doIt.*").argument(1),
-      cpg.method("doIt").methodReturn
+      cpg.method("doIt").block.ast.isReturn
     ))
   }
 

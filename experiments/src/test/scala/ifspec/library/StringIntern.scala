@@ -53,7 +53,7 @@ class StringIntern extends JimpleDataflowFixture {
     " method h." taggedAs(Library, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(
       cpg.method("main").call(".*foo.*").argument,
-      cpg.method("foo").methodReturn
+      cpg.method("foo").block.ast.isReturn
     ))
   }
 

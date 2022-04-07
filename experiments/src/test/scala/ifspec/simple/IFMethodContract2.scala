@@ -50,7 +50,7 @@ class IFMethodContract2 extends JimpleDataflowFixture {
     assertIsSecure(
       TaintSpec(
         cpg.method("main").call(".*insecure_if_high_n1.*").argument(1),
-        cpg.method("insecure_if_high_n1").methodReturn,
+        cpg.method("insecure_if_high_n1").block.ast.isReturn,
       )
     )
   }

@@ -48,7 +48,7 @@ class AliasingSimpleInsecure extends JimpleDataflowFixture {
     assertIsInsecure(
       TaintSpec(
         cpg.method.call(".*test.*").argument(1),
-        cpg.method("test").methodReturn,
+        cpg.method("test").block.ast.isReturn,
       )
     )
   }

@@ -55,13 +55,13 @@ class ArrayCopyDirectLeak extends JimpleDataflowFixture {
     assertIsInsecure(
       TaintSpec(
         cpg.method("main").call(".*f.*").argument(1),
-        cpg.method("f").methodReturn
+        cpg.method("f").block.ast.isReturn
       )
     )
     assertIsInsecure(
       TaintSpec(
         cpg.method("main").call(".*f.*").argument(3),
-        cpg.method("f").methodReturn
+        cpg.method("f").block.ast.isReturn
       )
     )
   }

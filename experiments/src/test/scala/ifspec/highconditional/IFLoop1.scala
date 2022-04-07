@@ -50,7 +50,7 @@ class IFLoop1 extends JimpleDataflowFixture {
     assertIsSecure(
       TaintSpec(
         cpg.method("secure_ifl").call(".*secure_ifl.*").argument(1),
-        cpg.method("secure_ifl").methodReturn,
+        cpg.method("secure_ifl").block.ast.isReturn,
       )
     )
   }

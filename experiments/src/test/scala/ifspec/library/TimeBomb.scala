@@ -36,7 +36,7 @@ class TimeBomb extends JimpleDataflowFixture {
     " not be leaked." taggedAs(Library, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
       cpg.method("main").call(".*noLeak.*").argument,
-      cpg.method("noLeak").methodReturn
+      cpg.method("noLeak").block.ast.isReturn
     ))
   }
 

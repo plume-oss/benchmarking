@@ -40056,7 +40056,7 @@ class program {
     assertIsSecure(
       TaintSpec(
         cpg.method("main").call(".*foo.*").argument(1),
-        cpg.method("foo").methodReturn
+        cpg.method("foo").block.ast.isReturn
       )
     )
   }

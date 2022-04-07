@@ -55,7 +55,7 @@ class ObjectSensLeak extends JimpleDataflowFixture {
     assertIsSecure(
       TaintSpec(
         cpg.method("main").call(".*test.*").argument,
-        cpg.method("test").methodReturn
+        cpg.method("test").block.ast.isReturn
       )
     )
   }

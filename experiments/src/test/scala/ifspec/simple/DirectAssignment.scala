@@ -34,7 +34,7 @@ class DirectAssignment extends JimpleDataflowFixture {
     assertIsInsecure(
       TaintSpec(
         cpg.method("main").call(".*leakyMethod.*").argument(1),
-        cpg.method("leakyMethod").methodReturn
+        cpg.method("leakyMethod").block.ast.isReturn
       )
     )
   }
