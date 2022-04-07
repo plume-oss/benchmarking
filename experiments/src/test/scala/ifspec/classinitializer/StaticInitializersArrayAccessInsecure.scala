@@ -43,7 +43,7 @@ class StaticInitializersArrayAccessInsecure extends JimpleDataflowFixture {
     " System.out.println()." taggedAs(Arrays, ClassInitializer, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(
       cpg.fieldAccess.code(".*secret.*"),
-      cpg.method("leak").call(".*println.*").argument
+      cpg.call(".*println.*").argument(1)
     ))
   }
 

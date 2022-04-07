@@ -52,7 +52,7 @@ class ExceptionalControlFlow1Insecure extends JimpleDataflowFixture {
     "flow to the return value of foo()" taggedAs (Exceptions, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
-        cpg.method("main").call(".*foo.*").argument(1),
+        cpg.call(".*foo.*").argument(1),
         cpg.method("foo").methodReturn
       )
     )

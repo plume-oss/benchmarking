@@ -5600,8 +5600,8 @@ class DeepAlias2 extends JimpleDataflowFixture {
   "[True Negative] The parameter of method 'foo'" should "not flow to its return value." taggedAs (Aliasing, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*foo.*").argument(1),
-        cpg.method("foo").block.ast.isReturn,
+        cpg.call(".*foo.*").argument(1),
+        cpg.method("foo").ast.isReturn,
       )
     )
   }

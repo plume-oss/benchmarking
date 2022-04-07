@@ -64,8 +64,8 @@ class PasswordChecker extends JimpleDataflowFixture {
   "[True Positive] No information about the provided password" should "leak to the program output" taggedAs (Library, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
-        cpg.method("main").call(".*nextLine.*").cfgPrev,
-        cpg.method("main").call(".*println.*").argument(0)
+        cpg.call(".*nextLine.*").cfgPrev,
+        cpg.call(".*println.*").argument(0)
       )
     )
   }

@@ -42,7 +42,7 @@ class ConditionalLeakage extends JimpleDataflowFixture {
     "flow to public output (i.e. System.out.println)" taggedAs (Exceptions, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
-        cpg.method("main").call(".*divide.*").argument(2),
+        cpg.call(".*divide.*").argument(2),
         cpg.method(".*divide.*").call(".*println.*").argument(1),
       )
     )

@@ -34,6 +34,7 @@ def plot(input_file):
 
     sns.catplot(data=df, kind="bar",
                 y="Library", x="Time [Seconds]", hue="Update Type",
+                hue_order=["Full Build", "Cold Update", "Hot Update"],
                 orient="h",
                 alpha=.6, height=6,
                 order=constants.PLOT_ORDER

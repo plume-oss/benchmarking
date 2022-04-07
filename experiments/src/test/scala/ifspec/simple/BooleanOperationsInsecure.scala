@@ -28,7 +28,7 @@ class BooleanOperationsInsecure extends JimpleDataflowFixture {
     assertIsInsecure(
       TaintSpec(
         cpg.method("leakyMethod").parameter,
-        cpg.method("leakyMethod").block.ast.isReturn
+        cpg.method("leakyMethod").ast.isReturn
       )
     )
   }

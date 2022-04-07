@@ -73,7 +73,7 @@ class Webstore3 extends JimpleDataflowFixture {
     "billing address." taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*setDeliveryAdr.*").argument,
+        cpg.call(".*setDeliveryAdr.*").argument,
         cpg.fieldAccess.code(".*[name|street].*")
       )
     )

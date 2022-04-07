@@ -83,7 +83,7 @@ class Webstore4 extends JimpleDataflowFixture {
     )
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*reinit.*").argument,
+        cpg.call(".*reinit.*").argument,
         cpg.method("seePreview").methodReturn
       )
     )

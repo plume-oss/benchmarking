@@ -51,7 +51,7 @@ class Polynomial extends JimpleDataflowFixture {
     "leaked by returning it" taggedAs (Simple, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*compute.*").argument(1),
+        cpg.call(".*compute.*").argument(1),
         cpg.method("compute").methodReturn
       )
     )

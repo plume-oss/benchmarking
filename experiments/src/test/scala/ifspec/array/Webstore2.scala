@@ -63,7 +63,7 @@ class Webstore2 extends JimpleDataflowFixture {
     "seePreview." taggedAs(Arrays, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
       cpg.fieldAccess.code(".*vPrime.*"),
-      cpg.method("seePreview").block.ast.isReturn
+      cpg.method("seePreview").ast.isReturn
     ))
   }
 

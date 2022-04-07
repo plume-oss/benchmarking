@@ -54,8 +54,8 @@ class ObjectSensLeak extends JimpleDataflowFixture {
     "It is however a valid operation to print the low value" taggedAs (Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*test.*").argument,
-        cpg.method("test").block.ast.isReturn
+        cpg.call(".*test.*").argument,
+        cpg.method("test").ast.isReturn
       )
     )
   }

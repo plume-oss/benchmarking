@@ -51,7 +51,7 @@ class AliasingNestedSecure extends JimpleDataflowFixture {
     assertIsSecure(
       TaintSpec(
         cpg.fieldAccess.code("Main.secret"),
-        cpg.method("main").call(".*println.*").argument(1),
+        cpg.call(".*println.*").argument(1),
       )
     )
   }

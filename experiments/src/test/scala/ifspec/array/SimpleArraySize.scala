@@ -40,8 +40,8 @@ class SimpleArraySize extends JimpleDataflowFixture {
     "arraySizeLeak(int h) to the return value of this method which is assumed to be " +
     "observable by the attacker." taggedAs (Arrays, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(
-      cpg.method("main").call(".*arraySizeLeak.*").argument(1),
-      cpg.method("arraySizeLeak").block.ast.isReturn
+      cpg.call(".*arraySizeLeak.*").argument(1),
+      cpg.method("arraySizeLeak").ast.isReturn
     ))
   }
 

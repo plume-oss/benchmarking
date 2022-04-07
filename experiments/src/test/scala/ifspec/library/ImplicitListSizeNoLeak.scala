@@ -51,7 +51,7 @@ class ImplicitListSizeNoLeak extends JimpleDataflowFixture {
     "the return value of this method is visible to the attacker" taggedAs (Library, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*listSizeLeak.*").argument(1),
+        cpg.call(".*listSizeLeak.*").argument(1),
         cpg.method("listSizeLeak").methodReturn,
       )
     )

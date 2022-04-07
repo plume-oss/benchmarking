@@ -47,8 +47,8 @@ class Webstore1 extends JimpleDataflowFixture {
 
   "[True Negative] There" should "be no flow from high to low." taggedAs(Arrays, ExplicitFlows) in {
     assertIsSecure(TaintSpec(
-      cpg.method("main").call(".*buyProduct.*").argument,
-      cpg.method("buyProduct").block.ast.isReturn
+      cpg.call(".*buyProduct.*").argument,
+      cpg.method("buyProduct").ast.isReturn
     ))
   }
 

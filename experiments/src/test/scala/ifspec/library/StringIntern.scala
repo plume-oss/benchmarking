@@ -52,8 +52,8 @@ class StringIntern extends JimpleDataflowFixture {
   "[True Positive] No information flow" should "occur between the input parameter h and the return value of the" +
     " method h." taggedAs(Library, ExplicitFlows) in {
     assertIsInsecure(TaintSpec(
-      cpg.method("main").call(".*foo.*").argument,
-      cpg.method("foo").block.ast.isReturn
+      cpg.call(".*foo.*").argument,
+      cpg.method("foo").ast.isReturn
     ))
   }
 

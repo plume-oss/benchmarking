@@ -51,7 +51,7 @@ class SimpleListToArraySize extends JimpleDataflowFixture {
     "this method. That is, the input provided to the method listSizeLeak(int h) is the confidential information and " +
     "the return value of this method is visible to the attacker." taggedAs(Library, ImplicitFlows) in {
     assertIsInsecure(TaintSpec(
-      cpg.method("main").call(".*listArraySizeLeak.*").argument,
+      cpg.call(".*listArraySizeLeak.*").argument,
       cpg.method("listArraySizeLeak").methodReturn
     ))
   }

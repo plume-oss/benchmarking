@@ -40057,8 +40057,8 @@ class program {
     "method 'foo'" taggedAs (Simple, ExplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
-        cpg.method("main").call(".*foo.*").argument(1),
-        cpg.method("foo").block.ast.isReturn
+        cpg.call(".*foo.*").argument(1),
+        cpg.method("foo").ast.isReturn
       )
     )
   }

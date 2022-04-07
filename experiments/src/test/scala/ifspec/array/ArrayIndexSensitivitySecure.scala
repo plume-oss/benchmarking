@@ -27,7 +27,7 @@ class ArrayIndexSensitivitySecure extends JimpleDataflowFixture {
     assertIsSecure(
       TaintSpec(
         cpg.method("foo").parameter,
-        cpg.method("foo").block.ast.isReturn
+        cpg.method("foo").ast.isReturn
       )
     )
   }

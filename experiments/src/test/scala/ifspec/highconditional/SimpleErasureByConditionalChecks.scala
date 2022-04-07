@@ -52,7 +52,7 @@ class SimpleErasureByConditionalChecks extends JimpleDataflowFixture {
     "to an attacker." taggedAs(HighConditional, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*computeSecretly.*").argument(1),
+        cpg.call(".*computeSecretly.*").argument(1),
         cpg.method("computeSecretly").methodReturn
       )
     )

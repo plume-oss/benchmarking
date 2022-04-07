@@ -40,7 +40,7 @@ class HighConditionalIncrementalLeakInsecure extends JimpleDataflowFixture {
     "attacker when provided as input to the method" taggedAs (HighConditional, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
-        cpg.method("main").call(".*f.*").argument,
+        cpg.call(".*f.*").argument,
         cpg.method("f").methodReturn,
       )
     )

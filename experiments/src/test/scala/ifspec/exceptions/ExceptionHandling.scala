@@ -42,7 +42,7 @@ class ExceptionHandling extends JimpleDataflowFixture {
     "allowed." taggedAs (Exceptions, ImplicitFlows) in {
     assertIsInsecure(
       TaintSpec(
-        cpg.method("main").call(".*f.*").argument(1),
+        cpg.call(".*f.*").argument(1),
         cpg.method("f").methodReturn,
       )
     )
