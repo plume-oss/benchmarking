@@ -13,7 +13,7 @@ class Polynomial extends JimpleDataflowFixture {
       |If it is zero, the method returns the high value h, if not, it returns the low value l.
       |Since p(x) = (x^2 + 1)^3, there does not exist value v such that p(v) = 0.
       |Therefore the method MyClass.compute does not leak the high value h.
-      |(The program uses BigInteger; thus the arithmetic is precise and no overflow can happen and.)
+      |(The program uses BigInteger; thus the arithmetic is precise and no overflow can happen.)
       |""".stripMargin
 
   override val code: String =
@@ -51,7 +51,7 @@ class Polynomial extends JimpleDataflowFixture {
     "leaked by returning it" taggedAs (Simple, ImplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*compute.*").argument,
+        cpg.method("main").call(".*compute.*").argument(1),
         cpg.method("compute").methodReturn
       )
     )

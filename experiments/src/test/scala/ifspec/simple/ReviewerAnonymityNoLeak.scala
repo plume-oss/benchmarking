@@ -83,7 +83,7 @@ class ReviewerAnonymityNoLeak extends JimpleDataflowFixture {
     "the reviewer identities." taggedAs(Simple, ExplicitFlows) in {
     assertIsSecure(
       TaintSpec(
-        cpg.method("main").call(".*addReview.*").argument,
+        cpg.method("main").call(".*addReview.*").argument(1),
         cpg.call("println").argument
       )
     )
