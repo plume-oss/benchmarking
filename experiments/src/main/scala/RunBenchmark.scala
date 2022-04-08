@@ -231,7 +231,7 @@ object RunBenchmark {
   }
 
   def captureBenchmarkResult(b: BenchmarkResult): BenchmarkResult = {
-    val csv = new JFile("../results/result.csv")
+    val csv = new JFile("../results/build_results.csv")
     if (!csv.exists()) {
       new JFile("../results/").mkdir()
       csv.createNewFile()
