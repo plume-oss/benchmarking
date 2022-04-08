@@ -11,6 +11,11 @@ def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
     df['TIME'] = df['TIME'].apply(lambda row: row / 1e+9)
     df = df.drop(df[df['PHASE'].str.contains("Initial")].index)
+    df['PHASE'] = df['PHASE'] \
+        .map(lambda x: "No Sharing" if "Do not share cache with local search" in x else x) \
+        .map(lambda x: "Recycle & Share" if "Recycle and share cache with" in x else x) \
+        .map(lambda x: "Recycle & No Sharing" if "Recycle with no sharing" in x else x) \
+        .map(lambda x: "Share" if "Share cache on local search" in x else x)
 
     df = df.rename(columns={
         'TIME': 'Time [Seconds]',
@@ -23,6 +28,7 @@ def plot(input_file):
                 y="Library", x="Time [Seconds]",
                 hue="Cache Use Strategy",
                 orient="h",
+                aspect=8 / 11,
                 alpha=.6, height=6,
                 order=constants.PLOT_ORDER
                 )

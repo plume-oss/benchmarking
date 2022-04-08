@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+
 import constants
 
 
@@ -10,7 +11,9 @@ def plot(input_file):
     df = pd.read_csv(input_file, delimiter=',')
     df.info()
     df['FILE_SIZE_MB'] = df['FILE_SIZE'].apply(lambda x: x / 1000 ** 2)
-
+    df = df.drop(df[df['FILE_TYPE'].str.contains("Zstd")].index)
+    df['FILE_TYPE'] = df['FILE_TYPE'] \
+        .map(lambda x: "JAR File" if "Project JAR File" in x else x.replace("Stored ", ""))
     df = df.rename(columns={
         'FILE_SIZE_MB': 'File Size [MB]',
         'FILE_TYPE': 'File Type',
@@ -21,6 +24,7 @@ def plot(input_file):
                 y="Library", x="File Size [MB]", hue="File Type",
                 orient="h",
                 alpha=.6, height=6,
+                aspect=8 / 9,
                 order=constants.PLOT_ORDER
                 )
     plt.tight_layout()
