@@ -29,7 +29,7 @@ run := Defaults
   .evaluated
 
 libraryDependencies ++= Seq(
-  "com.github.plume-oss" %% "plume" % plumeVersion,
+  "com.github.plume-oss" % "plume" % plumeVersion,
   "org.apache.logging.log4j" % "log4j-core" % log4jVersion,
   "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4jVersion,
   "org.lz4" % "lz4-java" % lz4Version,
