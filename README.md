@@ -1,24 +1,9 @@
 # Benchmarking
 
-The benchmarking suite for Plume related performance measures.
+This project handles the data from Plume benchmarks and largely plots the results.
 
-## Configuration
+## Usage
 
-The suite is configured at `src/main/resources/config.yaml` where one can enable/disable
-certain configurations and specify which storage backends to use.
-
-The programs part of the configuration shows which jar in the `src/main/resources/programs` 
-folder to use for the initial build and which to use in the update. These jars are currently
-named after their commit hash.
-
-## Running the suite
-
-* Heading into `experiments` directory
-* Then unpack the dataset with: 
-```
-    unlzma src/main/resources/programs.tar.lzma && \
-        tar xvf src/main/resources/programs.tar -C ./src/main/resources
-```
-* Then use `./RUN.sh` to start the benchmarks - this also contains memory configurations if necessary.
-
-Taint analysis is performed from sources and sinks defined in `src/main/resources/taint_definitions.yaml`.
+1. Execute `runBenchmarks.sc` from the `plume` repository. This will create a `results` directory.
+2. Copy `results` from `plume` to this directory.
+3. Run the cells in the Jupyter notebook `plotting.ipynb`
